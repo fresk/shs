@@ -1,0 +1,30 @@
+<QuizScreen>:
+    answerlayout: answergrid
+    BoxLayout:
+        orientation:'vertical'
+
+        Label:
+            text: root.question
+            size_hint: 1, 0.5
+
+        GridLayout:
+            id: answergrid
+            cols: 2 if len(self.children) > 3 else 1
+            size_hint: 1, 0.5
+
+<QuizAnswer>:
+    on_release: app.submit_answer(self)
+
+<ExplanationScreen>:
+    BoxLayout:
+        orientation:'vertical'
+
+        Label:
+            text: "YES!!" if root.answer.correct else "Sorry, thats wrong..."
+
+        Label:
+            text: root.explanation
+
+        Button:
+            text: "Continue"
+            on_release: app.random_question()
