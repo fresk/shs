@@ -1,0 +1,88 @@
+<IntroScreen>:
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'ui/screens/intro/bg.png'
+
+    Button:
+        text: "start"
+        size: 500,300
+        size_hint: None, None
+        center: root.center
+        background_normal: 'ui/screens/intro/btn.png'
+        background_down: 'ui/screens/intro/btn_down.png'
+        on_release: app.screen_manager.current = 'playerinfo'
+
+
+
+
+<PlayerInfoScreen>:
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'ui/screens/playerinfo/bg.png'
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        BoxLayout:
+            size_hint: 1, 0.15
+            orientation: 'horizontal'
+            Label:
+                text: "Enter your ZIP code, or select your county"
+            Button:
+                text: "Enter Zip"
+
+
+        Image:
+            source: 'ui/screen/playerinfo/map.png'
+            size_hint: 1, 0.7
+
+        Button:
+            size_hint: 1, 0.15
+            text: "just go..."
+            background_normal: 'ui/screens/playerinfo/go_btn.png'
+            background_down: 'ui/screens/playerinfo/go_btn_down.png'
+            on_release: app.screen_manager.current = 'question'
+
+
+
+
+<QuestionScreen>:
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'ui/screens/question/bg.png'
+
+
+
+
+<AnswerScreen>:
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'ui/screens/answer/bg.png'
+
+
+
+<ResultsScreen>:
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'ui/screens/results/bg.png'
+
