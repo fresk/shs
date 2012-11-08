@@ -1,5 +1,5 @@
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
 
 import os
 import glob
@@ -65,7 +65,7 @@ class IowaIQApp(App):
 
     def build(self):
         self.load_questions()
-        self.screen_manager = ScreenManager()
+        self.screen_manager = ScreenManager(transition=SlideTransition())
         self.screen_manager.add_widget(IntroScreen(name='intro'))
         self.screen_manager.add_widget(PlayerInfoScreen(name='playerinfo'))
         self.screen_manager.add_widget(QuestionScreen(name='question'))
