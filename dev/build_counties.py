@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 
 DEV_PATH = os.path.dirname(__file__)
-SHS_PATH = os.path.dirname(DEV_PATH)
+SHS_PATH = os.path.join(DEV_PATH, '..')
 
 
 class BoundingBox(object):
@@ -49,6 +49,9 @@ def extract_counties(infile):
 
     counties = {}
 
+    W = float(root.attrib['width'])
+    H = float(root.attrib['height'])
+
     for elem in root.iter('path'):
         #county id
 
@@ -78,9 +81,10 @@ def extract_counties(infile):
 
 
         counties[eid] = {
-                'pos':(-cx,-cy),
-                'size':(cw,ch),
-                'name':elem.attrib['id'].replace("_", " "),
+                'pos': (-cx, H+cy+ch),
+                'size': (b.width, b.height),
+                'name': elem.attrib['id'].replace("_", " "),
+                'id': eid
         }
 
         #add only this path/county to the new svg
@@ -88,7 +92,7 @@ def extract_counties(infile):
         croot.append(elem)
 
         #write county data
-        county_path = os.path.join(SHS_PATH, "counties", eid)
+        county_path = os.path.join(SHS_PATH, "data/counties", eid)
         try:
             os.makedirs(county_path)
         except:
@@ -97,8 +101,8 @@ def extract_counties(infile):
         with open(os.path.join(county_path, "facts.txt"), 'w') as f:
             f.write("Some facts about {0}".format(counties[eid]['name']))
 
-    county_path = os.path.join(SHS_PATH, "counties")
-    json.dump(counties, open(os.path.join(county_path, 'index.json'), 'w'))
+    county_path = os.path.join(SHS_PATH, "data/counties")
+    json.dump(counties, open(os.path.join(county_path, 'counties.json'), 'w'))
 
 
 def svg2png(infile, outfile):

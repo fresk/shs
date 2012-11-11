@@ -1,0 +1,322 @@
+3/27/95
+
+IOWA
+Population of Counties by Decennial Census: 1900 to 1990
+Compiled and edited by Richard L. Forstall
+                       Population Division 
+                       US Bureau of the Census
+                       Washington, DC  20233
+
+Please see file, 1900-90.doc for explanatory notes and documentation.
+
+ FIPS      1990      1980      1970      1960
+00000 248709873 226545805 203211926 179323175 United States
+
+19000   2776755   2913808   2824376   2757537 Iowa
+19001      8409      9509      9487     10893 Adair County
+19003      4866      5731      6322      7468 Adams County
+19005     13855     15108     14968     15982 Allamakee County
+19007     13743     15511     15007     16015 Appanoose County
+19009      7334      8559      9595     10919 Audubon County
+19011     22429     23649     22885     23422 Benton County
+19013    123798    137961    132916    122482 Black Hawk County
+19015     25186     26184     26470     28037 Boone County
+19017     22813     24820     22737     21108 Bremer County
+19019     20844     22900     21746     22293 Buchanan County
+19021     19965     20774     20693     21189 Buena Vista County
+19023     15731     17668     16953     17467 Butler County
+19025     11508     13542     14287     15923 Calhoun County
+19027     21423     22951     22912     23431 Carroll County
+19029     15128     16932     17007     17919 Cass County
+19031     17381     18635     17655     17791 Cedar County
+19033     46733     48458     49335     49894 Cerro Gordo County
+19035     14098     16238     17269     18598 Cherokee County
+19037     13295     15437     14969     15034 Chickasaw County
+19039      8287      8612      7581      8222 Clarke County
+19041     17585     19576     18464     18504 Clay County
+19043     19054     21098     20606     21962 Clayton County
+19045     51040     57122     56749     55060 Clinton County
+19047     16775     18935     18780     18569 Crawford County
+19049     29755     29513     26085     24123 Dallas County
+19051      8312      9104      8207      9199 Davis County
+19053      8338      9794      9737     10539 Decatur County
+19055     18035     18933     18770     18483 Delaware County
+19057     42614     46203     46982     44605 Des Moines County
+19059     14909     15629     12565     12574 Dickinson County
+19061     86403     93745     90609     80048 Dubuque County
+19063     11569     13336     14009     14871 Emmet County
+19065     21843     25488     26898     28581 Fayette County
+19067     17058     19597     19860     21102 Floyd County
+19069     11364     13036     13255     15472 Franklin County
+19071      8226      9401      9282     10282 Fremont County
+19073     10045     12119     12716     14379 Greene County
+19075     12029     14366     14119     14132 Grundy County
+19077     10935     11983     12243     13607 Guthrie County
+19079     16071     17862     18383     20032 Hamilton County
+19081     12638     13833     13227     14604 Hancock County
+19083     19094     21776     22248     22533 Hardin County
+19085     14730     16348     16240     17600 Harrison County
+19087     19226     18890     18114     18187 Henry County
+19089      9809     11114     11442     12734 Howard County
+19091     10756     12246     12519     13156 Humboldt County
+19093      8365      8908      9190     10269 Ida County
+19095     14630     15429     15419     16396 Iowa County
+19097     19950     22503     20839     20754 Jackson County
+19099     34795     36425     35425     35282 Jasper County
+19101     16310     16316     15774     15818 Jefferson County
+19103     96119     81717     72127     53663 Johnson County
+19105     19444     20401     19868     20693 Jones County
+19107     11624     12921     13943     15492 Keokuk County
+19109     18591     21891     22937     25314 Kossuth County
+19111     38687     43106     42996     44207 Lee County
+19113    168767    169775    163213    136899 Linn County
+19115     11592     12055     10682     10290 Louisa County
+19117      9070     10313     10163     10923 Lucas County
+19119     11952     12896     13340     14468 Lyon County
+19121     12483     12597     11558     12295 Madison County
+19123     21522     22867     22177     23602 Mahaska County
+19125     30001     29669     26352     25886 Marion County
+19127     38276     41652     41076     37984 Marshall County
+19129     13202     13406     11606     13050 Mills County
+19131     10928     12329     13108     14043 Mitchell County
+19133     10034     11692     12069     13916 Monona County
+19135      8114      9209      9357     10463 Monroe County
+19137     12076     13413     12781     14467 Montgomery County
+19139     39907     40436     37181     33840 Muscatine County
+19141     15444     16972     17522     18840 O'Brien County
+19143      7267      8371      8555     10064 Osceola County
+19145     16870     19063     18507     21023 Page County
+19147     10669     12721     13289     14736 Palo Alto County
+19149     23388     24743     24312     23906 Plymouth County
+19151      9525     11369     12729     14234 Pocahontas County
+19153    327140    303170    286101    266315 Polk County
+19155     82628     86561     86991     83102 Pottawattami County
+19157     19033     19306     18803     19300 Poweshiek County
+19159      5420      6112      6373      7910 Ringgold County
+19161     12324     14118     15573     17007 Sac County
+19163    150979    160022    142687    119067 Scott County
+19165     13230     15043     15528     15825 Shelby County
+19167     29903     30813     27996     26375 Sioux County
+19169     74252     72326     62783     49327 Story County
+19171     17419     19533     20147     21413 Tama County
+19173      7114      8353      8790     10288 Taylor County
+19175     12750     13858     13557     13712 Union County
+19177      7676      8626      8643      9778 Van Buren County
+19179     35687     40241     42149     46126 Wapello County
+19181     36033     34878     27432     20829 Warren County
+19183     19612     20141     18967     19406 Washington County
+19185      7067      8199      8405      9800 Wayne County
+19187     40342     45953     48391     47810 Webster County
+19189     12122     13010     12990     13099 Winnebago County
+19191     20847     21876     21758     21651 Winneshiek County
+19193     98276    100884    103052    107849 Woodbury County
+19195      7991      9075      8968     10259 Worth County
+19197     14269     16319     17294     19447 Wright County
+
+ FIPS      1950      1940      1930      1920
+00000 151325798 132164569 123202624 106021537 United States
+
+19000   2621073   2538268   2470939   2404021 Iowa
+19001     12292     13196     13891     14259 Adair County
+19003      8753     10156     10437     10521 Adams County
+19005     16351     17184     16328     17285 Allamakee County
+19007     19683     24245     24835     30535 Appanoose County
+19009     11579     11790     12264     12520 Audubon County
+19011     22656     22879     22851     24080 Benton County
+19013    100448     79946     69146     56570 Black Hawk County
+19015     28139     29782     29271     29892 Boone County
+19017     18884     17932     17046     16728 Bremer County
+19019     21927     20991     19550     19890 Buchanan County
+19021     21113     19838     18667     18556 Buena Vista County
+19023     17394     17986     17617     17845 Butler County
+19025     16925     17584     17605     17783 Calhoun County
+19027     23065     22770     22326     21549 Carroll County
+19029     18532     18647     19422     19421 Cass County
+19031     16910     16884     16760     17560 Cedar County
+19033     46053     43845     38476     34675 Cerro Gordo County
+19035     19052     19258     18737     17760 Cherokee County
+19037     15228     15227     14637     15431 Chickasaw County
+19039      9369     10233     10384     10506 Clarke County
+19041     18103     17762     16107     15660 Clay County
+19043     22522     24334     24559     25032 Clayton County
+19045     49664     44722     44377     43371 Clinton County
+19047     19741     20538     21028     20614 Crawford County
+19049     23661     24649     25493     25120 Dallas County
+19051      9959     11136     11150     12574 Davis County
+19053     12601     14012     14903     16566 Decatur County
+19055     17734     18487     18122     18183 Delaware County
+19057     42056     36804     38162     35520 Des Moines County
+19059     12756     12185     10982     10241 Dickinson County
+19061     71337     63768     61214     58262 Dubuque County
+19063     14102     13406     12856     12627 Emmet County
+19065     28294     29151     29145     29251 Fayette County
+19067     21505     20169     19524     18860 Floyd County
+19069     16268     16379     16382     15807 Franklin County
+19071     12323     14645     15533     15447 Fremont County
+19073     15544     16599     16528     16467 Greene County
+19075     13722     13518     14133     14420 Grundy County
+19077     15197     17210     17324     17596 Guthrie County
+19079     19660     19922     20978     19531 Hamilton County
+19081     15077     15402     14802     14723 Hancock County
+19083     22218     22530     22947     23337 Hardin County
+19085     19560     22767     24897     24488 Harrison County
+19087     18708     17994     17660     18298 Henry County
+19089     13105     13531     13082     13705 Howard County
+19091     13117     13459     13202     12951 Humboldt County
+19093     10697     11047     11933     11689 Ida County
+19095     15835     17016     17332     18600 Iowa County
+19097     18622     19181     18481     19931 Jackson County
+19099     32305     31496     32936     27855 Jasper County
+19101     15696     15762     16241     16440 Jefferson County
+19103     45756     33191     30276     26462 Johnson County
+19105     19401     19950     19206     18607 Jones County
+19107     16797     18406     19148     20983 Keokuk County
+19109     26241     26630     25452     25082 Kossuth County
+19111     43102     41074     41268     39676 Lee County
+19113    104274     89142     82336     74004 Linn County
+19115     11101     11384     11575     12179 Louisa County
+19117     12069     14571     15114     15686 Lucas County
+19119     14697     15374     15293     15431 Lyon County
+19121     13131     14525     14331     15020 Madison County
+19123     24672     26485     25804     26270 Mahaska County
+19125     25930     27019     25727     24957 Marion County
+19127     35611     35406     33727     32630 Marshall County
+19129     14064     15064     15866     15422 Mills County
+19131     13945     14121     14065     13921 Mitchell County
+19133     16303     18238     18213     17125 Monona County
+19135     11814     14553     15010     23467 Monroe County
+19137     15685     15697     16752     17048 Montgomery County
+19139     32148     31296     29385     29042 Muscatine County
+19141     18970     19293     18409     19051 O'Brien County
+19143     10181     10607     10182     10223 Osceola County
+19145     23921     24887     25904     24137 Page County
+19147     15891     16170     15398     15486 Palo Alto County
+19149     23252     23502     24159     23584 Plymouth County
+19151     15496     16266     15687     15602 Pocahontas County
+19153    226010    195835    172837    154029 Polk County
+19155     69682     66756     69888     61550 Pottawattami County
+19157     19344     18758     18727     19910 Poweshiek County
+19159      9528     11137     11966     12919 Ringgold County
+19161     17518     17639     17641     17500 Sac County
+19163    100698     84748     77332     73952 Scott County
+19165     15942     16720     17131     16065 Shelby County
+19167     26381     27209     26806     26458 Sioux County
+19169     44294     33434     31141     26185 Story County
+19171     21688     22428     21987     21861 Tama County
+19173     12420     14258     14859     15514 Taylor County
+19175     15651     16280     17435     17268 Union County
+19177     11007     12053     12603     14060 Van Buren County
+19179     47397     44280     40480     37937 Wapello County
+19181     17758     17695     17700     18047 Warren County
+19183     19557     20055     19822     20421 Washington County
+19185     11737     13308     13787     15378 Wayne County
+19187     44241     41521     40425     37611 Webster County
+19189     13450     13972     13143     13489 Winnebago County
+19191     21639     22263     21630     22091 Winneshiek County
+19193    103917    103627    101669     92171 Woodbury County
+19195     11068     11449     11164     11630 Worth County
+19197     19652     20038     20216     20348 Wright County
+
+ FIPS      1910      1900
+00000  92228496  76212168                     United States
+
+19000   2224771   2231853                     Iowa
+19001     14420     16192                     Adair County
+19003     10998     13601                     Adams County
+19005     17328     18711                     Allamakee County
+19007     28701     25927                     Appanoose County
+19009     12671     13626                     Audubon County
+19011     23156     25177                     Benton County
+19013     44865     32399                     Black Hawk County
+19015     27626     28200                     Boone County
+19017     15843     16305                     Bremer County
+19019     19748     21427                     Buchanan County
+19021     15981     16975                     Buena Vista County
+19023     17119     17955                     Butler County
+19025     17090     18569                     Calhoun County
+19027     20117     20319                     Carroll County
+19029     19047     21274                     Cass County
+19031     17765     19371                     Cedar County
+19033     25011     20672                     Cerro Gordo County
+19035     16741     16570                     Cherokee County
+19037     15375     17037                     Chickasaw County
+19039     10736     12440                     Clarke County
+19041     12766     13401                     Clay County
+19043     25576     27750                     Clayton County
+19045     45394     43832                     Clinton County
+19047     20041     21685                     Crawford County
+19049     23628     23058                     Dallas County
+19051     13315     15620                     Davis County
+19053     16347     18115                     Decatur County
+19055     17888     19185                     Delaware County
+19057     36145     35989                     Des Moines County
+19059      8137      7995                     Dickinson County
+19061     57450     56403                     Dubuque County
+19063      9816      9936                     Emmet County
+19065     27919     29845                     Fayette County
+19067     17119     17754                     Floyd County
+19069     14780     14996                     Franklin County
+19071     15623     18546                     Fremont County
+19073     16023     17820                     Greene County
+19075     13574     13757                     Grundy County
+19077     17374     18729                     Guthrie County
+19079     19242     19514                     Hamilton County
+19081     12731     13752                     Hancock County
+19083     20921     22794                     Hardin County
+19085     23162     25597                     Harrison County
+19087     18640     20022                     Henry County
+19089     12920     14512                     Howard County
+19091     12182     12667                     Humboldt County
+19093     11296     12327                     Ida County
+19095     18409     19544                     Iowa County
+19097     21258     23615                     Jackson County
+19099     27034     26976                     Jasper County
+19101     15951     17437                     Jefferson County
+19103     25914     24817                     Johnson County
+19105     19050     21954                     Jones County
+19107     21160     24979                     Keokuk County
+19109     21971     22720                     Kossuth County
+19111     36702     39719                     Lee County
+19113     60720     55392                     Linn County
+19115     12855     13516                     Louisa County
+19117     13462     16126                     Lucas County
+19119     14624     13165                     Lyon County
+19121     15621     17710                     Madison County
+19123     29860     34273                     Mahaska County
+19125     22995     24159                     Marion County
+19127     30279     29991                     Marshall County
+19129     15811     16764                     Mills County
+19131     13435     14916                     Mitchell County
+19133     16633     17980                     Monona County
+19135     25429     17985                     Monroe County
+19137     16604     17803                     Montgomery County
+19139     29505     28242                     Muscatine County
+19141     17262     16985                     O'Brien County
+19143      8956      8725                     Osceola County
+19145     24002     24187                     Page County
+19147     13845     14354                     Palo Alto County
+19149     23129     22209                     Plymouth County
+19151     14808     15339                     Pocahontas County
+19153    110438     82624                     Polk County
+19155     55832     54336                     Pottawattami County
+19157     19589     19414                     Poweshiek County
+19159     12904     15325                     Ringgold County
+19161     16555     17639                     Sac County
+19163     60000     51558                     Scott County
+19165     16552     17932                     Shelby County
+19167     25248     23337                     Sioux County
+19169     24083     23159                     Story County
+19171     22156     24585                     Tama County
+19173     16312     18784                     Taylor County
+19175     16616     19928                     Union County
+19177     15020     17354                     Van Buren County
+19179     37743     35426                     Wapello County
+19181     18194     20376                     Warren County
+19183     19925     20718                     Washington County
+19185     16184     17491                     Wayne County
+19187     34629     31757                     Webster County
+19189     11914     12725                     Winnebago County
+19191     21729     23731                     Winneshiek County
+19193     67616     54610                     Woodbury County
+19195      9950     10887                     Worth County
+19197     17951     18227                     Wright County
