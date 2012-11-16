@@ -1,3 +1,16 @@
+#:import m kivy.metrics
+
+
+<Label>:
+    font: 'ui/fonts/Gotham-Book.ttf'
+    font_size: '14pt'
+    text_size: self.width-self.padding_x, self.height-self.padding_y
+    padding: ('50dp', '5dp')
+    valign: 'middle'
+    halign: 'center'
+
+
+
 <IntroScreen>:
     canvas:
         Color:
@@ -8,49 +21,12 @@
             source: 'ui/screens/intro/bg.png'
 
     Button:
-        text: "start"
         size: 500,300
         size_hint: None, None
         center: root.center
         background_normal: 'ui/screens/intro/btn.png'
         background_down: 'ui/screens/intro/btn_down.png'
-        on_release: app.screen_manager.current = 'playerinfo'
-
-
-
-
-<PlayerInfoScreen>:
-    canvas:
-        Color:
-            rgba: 1,1,1,1
-        Rectangle:
-            pos: self.pos
-            size: self.size
-            source: 'ui/screens/playerinfo/bg.png'
-
-    BoxLayout:
-        orientation: 'vertical'
-
-        BoxLayout:
-            size_hint: 1, 0.15
-            orientation: 'horizontal'
-            Label:
-                text: "Enter your ZIP code, or select your county"
-            Button:
-                text: "Enter Zip"
-
-
-        Image:
-            source: 'ui/screen/playerinfo/map.png'
-            size_hint: 1, 0.7
-
-        Button:
-            size_hint: 1, 0.15
-            text: "just go..."
-            background_normal: 'ui/screens/playerinfo/go_btn.png'
-            background_down: 'ui/screens/playerinfo/go_btn_down.png'
-            on_release: app.start_quiz()
-
+        on_release: app.start_quiz()
 
 
 
@@ -62,24 +38,41 @@
             pos: self.pos
             size: self.size
             source: 'ui/screens/question/bg.png'
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: root.bg_image
+
     BoxLayout:
         orientation: 'vertical'
 
         Label:
-            text: root.text
+            font_size: '18pt'
+            text: root.text+"\n"
+
         GridLayout:
             cols: 2
+            padding: '20dp'
+            spacing: '20dp'
 
             Button:
+                background_normal: "ui/screens/question/qbg.png"
+                background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_a
                 on_release: app.check_answer(self.text)
             Button:
+                background_normal: "ui/screens/question/qbg.png"
+                background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_b
                 on_release: app.check_answer(self.text)
             Button:
+                background_normal: "ui/screens/question/qbg.png"
+                background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_c
                 on_release: app.check_answer(self.text)
             Button:
+                background_normal: "ui/screens/question/qbg.png"
+                background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_d
                 on_release: app.check_answer(self.text)
 
@@ -96,20 +89,43 @@
             pos: self.pos
             size: self.size
             source: 'ui/screens/answer/bg.png'
+
+    Label:
+        font_size: '26pt'
+        halign: 'left'
+        valign: 'bottom'
+        size_hint_y: None
+        text: root.feedback
+        height: '80sp'
+        y: root.height - self.height
+
+
+    Label:
+        halign: 'left'
+        font_size: '18pt'
+        valign: 'top'
+        padding_y: '220sp'
+        text: root.text+"\n"
+        y: root.height - self.height
+
+
     BoxLayout:
-        orientation:'vertical'
-        Label:
-            text: "that is "+str(root.correct)
-            size_hint: 1, 0.2
+        padding: '20dp'
+        spacing: '20dp'
+        size_hint: .8, 0.4
+        on_parent: root.image_layout = self
+        orientation: 'horizontal'
 
-        Label:
-            text: root.text
-            size_hint: 1, 0.6
 
-        Button:
-            text: "next"
-            on_release: app.next_question()
-            size_hint: 1, 0.2
+    Button:
+        on_release: app.next_question()
+        background_normal: "ui/screens/answer/nextbtn.png"
+        background_down: "ui/screens/answer/nextbtn_down.png"
+        size_hint: None, None
+        size: '150sp','150sp'
+        right: root.right - 50
+        y: 50
+
 
 
 

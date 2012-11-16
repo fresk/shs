@@ -1,1 +1,0 @@
-This is the answer text that gets displayed when a user has asked his question explaining the image and such.
