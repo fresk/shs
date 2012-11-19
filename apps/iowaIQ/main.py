@@ -1,9 +1,11 @@
 import os
 import md5
 import random
-import httplib2
 import urllib2
+import json
 import jsondata
+import requests
+
 
 from kivy.app import App
 from kivy.uix.image import Image
@@ -32,14 +34,14 @@ class AnswerScreen(Screen):
     images = ListProperty([])
     image_layout = ObjectProperty()
 
-    _feddback_right = open('ui/screens/answer/feedback_right.txt').readlines()
-    _feddback_wrong = open('ui/screens/answer/feedback_wrong.txt').readlines()
+    _feedback_right = open('ui/screens/answer/feedback_right.txt').readlines()
+    _feedback_wrong = open('ui/screens/answer/feedback_wrong.txt').readlines()
 
     def on_text(self, *args):
         if self.correct:
-            self.feedback = random.choice(self.feddback_right).strip()
+            self.feedback = random.choice(self._feedback_right).strip()
         else:
-            self.feedback = random.choice(self._feddback_wrong).strip()
+            self.feedback = random.choice(self._feedback_wrong).strip()
 
     def on_images(self, *args):
         print "ANWER IMAGES", self.images
@@ -56,9 +58,16 @@ class ResultsScreen(Screen):
 
 class IowaIQApp(App):
 
-
+    def pull_update(self):
+        r = requests.get('http://www.fresksite.net/dcadb/wp-content/themes/dca/api/questions.php')
+        if r.status_code == 200:
+            json.dump(r.json, open('questions.json', 'w'))
+        print "XXXXXXXXXXXXXxx", type(r.status_code)
     def load_questions(self):
+        self.pull_update()
         self.questions = jsondata.load('questions.json')
+        for q in self.questions:
+            print q['question_bg_image']
 
     def start_quiz(self):
         self.score = 0
@@ -76,6 +85,7 @@ class IowaIQApp(App):
         qscreen.option_c = q['answers'][2]
         qscreen.option_d = q['answers'][3]
         qscreen.bg_image = q['question_bg_image']
+        print "set bg image to", q['question_bg_image']
 
         self.screen_manager.current = 'question'
 
