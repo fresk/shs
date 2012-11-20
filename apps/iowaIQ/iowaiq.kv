@@ -21,7 +21,7 @@
             source: 'ui/screens/intro/bg.png'
 
     Button:
-        size: 500,300
+        size: 800,250
         size_hint: None, None
         center: root.center
         background_normal: 'ui/screens/intro/btn.png'
@@ -47,7 +47,9 @@
         orientation: 'vertical'
 
         Label:
+        	font_name: 'ui/fonts/Gotham-Bold.ttf'
             font_size: '18pt'
+            halign: 'left'
             text: root.text+"\n"
 
         GridLayout:
@@ -56,21 +58,25 @@
             spacing: '20dp'
 
             Button:
+            	font_name: 'ui/fonts/Gotham-Bold.ttf'
                 background_normal: "ui/screens/question/qbg.png"
                 background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_a
                 on_release: app.check_answer(1)
             Button:
+            	font_name: 'ui/fonts/Gotham-Bold.ttf'
                 background_normal: "ui/screens/question/qbg.png"
                 background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_b
                 on_release: app.check_answer(2)
             Button:
+            	font_name: 'ui/fonts/Gotham-Bold.ttf'
                 background_normal: "ui/screens/question/qbg.png"
                 background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_c
                 on_release: app.check_answer(3)
             Button:
+            	font_name: 'ui/fonts/Gotham-Bold.ttf'
                 background_normal: "ui/screens/question/qbg.png"
                 background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_d
@@ -91,6 +97,7 @@
             source: 'ui/screens/answer/bg.png'
 
     Label:
+    	font_name: 'ui/fonts/Gotham-Bold.ttf'
         font_size: '26pt'
         halign: 'left'
         valign: 'bottom'
@@ -102,7 +109,7 @@
 
     Label:
         halign: 'left'
-        font_size: '18pt'
+        font_size: '16pt'
         valign: 'top'
         padding_y: '220sp'
         text: root.text+"\n"
@@ -144,6 +151,9 @@
             size_hint: 1, 0.8
             text: root.text
         Button:
-            size_hint: 1, 0.2
-            text: "Done"
             on_release: app.screen_manager.current = 'intro'
+            size: 800,250
+            size_hint: None, None
+            center: root.center
+            background_normal: 'ui/screens/results/donebtn.png'
+            background_down: 'ui/screens/results/donebtn_down.png'
