@@ -98,20 +98,20 @@
 
     Label:
     	font_name: 'ui/fonts/Gotham-Bold.ttf'
-        font_size: '26pt'
+        font_size: '48pt'
         halign: 'left'
         valign: 'bottom'
         size_hint_y: None
         text: root.feedback
         height: '80sp'
-        y: root.height - self.height
+        y: root.height - self.height*2
 
 
     Label:
         halign: 'left'
         font_size: '16pt'
         valign: 'top'
-        padding_y: '220sp'
+        padding_y: '320sp'
         text: root.text+"\n"
         y: root.height - self.height
 
@@ -148,12 +148,15 @@
     BoxLayout:
         orientation:'vertical'
         Label:
-            size_hint: 1, 0.8
+        	font_name: 'ui/fonts/Gotham-Bold.ttf'
+        	font_size: '24pt'
+        	size_hint: 1, 0.5
             text: root.text
-        Button:
-            on_release: app.screen_manager.current = 'intro'
-            size: 800,250
-            size_hint: None, None
-            center: root.center
-            background_normal: 'ui/screens/results/donebtn.png'
-            background_down: 'ui/screens/results/donebtn_down.png'
+    Button:
+        on_release: app.screen_manager.current = 'intro'
+        size: 800,250
+        size_hint: None, None
+        center_x: root.center_x
+        background_normal: 'ui/screens/results/donebtn.png'
+        background_down: 'ui/screens/results/donebtn_down.png'
+        y: 200
