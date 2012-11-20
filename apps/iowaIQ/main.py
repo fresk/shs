@@ -62,7 +62,6 @@ class IowaIQApp(App):
         r = requests.get('http://www.fresksite.net/dcadb/wp-content/themes/dca/api/questions.php')
         if r.status_code == 200:
             json.dump(r.json, open('questions.json', 'w'))
-        print "XXXXXXXXXXXXXxx", type(r.status_code)
     def load_questions(self):
         self.pull_update()
         self.questions = jsondata.load('questions.json')
