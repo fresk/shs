@@ -47,7 +47,7 @@
         orientation: 'vertical'
 
         Label:
-        	font_name: 'ui/fonts/Gotham-Bold.ttf'
+            font_name: 'ui/fonts/Gotham-Bold.ttf'
             font_size: '28sp'
             halign: 'left'
             text: root.text+"\n"
@@ -58,25 +58,25 @@
             spacing: '20dp'
 
             Button:
-            	font_name: 'ui/fonts/Gotham-Bold.ttf'
+                font_name: 'ui/fonts/Gotham-Bold.ttf'
                 background_normal: "ui/screens/question/qbg.png"
                 background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_a
                 on_release: app.check_answer(1)
             Button:
-            	font_name: 'ui/fonts/Gotham-Bold.ttf'
+                font_name: 'ui/fonts/Gotham-Bold.ttf'
                 background_normal: "ui/screens/question/qbg.png"
                 background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_b
                 on_release: app.check_answer(2)
             Button:
-            	font_name: 'ui/fonts/Gotham-Bold.ttf'
+                font_name: 'ui/fonts/Gotham-Bold.ttf'
                 background_normal: "ui/screens/question/qbg.png"
                 background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_c
                 on_release: app.check_answer(3)
             Button:
-            	font_name: 'ui/fonts/Gotham-Bold.ttf'
+                font_name: 'ui/fonts/Gotham-Bold.ttf'
                 background_normal: "ui/screens/question/qbg.png"
                 background_down: "ui/screens/question/qbg_down.png"
                 text: root.option_d
@@ -97,7 +97,7 @@
             source: 'ui/screens/answer/bg.png'
 
     Label:
-    	font_name: 'ui/fonts/Gotham-Bold.ttf'
+        font_name: 'ui/fonts/Gotham-Bold.ttf'
         font_size: '76sp'
         halign: 'left'
         valign: 'bottom'
@@ -148,9 +148,9 @@
     BoxLayout:
         orientation:'vertical'
         Label:
-        	font_name: 'ui/fonts/Gotham-Bold.ttf'
-        	font_size: '38sp'
-        	size_hint: 1, 0.5
+            font_name: 'ui/fonts/Gotham-Bold.ttf'
+            font_size: '38sp'
+            size_hint: 1, 0.5
             text: root.text
     Button:
         on_release: app.screen_manager.current = 'intro'
@@ -162,14 +162,14 @@
         y: 200
 
 <ProgressionView>:
-	auto_dismiss: False
-	size_hint: None, None
-	size: ('400sp', '250sp')
+    auto_dismiss: False
+    size_hint: None, None
+    size: ('400sp', '250sp')
 
-	BoxLayout:
-		orientation: 'vertical'
-		padding: '50dp'
-		Label:
-			text: root.text
-		ProgressBar:
-			value: root.progression
+    BoxLayout:
+        orientation: 'vertical'
+        padding: '50dp'
+        Label:
+            text: root.text
+        ProgressBar:
+            value: root.progression
