@@ -4,7 +4,7 @@ from jsondata import JsonData
 
 
 from os import makedirs
-from os.path import join, exists
+from os.path import join, exists, expanduser
 from kivy.app import App
 from kivy.uix.image import Image
 from kivy.uix.floatlayout import FloatLayout
@@ -109,7 +109,13 @@ class IowaIQApp(App):
 
     def build(self):
         self.root = FloatLayout()
+        self.ensure_directories()
         self.load_questions()
+
+    def ensure_directories(self):
+        resources_dir = join(self.get_data_dir(), 'resources')
+        if not exists(resources_dir):
+            makedirs(resources_dir)
 
     def show_app(self, *args):
         self._hide_progression()
@@ -126,7 +132,7 @@ class IowaIQApp(App):
 
     def get_data_dir(self):
         if platform() == 'ios':
-            directory = join(self.directory, 'Documents')
+            directory = join(expanduser('~'), 'Documents')
         elif platform() == 'android':
             directory = join('/sdcard', '.{0}'.format(self.get_application_name))
         else:
