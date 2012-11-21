@@ -160,3 +160,16 @@
         background_normal: 'ui/screens/results/donebtn.png'
         background_down: 'ui/screens/results/donebtn_down.png'
         y: 200
+
+<ProgressionView>:
+	auto_dismiss: False
+	size_hint: None, None
+	size: ('400dp', '200dp')
+
+	BoxLayout:
+		orientation: 'vertical'
+		padding: '50dp'
+		Label:
+			text: root.text
+		ProgressBar:
+			value: root.progression
