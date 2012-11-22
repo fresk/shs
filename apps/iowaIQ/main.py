@@ -9,11 +9,15 @@ from kivy.app import App
 from kivy.uix.image import Image
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.modalview import ModalView
+from kivy.uix.button import Button
 from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
 from kivy.network.urlrequest import UrlRequest
 from kivy.properties import *
 from kivy.utils import platform
 from kivy.clock import Clock
+from kivy.animation import Animation
+from kivy.graphics import Fbo, Canvas, Color, Quad, Translate
+from math import sin, pi
 from viewport import Viewport
 
 
@@ -24,6 +28,83 @@ class ProgressionView(ModalView):
 
 class IntroScreen(Screen):
     pass
+
+class QuestionButton(Button):
+    disabled = BooleanProperty()
+    alpha_rotation = NumericProperty(0)
+    background_wrong = StringProperty()
+    color_wrong = ListProperty([0, 0, 0, 0])
+
+    def __init__(self, **kwargs):
+        super(QuestionButton, self).__init__(**kwargs)
+        Clock.schedule_once(self._prepare_fbo, 0)
+
+    def _prepare_fbo(self, *args):
+        # put all the current canvas into an FBO
+        # then use the fbo texture into a Quad, for animating when disable
+
+        # create the Fbo
+        self.fbo = Fbo(size=(1, 1))
+        with self.fbo.before:
+            self.g_translate = Translate(self.x, self.y)
+        self.orig_canvas = self.canvas
+        self.fbo.add(self.canvas)
+
+        # create a new Canvas
+        self.canvas = Canvas()
+        self.canvas.add(self.fbo)
+        with self.canvas:
+            Color(1, 1, 1)
+            self.g_quad = Quad(texture=self.fbo.texture)
+
+        # replace the canvas from the parent with the new one
+        self.parent.canvas.remove(self.orig_canvas)
+        self.parent.canvas.add(self.canvas)
+
+        # ensure we'll be updated when we'll change position
+        self.bind(pos=self._update_mesh,
+                size=self._update_mesh,
+                alpha_rotation=self._update_mesh)
+        self._update_mesh()
+
+    def _update_mesh(self, *args):
+        m = self.g_quad
+        alpha = self.alpha_rotation
+
+        # don't do anything if the fbo size will be messup.
+        if 0 in self.size:
+            return
+
+        # update fbo size, and reassign the new texture to the quad
+        if self.fbo.size != self.size:
+            self.fbo.size = self.size
+            self.g_quad.texture = self.fbo.texture
+
+        # change the background to red, and ensure we are not seeing any changes
+        # when clicking
+        if alpha >= 0.5 and self.background_normal != self.background_wrong:
+            self.background_normal = self.background_wrong
+            self.background_down = self.background_wrong
+            self.color = self.color_wrong
+
+        # correctly setup the positionning for the quad rendering
+        self.g_translate.xy = -self.x, -self.y
+
+        # 3d fake effect
+        dx = sin(alpha * pi / 2.) * self.width
+        dy = sin(alpha * pi) * 25
+        m.points = (
+            self.x + dx,        self.y + dy,
+            self.right - dx,    self.y - dy,
+            self.right - dx,    self.top + dy,
+            self.x + dx,        self.top - dy)
+
+
+    def disable(self):
+        d = 1.
+        t = 'out_quart'
+        Animation(alpha_rotation=1., t=t, d=d).start(self)
+        Animation(color=self.color_wrong, t=t, d=d/2.).start(self)
 
 
 class QuestionScreen(Screen):
@@ -92,15 +173,17 @@ class IowaIQApp(App):
 
         self.screen_manager.current = 'question'
 
-    def check_answer(self, answer):
-        ascreen = self.screen_manager.get_screen('answer')
-        ascreen.correct = (answer == int(self.question['correct_answer']))
-        if ascreen.correct:
+    def check_answer(self, ui_question, ui_button, answer):
+        is_correct = (answer == int(self.question['correct_answer']))
+        if is_correct:
+            ascreen = self.screen_manager.get_screen('answer')
+            ascreen.correct = True
             self.score += 1
-        ascreen.text = self.question['answer_text']
-        ascreen.images = self.question['answer_images']
-        self.screen_manager.current = 'answer'
-
+            ascreen.text = self.question['answer_text']
+            ascreen.images = self.question['answer_images']
+            self.screen_manager.current = 'answer'
+        else:
+            ui_button.disable()
 
     def finish_quiz(self):
         rscreen = self.screen_manager.get_screen('results')

@@ -33,7 +33,7 @@
 <QuestionScreen>:
     canvas:
         Color:
-            rgba: 1,1,1,1
+            rgba: 1, 1, 1, 1
         Rectangle:
             pos: self.pos
             size: self.size
@@ -57,33 +57,26 @@
             padding: '20dp'
             spacing: '20dp'
 
-            Button:
-                font_name: 'ui/fonts/Gotham-Bold.ttf'
-                background_normal: "ui/screens/question/qbg.png"
-                background_down: "ui/screens/question/qbg_down.png"
+            QuestionButton:
                 text: root.option_a
-                on_release: app.check_answer(1)
-            Button:
-                font_name: 'ui/fonts/Gotham-Bold.ttf'
-                background_normal: "ui/screens/question/qbg.png"
-                background_down: "ui/screens/question/qbg_down.png"
+                on_release: app.check_answer(root, self, 1)
+            QuestionButton:
                 text: root.option_b
-                on_release: app.check_answer(2)
-            Button:
-                font_name: 'ui/fonts/Gotham-Bold.ttf'
-                background_normal: "ui/screens/question/qbg.png"
-                background_down: "ui/screens/question/qbg_down.png"
+                on_release: app.check_answer(root, self, 2)
+            QuestionButton:
                 text: root.option_c
-                on_release: app.check_answer(3)
-            Button:
-                font_name: 'ui/fonts/Gotham-Bold.ttf'
-                background_normal: "ui/screens/question/qbg.png"
-                background_down: "ui/screens/question/qbg_down.png"
+                on_release: app.check_answer(root, self, 3)
+            QuestionButton:
                 text: root.option_d
-                on_release: app.check_answer(4)
+                on_release: app.check_answer(root, self, 4)
 
 
-
+<QuestionButton>:
+	font_name: 'ui/fonts/Gotham-Bold.ttf'
+	background_normal: "ui/screens/question/qbg.png"
+	background_down: "ui/screens/question/qbg_down.png"
+	background_wrong: "ui/screens/question/qbg_wrong.png"
+	color_wrong: (1, 1, 1, 0)
 
 
 
