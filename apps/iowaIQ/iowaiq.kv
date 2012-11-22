@@ -62,22 +62,22 @@
             QuestionButton:
                 id: opt1
                 text: root.option_a
-                text_wrong: 'Wrong A!'
+                text_wrong: root.option_wrong_a
                 on_release: app.check_answer(root, self, 1)
             QuestionButton:
                 id: opt2
                 text: root.option_b
-                text_wrong: 'Wrong B!'
+                text_wrong: root.option_wrong_b
                 on_release: app.check_answer(root, self, 2)
             QuestionButton:
                 id: opt3
                 text: root.option_c
-                text_wrong: 'Wrong C!'
+                text_wrong: root.option_wrong_c
                 on_release: app.check_answer(root, self, 3)
             QuestionButton:
                 id: opt4
                 text: root.option_d
-                text_wrong: 'Wrong D!'
+                text_wrong: root.option_wrong_d
                 on_release: app.check_answer(root, self, 4)
 
 
@@ -86,7 +86,6 @@
     background_normal: "ui/screens/question/qbg.png"
     background_down: "ui/screens/question/qbg_down.png"
     background_wrong: "ui/screens/question/qbg_wrong.png"
-    color_wrong: (1, 1, 1, 0)
 
 
 <AnswerScreen>:

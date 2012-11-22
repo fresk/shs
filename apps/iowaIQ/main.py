@@ -34,7 +34,7 @@ class QuestionButton(Button):
     alpha_rotation = NumericProperty(0)
     background_default = StringProperty()
     background_wrong = StringProperty()
-    color_wrong = ListProperty([0, 0, 0, 0])
+    color_wrong = ListProperty([1, 1, 1, 0])
     text_wrong = StringProperty()
 
     def __init__(self, **kwargs):
@@ -132,6 +132,10 @@ class QuestionScreen(Screen):
     option_b = StringProperty()
     option_c = StringProperty()
     option_d = StringProperty()
+    option_wrong_a = StringProperty()
+    option_wrong_b = StringProperty()
+    option_wrong_c = StringProperty()
+    option_wrong_d = StringProperty()
     reset = BooleanProperty()
 
 
