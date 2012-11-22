@@ -139,6 +139,44 @@ class QuestionScreen(Screen):
     reset = BooleanProperty()
 
 
+class AnswerImagePopup(ModalView):
+    answer = ObjectProperty()
+    alpha = NumericProperty(0)
+    scatter = ObjectProperty()
+
+    def on_touch_down(self, touch):
+        if touch.is_double_tap:
+            self.reset()
+            return True
+        return super(AnswerImagePopup, self).on_touch_down(touch)
+
+    def reset(self):
+        rotation = 360. if self.scatter.rotation > 180 else 0.
+        Animation(rotation=rotation, scale=1., center=self.center,
+                d=0.5, t='out_quart').start(self.scatter)
+
+    def open(self):
+        super(AnswerImagePopup, self).open()
+        Animation(alpha=1., d=.5, t='out_quart').start(self)
+
+    def dismiss(self):
+        super(AnswerImagePopup, self).dismiss()
+        Animation(alpha=0., d=.5, t='out_quart').start(self)
+
+
+class AnswerImage(Image):
+    text = StringProperty()
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            self.open()
+            return True
+        super(AnswerImage, self).on_touch_down(touch)
+
+    def open(self):
+        self._popup = AnswerImagePopup(answer=self)
+        self._popup.open()
+
+
 class AnswerScreen(Screen):
     text = StringProperty("")
     correct = BooleanProperty(False)
@@ -160,7 +198,8 @@ class AnswerScreen(Screen):
         self.image_layout.clear_widgets()
         for img in self.images:
             if img[0]:
-                self.image_layout.add_widget(Image(source=img[0]))
+                self.image_layout.add_widget(AnswerImage(
+                    source=img[0], text=img[1] or ''))
 
 
 class ResultsScreen(Screen):

@@ -5,7 +5,7 @@
     font_name: 'ui/fonts/Gotham-Book.ttf'
     font_size: '22sp'
     text_size: self.width-self.padding_x, self.height-self.padding_y
-    padding: ('50dp', '5dp')
+    padding: ('50sp', '5sp')
     valign: 'middle'
     halign: 'center'
 
@@ -174,3 +174,37 @@
             text: root.text
         ProgressBar:
             value: root.progression
+
+<AnswerImage>:
+	mipmap: True
+
+<AnswerImagePopup>:
+	scatter: scatter
+	background_color: (0, 0, 0, 1.0)
+	background: 'ui/images/trans.png'
+
+	ScatterPlane:
+		id: scatter
+		opacity: root.alpha
+		Image:
+			mipmap: True
+			source: root.answer.source
+			# for positionning, take care of the label
+			size: root.width - dp(100), root.height - dp(150)
+			pos: dp(50), dp(100)
+
+	FloatLayout:
+		Label:
+			text: root.answer.text or 'Hello World'
+			size_hint_y: None
+			height: '50sp'
+			font_size: '18sp'
+			y: -(1 - root.alpha) * self.height
+			on_touch_down: root.dismiss() if self.collide_point(*args[1].pos) else None
+
+			canvas.before:
+				Color:
+					rgba: .05, .05, .05, .9
+				Rectangle:
+					pos: self.pos
+					size: self.size
