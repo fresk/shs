@@ -32,11 +32,14 @@ class IntroScreen(Screen):
 class QuestionButton(Button):
     disabled = BooleanProperty()
     alpha_rotation = NumericProperty(0)
+    background_default = StringProperty()
     background_wrong = StringProperty()
     color_wrong = ListProperty([0, 0, 0, 0])
+    text_wrong = StringProperty()
 
     def __init__(self, **kwargs):
         super(QuestionButton, self).__init__(**kwargs)
+        self._origin = {}
         Clock.schedule_once(self._prepare_fbo, 0)
 
     def _prepare_fbo(self, *args):
@@ -83,9 +86,14 @@ class QuestionButton(Button):
         # change the background to red, and ensure we are not seeing any changes
         # when clicking
         if alpha >= 0.5 and self.background_normal != self.background_wrong:
+            self._origin = {
+                'background_normal': self.background_normal,
+                'background_down': self.background_down,
+                'color': (1, 1, 1, 1)}
             self.background_normal = self.background_wrong
             self.background_down = self.background_wrong
             self.color = self.color_wrong
+            self.text = self.text_wrong
 
         # correctly setup the positionning for the quad rendering
         self.g_translate.xy = -self.x, -self.y
@@ -93,27 +101,38 @@ class QuestionButton(Button):
         # 3d fake effect
         dx = sin(alpha * pi / 2.) * self.width
         dy = sin(alpha * pi) * 25
+        if alpha > 0.5:
+            dy = -dy
+            dx = self.width - dx
         m.points = (
             self.x + dx,        self.y + dy,
             self.right - dx,    self.y - dy,
             self.right - dx,    self.top + dy,
             self.x + dx,        self.top - dy)
 
-
     def disable(self):
+        if self.alpha_rotation > 0:
+            return
         d = 1.
         t = 'out_quart'
         Animation(alpha_rotation=1., t=t, d=d).start(self)
-        Animation(color=self.color_wrong, t=t, d=d/2.).start(self)
+        (Animation(color=self.color_wrong, t=t, d=d/2.) +
+         Animation(color=self.color, t=t, d=d/2.)).start(self)
+
+    def reset(self):
+        self.alpha_rotation = 0
+        for key, value in self._origin.iteritems():
+            setattr(self, key, value)
 
 
 class QuestionScreen(Screen):
     bg_image = StringProperty(errorvalue="ui/images/trans.png")
-    text = StringProperty("")
-    option_a = StringProperty("")
-    option_b = StringProperty("")
-    option_c = StringProperty("")
-    option_d = StringProperty("")
+    text = StringProperty()
+    option_a = StringProperty()
+    option_b = StringProperty()
+    option_c = StringProperty()
+    option_d = StringProperty()
+    reset = BooleanProperty()
 
 
 class AnswerScreen(Screen):
@@ -169,6 +188,9 @@ class IowaIQApp(App):
         qscreen.option_c = q['answers'][2]
         qscreen.option_d = q['answers'][3]
         qscreen.bg_image = q['question_bg_image']
+        # trigger button reset
+        qscreen.reset = True
+        qscreen.reset = False
         print "set bg image to", q['question_bg_image']
 
         self.screen_manager.current = 'question'
