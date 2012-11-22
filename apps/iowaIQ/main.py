@@ -289,6 +289,9 @@ class IowaIQApp(App):
             makedirs(directory)
         return directory
 
+    def on_pause(self):
+        return True
+
     #
     # Update part
     # Manage the update of questions.json + associated data
