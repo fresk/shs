@@ -1,6 +1,10 @@
 *DS_Store
 *.py[co]
 
+apps/iowaIQ/resources/*
+apps/iowaIQ/*.json
+apps/iowaIQ/*.ini
+
 # Packages
 *.egg
 *.egg-info
