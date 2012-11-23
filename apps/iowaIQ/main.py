@@ -1,29 +1,27 @@
-# set DPI and density to ipad3, since we
-# scale down with viewport
-from os import environ
-environ['KIVY_METRICS_DENSITY'] = "2"
-environ['KIVY_DPI'] = "264"
-
-
 import random
 import json
 from jsondata import JsonData
 
 
-from os import makedirs, environ
+from os import makedirs
 from os.path import join, exists, expanduser
 from kivy.app import App
 from kivy.uix.image import Image
+from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
 from kivy.network.urlrequest import UrlRequest
-from kivy.properties import *
 from kivy.utils import platform
 from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.graphics import Fbo, Canvas, Color, Quad, Translate
+from kivy.properties import (
+    BooleanProperty, NumericProperty, StringProperty, ObjectProperty,
+    ListProperty)
+
 from math import sin, pi
 from viewport import Viewport
 
@@ -35,6 +33,7 @@ class ProgressionView(ModalView):
 
 class IntroScreen(Screen):
     pass
+
 
 class QuestionButton(Button):
     disabled = BooleanProperty()
@@ -93,8 +92,8 @@ class QuestionButton(Button):
             self.fbo.size = self.size
             self.g_quad.texture = self.fbo.texture
 
-        # change the background to red, and ensure we are not seeing any changes
-        # when clicking
+        # change the background to red, and ensure we are not seeing any
+        # changes when clicking
         if alpha >= 0.5 and self.background_normal != self.background_wrong:
             self._origin = {
                 'background_normal': self.background_normal,
@@ -124,13 +123,15 @@ class QuestionButton(Button):
         if self.alpha_rotation > 0:
             return
         d = 1.
+        hd = d / 2.0
         t = 'out_quart'
         Animation(alpha_rotation=1., t=t, d=d).start(self)
-        (Animation(color=self.color_wrong, t=t, d=d/2.) +
-         Animation(color=self.color, t=t, d=d/2.)).start(self)
+        (Animation(color=self.color_wrong, t=t, d=hd) +
+         Animation(color=self.color, t=t, d=hd)).start(self)
 
     def reset(self):
         self.alpha_rotation = 0
+        self.background_normal =  "ui/screens/question/qbg.png"
         for key, value in self._origin.iteritems():
             setattr(self, key, value)
 
@@ -182,6 +183,7 @@ class AnswerImagePopup(ModalView):
 class AnswerImage(Image):
     text = StringProperty()
     source_full = StringProperty()
+
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             self.open()
@@ -220,7 +222,7 @@ class AnswerScreen(Screen):
                 src = img['medium'][0]
             self.image_layout.add_widget(AnswerImage(
                 source=src,
-                source_full = img['full'],
+                source_full=img['full'],
                 text=img.get('caption') or '',
             ))
 
@@ -229,12 +231,23 @@ class ResultsScreen(Screen):
     text = StringProperty("")
 
 
+class StatusBar(RelativeLayout):
+    alpha_show = NumericProperty(0.0)
+    def show(self, *args):
+        (
+        Animation(d=0.8) +
+        Animation(alpha_show=1.0, t='out_quad', d=1.0)
+        ).start(self)
+
+    def hide(self, *args):
+        Animation(alpha_show=1.0, t='out_quad', d=0.0).start(self)
+
 
 class IowaIQApp(App):
 
     def build_config(self, config):
         default_config = json.load(open('default_config.json'))
-        for k,v in default_config.iteritems():
+        for k, v in default_config.iteritems():
             config.setdefaults(k, v)
 
     def build(self):
@@ -249,20 +262,23 @@ class IowaIQApp(App):
 
     def show_app(self, *args):
         self._hide_progression()
+        self.viewport = Viewport(size=(2048, 1536))
+
         self.screen_manager = ScreenManager(transition=SlideTransition())
         self.screen_manager.add_widget(IntroScreen(name='intro'))
         self.screen_manager.add_widget(QuestionScreen(name='question'))
         self.screen_manager.add_widget(AnswerScreen(name='answer'))
         self.screen_manager.add_widget(ResultsScreen(name='results'))
-
-        self.viewport = Viewport(size=(2048,1536))
         self.viewport.add_widget(self.screen_manager)
+
+        self.status_bar = StatusBar()
+        self.viewport.add_widget(self.status_bar)
 
         self.root.add_widget(self.viewport)
 
-
     def start_quiz(self):
         self.score = 0
+        self.status_bar.show()
         self.quiz = random.sample(self.questions, 5)
         self.next_question()
 
@@ -284,16 +300,21 @@ class IowaIQApp(App):
         self.screen_manager.current = 'question'
 
     def check_answer(self, ui_question, ui_button, answer):
-        is_correct = (answer == int(self.question['correct_answer']))
+        q = self.question
+        is_correct = (answer == int(q['correct_answer']))
         if is_correct:
-            ascreen = self.screen_manager.get_screen('answer')
-            ascreen.correct = True
             self.score += 1
-            ascreen.text = self.question['answer_text']
-            ascreen.images = self.question['answer_images']
-            self.screen_manager.current = 'answer'
+            ui_button.background_normal = "ui/screens/question/qbg_correct.png"
+            ui_button._update_mesh()
+            def _go_answer(*args):
+                ascreen = self.screen_manager.get_screen('answer')
+                ascreen.correct = True
+                ascreen.text = q['answer_text']
+                ascreen.images = q['answer_images']
+                self.screen_manager.current = 'answer'
+            Clock.schedule_once(_go_answer, 0.5)
         else:
-            ui_button.text_wrong = self.question['answer_corrections'][answer-1]
+            ui_button.text_wrong = q['answer_corrections'][answer - 1]
             ui_button.disable()
 
     def finish_quiz(self):
@@ -305,7 +326,8 @@ class IowaIQApp(App):
         if platform() == 'ios':
             directory = join(expanduser('~'), 'Documents')
         elif platform() == 'android':
-            directory = join('/sdcard', '.{0}'.format(self.get_application_name))
+            app_name = self.get_application_name
+            directory = join('/sdcard', '.{0}'.format(app_name))
         else:
             directory = self.directory
         if not exists(directory):
@@ -315,29 +337,32 @@ class IowaIQApp(App):
     def on_pause(self):
         return True
 
-    #
     # Update part
     # Manage the update of questions.json + associated data
-    #
     def load_questions(self):
         # first step, download the questions.json
         self._req = UrlRequest(self.config.get('app', 'questions'),
-                on_success=self._pull_update_2,
-                on_error=self._pull_update_failed,
-                on_progress=lambda req, cursize, totalsize: self._show_progression(
-                    'Downloading questions...', cursize, totalsize))
+            on_success=self._pull_update_success,
+            on_error=self._pull_update_failed,
+            on_progress=self._progress_update
+        )
 
-    def _pull_update_2(self, request, result):
+    def _progress_update(self, req, cursize, totalsize):
+        msg = 'Downloading questions...'
+        self._show_progression(msg, cursize, totalsize)
+
+    def _pull_update_success(self, request, result):
         # second step, download all the outdated resources
         self._questions_fn = join(self.get_data_dir(), 'questions.json')
         with open(self._questions_fn, 'w') as fd:
             json.dump(result, fd)
 
         self._jsondata = JsonData('questions.json',
-                on_success=self._pull_update_3,
-                on_progress=self._show_progression)
+            on_success=self._pull_update_done,
+            on_progress=self._show_progression
+        )
 
-    def _pull_update_3(self, questions):
+    def _pull_update_done(self, questions):
         self.questions = questions
         for q in self.questions:
             print q['question_bg_image']
@@ -348,9 +373,7 @@ class IowaIQApp(App):
         # XXX TODO
         pass
 
-    #
     # Modal view for showing progression
-    #
     def _show_progression(self, text, size, total):
         if not hasattr(self, '_progression'):
             self._progression = ProgressionView()
