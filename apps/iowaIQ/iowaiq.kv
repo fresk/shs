@@ -62,22 +62,18 @@
             QuestionButton:
                 id: opt1
                 text: root.option_a
-                text_wrong: root.option_wrong_a
                 on_release: app.check_answer(root, self, 1)
             QuestionButton:
                 id: opt2
                 text: root.option_b
-                text_wrong: root.option_wrong_b
                 on_release: app.check_answer(root, self, 2)
             QuestionButton:
                 id: opt3
                 text: root.option_c
-                text_wrong: root.option_wrong_c
                 on_release: app.check_answer(root, self, 3)
             QuestionButton:
                 id: opt4
                 text: root.option_d
-                text_wrong: root.option_wrong_d
                 on_release: app.check_answer(root, self, 4)
 
 
@@ -188,7 +184,7 @@
 		opacity: root.alpha
 		Image:
 			mipmap: True
-			source: root.answer.source
+			source: root.answer.source_full
 			# for positionning, take care of the label
 			size: root.width - dp(100), root.height - dp(150)
 			pos: dp(50), dp(100)

@@ -169,6 +169,7 @@ class AnswerImagePopup(ModalView):
 
 class AnswerImage(Image):
     text = StringProperty()
+    source_full = StringProperty()
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
             self.open()
@@ -198,10 +199,18 @@ class AnswerScreen(Screen):
 
     def on_images(self, *args):
         self.image_layout.clear_widgets()
+        print "IMAGES:", self.images
         for img in self.images:
-            if img[0]:
-                self.image_layout.add_widget(AnswerImage(
-                    source=img[0], text=img[1] or ''))
+            if not img.get('full'):
+                continue
+            src = img['full']
+            if img.get('medium'):
+                src = img['medium'][0]
+            self.image_layout.add_widget(AnswerImage(
+                source=src,
+                source_full = img['full'],
+                text=img.get('caption') or '',
+            ))
 
 
 class ResultsScreen(Screen):
@@ -249,6 +258,7 @@ class IowaIQApp(App):
             ascreen.images = self.question['answer_images']
             self.screen_manager.current = 'answer'
         else:
+            ui_button.text_wrong = self.question['answer_corrections'][answer-1]
             ui_button.disable()
 
     def finish_quiz(self):
