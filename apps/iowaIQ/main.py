@@ -1,9 +1,16 @@
+# set DPI and density to ipad3, since we
+# scale down with viewport
+from os import environ
+environ['KIVY_METRICS_DENSITY'] = "2"
+environ['KIVY_DPI'] = "264"
+
+
 import random
 import json
 from jsondata import JsonData
 
 
-from os import makedirs
+from os import makedirs, environ
 from os.path import join, exists, expanduser
 from kivy.app import App
 from kivy.uix.image import Image
@@ -226,10 +233,33 @@ class ResultsScreen(Screen):
 class IowaIQApp(App):
 
     def build_config(self, config):
-        config.setdefaults('app', {
-            'questions':
-                'http://www.fresksite.net/dcadb/wp-content/themes/dca/api/questions.php'
-        })
+        default_config = json.load(open('default_config.json'))
+        for k,v in default_config.iteritems():
+            config.setdefaults(k, v)
+
+    def build(self):
+        self.root = FloatLayout()
+        self.ensure_directories()
+        self.load_questions()
+
+    def ensure_directories(self):
+        resources_dir = join(self.get_data_dir(), 'resources')
+        if not exists(resources_dir):
+            makedirs(resources_dir)
+
+    def show_app(self, *args):
+        self._hide_progression()
+        self.screen_manager = ScreenManager(transition=SlideTransition())
+        self.screen_manager.add_widget(IntroScreen(name='intro'))
+        self.screen_manager.add_widget(QuestionScreen(name='question'))
+        self.screen_manager.add_widget(AnswerScreen(name='answer'))
+        self.screen_manager.add_widget(ResultsScreen(name='results'))
+
+        self.viewport = Viewport(size=(2048,1536))
+        self.viewport.add_widget(self.screen_manager)
+
+        self.root.add_widget(self.viewport)
+
 
     def start_quiz(self):
         self.score = 0
@@ -270,29 +300,6 @@ class IowaIQApp(App):
         rscreen = self.screen_manager.get_screen('results')
         rscreen.text = "You got {0} out of 4".format(self.score)
         self.screen_manager.current = 'results'
-
-    def build(self):
-        self.root = FloatLayout()
-        self.ensure_directories()
-        self.load_questions()
-
-    def ensure_directories(self):
-        resources_dir = join(self.get_data_dir(), 'resources')
-        if not exists(resources_dir):
-            makedirs(resources_dir)
-
-    def show_app(self, *args):
-        self._hide_progression()
-        self.screen_manager = ScreenManager(transition=SlideTransition())
-        self.screen_manager.add_widget(IntroScreen(name='intro'))
-        self.screen_manager.add_widget(QuestionScreen(name='question'))
-        self.screen_manager.add_widget(AnswerScreen(name='answer'))
-        self.screen_manager.add_widget(ResultsScreen(name='results'))
-
-        self.viewport = Viewport(size=(2048,1536))
-        self.viewport.add_widget(self.screen_manager)
-
-        self.root.add_widget(self.viewport)
 
     def get_data_dir(self):
         if platform() == 'ios':
