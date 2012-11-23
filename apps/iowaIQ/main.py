@@ -42,6 +42,9 @@ class QuestionButton(Button):
         self._origin = {}
         Clock.schedule_once(self._prepare_fbo, 0)
 
+    def on_text(self, *args):
+        self._update_mesh()
+
     def _prepare_fbo(self, *args):
         # put all the current canvas into an FBO
         # then use the fbo texture into a Quad, for animating when disable
@@ -194,7 +197,6 @@ class AnswerScreen(Screen):
             self.feedback = random.choice(self._feedback_wrong).strip()
 
     def on_images(self, *args):
-        print "ANWER IMAGES", self.images
         self.image_layout.clear_widgets()
         for img in self.images:
             if img[0]:
@@ -234,7 +236,6 @@ class IowaIQApp(App):
         # trigger button reset
         qscreen.reset = True
         qscreen.reset = False
-        print "set bg image to", q['question_bg_image']
 
         self.screen_manager.current = 'question'
 
