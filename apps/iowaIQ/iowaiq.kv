@@ -8,6 +8,7 @@
     padding: ('50sp', '5sp')
     valign: 'middle'
     halign: 'center'
+    line_height: 1.3
 
 
 
@@ -55,6 +56,7 @@
             text: root.text+"\n"
 
         GridLayout:
+            on_parent: root.button_grid = self
             cols: 2
             padding: '20dp'
             spacing: '20dp'
@@ -78,7 +80,9 @@
 
 
 <QuestionButton>:
-    font_name: 'ui/fonts/Gotham-Bold.ttf'
+    font_name: 'ui/fonts/Gotham-Bold.ttf' if self.alpha_rotation < 0.5 else 'ui/fonts/Gotham-Book.ttf'
+    halign: 'center' if self.alpha_rotation < 0.5 else 'left'
+    font_size: '22sp' if self.alpha_rotation < 0.5 else '18sp'
     background_normal: "ui/screens/question/qbg.png"
     background_down: "ui/screens/question/qbg_down.png"
     background_wrong: "ui/screens/question/qbg_wrong.png"

@@ -139,7 +139,12 @@ class QuestionScreen(Screen):
     option_wrong_b = StringProperty()
     option_wrong_c = StringProperty()
     option_wrong_d = StringProperty()
+    button_grid = ObjectProperty(None)
     reset = BooleanProperty()
+
+    def on_reset(self, *args):
+        for c in self.button_grid.children:
+            c.reset()
 
 
 class AnswerImagePopup(ModalView):
