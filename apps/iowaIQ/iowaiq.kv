@@ -10,18 +10,31 @@
 
 
 <StatusBar>:
-    height: 150
-    size_hint: 1, None
-    pos: 0, app.viewport.height - self.height * self.alpha_show
+    size: 2048, 150
+    y: 1536 - (150*self.alpha_show)
+    size_hint: None, None
+
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: 0,0
+            size: self.size
+            source: "ui/images/statusbarbg.png"
 
     Label:
-        text: "Header                 Points:"
-        canvas.before:
-            Color:
-                rgba: 0,0,0, 1.0
-            Rectangle:
-                pos: self.pos
-                size: self.size
+        text: "Question: {0}/5".format(root.questions_left)
+        size: 2048, 150
+        halign: 'left'
+        size_hint: None, None
+        text_size: 2000, 150
+
+    Label:
+        text: "Score: {0}".format(root.score)
+        halign: 'right'
+        size: 2048, 150
+        size_hint: None, None
+        text_size: 2000, 150
 
 <ScreenManager>:
     canvas:
@@ -45,7 +58,7 @@
     Button:
         size: 800,250
         size_hint: None, None
-        center: root.center
+        center: root.center_x, root.center_y - 200
         background_normal: 'ui/screens/intro/btn.png'
         background_down: 'ui/screens/intro/btn_down.png'
         on_release: app.start_quiz()
@@ -60,10 +73,6 @@
             pos: self.pos
             size: self.size
             source: 'ui/screens/question/bg.png'
-        Rectangle:
-            pos: self.pos
-            size: self.size
-            source: root.bg_image
 
     on_reset: [x.reset() for x in (opt1, opt2, opt3, opt4)]
 
@@ -71,10 +80,13 @@
         orientation: 'vertical'
 
         Label:
+            text: root.text
+            markup: True
             font_name: 'ui/fonts/Gotham-Bold.ttf'
             font_size: '28sp'
             halign: 'left'
-            text: root.text+"\n"
+            size_hint: None, 1
+            width: root.width - 250
 
         GridLayout:
             on_parent: root.button_grid = self
@@ -126,24 +138,37 @@
         size_hint_y: None
         text: root.feedback
         height: '100sp'
-        y: root.height - sp(200)
+        y: root.height - sp(190)
 
 
     Label:
         halign: 'left'
-        font_size: '25sp'
+        font_size: '24sp'
         valign: 'top'
         padding_y: '360sp'
         text: root.text+"\n"
         y: root.height - self.height
 
 
-    BoxLayout:
-        padding: '20dp'
-        spacing: '20dp'
-        size_hint: .8, 0.4
-        on_parent: root.image_layout = self
-        orientation: 'horizontal'
+    ScrollView:
+        do_scroll_y: False
+        size_hint: 1, None
+        height: 500
+
+        canvas.before:
+            Color:
+                rgba: 1,0,0,0.4
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        ThumnailList:
+            padding: 50
+            spacing: 50
+            size_hint: None, None
+            height: 500
+            minimum_width: self.width
+            on_parent: root.image_layout = self
 
 
     Button:
@@ -151,7 +176,7 @@
         background_normal: "ui/screens/answer/nextbtn.png"
         background_down: "ui/screens/answer/nextbtn_down.png"
         size_hint: None, None
-        size: '150sp','150sp'
+        size: 200,200
         right: root.right - 50
         y: 50
 
@@ -197,35 +222,47 @@
             value: root.progression
 
 <AnswerImage>:
-	mipmap: True
+    mipmap: True
+    allow_stretch: True
 
 <AnswerImagePopup>:
-	scatter: scatter
-	background_color: (0, 0, 0, 1.0)
-	background: 'ui/images/trans.png'
+    scatter: scatter
+    background_color: (0, 0, 0, 1.0)
+    background: 'ui/screens/answer/imageviewbg.png'
 
-	ScatterPlane:
-		id: scatter
-		opacity: root.alpha
-		Image:
-			mipmap: True
-			source: root.answer.source_full
-			# for positionning, take care of the label
-			size: root.width - dp(100), root.height - dp(150)
-			pos: dp(50), dp(100)
+    ScatterPlane:
+        id: scatter
+        opacity: root.alpha
+        scale_min: 1.0
+        on_center_x: self.center_x = min(max(0,self.center_x), root.height)
+        on_center_y: self.center_y = min(max(0,self.center_y), root.height)
+        Image:
+            mipmap: True
+            source: root.answer.img_data['full']
+            # for positionning, take care of the label
+            size: root.width - dp(100), root.height - dp(150)
+            pos: dp(50), dp(100)
 
-	FloatLayout:
-		Label:
-			text: root.answer.text or 'Hello World'
-			size_hint_y: None
-			height: '50sp'
-			font_size: '18sp'
-			y: -(1 - root.alpha) * self.height
-			on_touch_down: root.dismiss() if self.collide_point(*args[1].pos) else None
+    FloatLayout:
+        Image:
+            size: 150,150
+            x: root.width - self.width - 20
+            y: root.height - self.height - 20
+            source: "ui/screens/answer/imageviewclose.png"
+            size_hint: None, None
+            on_touch_down: root.dismiss() if self.collide_point(*args[1].pos) else None
 
-			canvas.before:
-				Color:
-					rgba: .05, .05, .05, .9
-				Rectangle:
-					pos: self.pos
-					size: self.size
+        Label:
+            text: root.answer.text or ''
+            size_hint_y: None
+            height: '50sp'
+            font_size: '12sp'
+            y: -(1 - root.alpha) * self.height
+            on_touch_down: root.dismiss() if self.collide_point(*args[1].pos) else None
+
+            canvas.before:
+                Color:
+                    rgba: .05, .05, .05, .9
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
