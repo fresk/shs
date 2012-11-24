@@ -340,6 +340,7 @@ class IowaIQApp(App):
     # Update part
     # Manage the update of questions.json + associated data
     def load_questions(self):
+        self._show_progression('Downloading questions...', 0, 1)
         # first step, download the questions.json
         self._req = UrlRequest(self.config.get('app', 'questions'),
             on_success=self._pull_update_success,
