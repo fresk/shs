@@ -2,6 +2,7 @@ from kivy.clock import Clock
 import json
 import urllib2
 from os.path import join, exists
+from functools import partial
 from kivy.network.urlrequest import UrlRequest
 from kivy.app import App
 
@@ -51,6 +52,54 @@ class JsonData(object):
             result = json.load(fd, object_hook=self._decode_dict)
         self.cb_success(result)
 
+    def _get_local_from_etag(self, etag, ext, suffix=''):
+        return join(App.get_running_app().get_data_dir(),
+                'resources', '{0}{1}.{2}'.format(etag, suffix, ext))
+
+    def _download_image(self, data):
+        if not data['full']:
+            return {}
+        # check the etag
+        etag = data['etag']
+        ext = data['full'][0].rsplit('.', 1)[-1]
+
+        if self._json_mode == 'detect':
+            fn = self._get_local_from_etag(etag, ext)
+            print 'fn', fn, exists(fn)
+            if not exists(fn):
+                print 'append full', data['full']
+                self._json_urls.append((data['full'], etag, ''))
+            else:
+                self._json_cache[data['full'][0]] = fn
+            if data['medium']:
+                fn = self._get_local_from_etag(etag, ext, '_medium')
+                if not exists(fn):
+                    print 'append medium', data['medium']
+                    self._json_urls.append((data['medium'], etag, '_medium'))
+                else:
+                    self._json_cache[data['medium'][0]] = fn
+            if data['large']:
+                fn = self._get_local_from_etag(etag, ext, '_large')
+                if not exists(fn):
+                    print 'append large', data['large']
+                    self._json_urls.append((data['large'], etag, '_large'))
+                else:
+                    self._json_cache[data['large'][0]] = fn
+            return data
+
+        if self._json_mode == 'replace':
+            if data['full'][0].startswith('http://'):
+                data['full'] = self._json_cache.get(data['full'][0])
+            if data['medium'] and data['medium'][0].startswith('http://'):
+                data['medium'] = self._json_cache.get(data['medium'][0])
+            else:
+                data['medium'] = None
+            if data['large'] and data['large'][0].startswith('http://'):
+                data['large'] = self._json_cache.get(data['large'][0])
+            else:
+                data['large'] = None
+            return data
+
     def _download_resources(self, *args):
         # we finished to download all the resources. now replace.
         if self._json_req is None and not self._json_urls:
@@ -62,48 +111,23 @@ class JsonData(object):
             return
 
         # start a resource download
-        url = urllib2.quote(self._json_urls.pop(), safe=':/')
+        url_data, etag, suffix = self._json_urls.pop()
+        url = url_data[0]
+        url = urllib2.quote(url, safe=':/')
         self.cb_progress('Downloading resources {0}/{1}'.format(
             self._json_count - len(self._json_urls), self._json_count),
             self._json_count - 1 - len(self._json_urls),
             self._json_count)
         self._json_req = UrlRequest(url,
-                on_success=self._on_dhead_success,
-                on_error=self._on_dhead_error,
-                method='HEAD')
+                on_success=partial(self._on_dget_success, etag, suffix),
+                on_progress=self._on_dget_progress,
+                on_error=self._on_dget_error)
 
-    def _on_dhead_success(self, req, *args):
-        if req.resp_status > 399:
-            raise Exception('HTTP HEAD ERROR: {0} ({1})'.format(
-                req.url, req.resp_status))
-
+    def _on_dget_success(self, etag, suffix, req, result, *args):
         url = urllib2.unquote(req.url)
-        etag = req.resp_headers['etag'][1:-1]
-        ext = req.resp_headers['content-type'].split('/')[-1]
-
-        # link the url to a local filename
-        local_fn = join(App.get_running_app().get_data_dir(),
-                'resources', '{0}.{1}'.format(etag, ext))
+        ext = url.rsplit('.', 1)[-1]
+        local_fn = self._get_local_from_etag(etag, ext, suffix)
         self._json_cache[url] = local_fn
-
-        # if the local file is not found, get it.
-        if not exists(local_fn):
-            self._json_req = UrlRequest(urllib2.quote(url, safe=':/'),
-                    on_success=self._on_dget_success,
-                    on_progress=self._on_dget_progress,
-                    on_error=self._on_dget_error)
-            return
-
-        # otherwise, just release the req, the next download will happen in the
-        # clock.
-        self._json_req = None
-
-    def _on_dhead_error(self, *args):
-        self._json_req = None
-
-    def _on_dget_success(self, req, result, *args):
-        url = urllib2.unquote(req.url)
-        local_fn = self._json_cache[url]
         if req.resp_status > 399:
             raise Exception('HTTP GET ERROR: {0} ({1})'.format(
                 req.url, req.resp_status))
@@ -114,8 +138,8 @@ class JsonData(object):
         self._json_req = None
 
     def _on_dget_error(self, *args):
-        # TODO
-        pass
+        print 'HTTP GET ERROR?', args
+        self._json_req = None
 
     def _on_dget_progress(self, req, cursize, total):
         step = (cursize / float(total)) if total > 0 else 0
@@ -139,8 +163,6 @@ class JsonData(object):
         for item in data:
             if isinstance(item, unicode):
                 item = item.encode('utf-8')
-                if item.startswith("http://"):
-                    item = self._download_resource(item)
             elif isinstance(item, list):
                 item = self._decode_list(item)
             elif isinstance(item, dict):
@@ -151,13 +173,16 @@ class JsonData(object):
 
     def _decode_dict(self, data):
         rv = {}
+
+        # hook to check if the dict is an image dict
+        if 'full' in data and 'etag' in data:
+            return self._download_image(data)
+
         for key, value in data.iteritems():
             if isinstance(key, unicode):
                 key = key.encode('utf-8')
             if isinstance(value, unicode):
                 value = value.encode('utf-8')
-                if value.startswith("http://"):
-                    value = self._download_resource(value)
             elif isinstance(value, list):
                 value = self._decode_list(value)
             elif isinstance(value, dict):

@@ -200,9 +200,10 @@ class AnswerImage(Image):
 
 
     def _get_smallest(self):
+        print "XXXX", self.img_data
         if self.img_data.get('medium'):
             return self.img_data['medium'][0]
-        return self.image_data['full']
+        return self.img_data['full']
 
     def on_img_data(self, *args):
         self.source = self._get_smallest()
@@ -384,6 +385,7 @@ class IowaIQApp(App):
     # Update part
     # Manage the update of questions.json + associated data
     def load_questions(self):
+        self._show_progression('Downloading questions...', 0, 1)
         # first step, download the questions.json
         self._req = UrlRequest(self.config.get('app', 'questions'),
             on_success=self._pull_update_success,

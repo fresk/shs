@@ -236,7 +236,7 @@
         scale_min: 1.0
         on_center_x: self.center_x = min(max(0,self.center_x), root.height)
         on_center_y: self.center_y = min(max(0,self.center_y), root.height)
-        Image:
+        AsyncImage:
             mipmap: True
             source: root.answer.img_data['full']
             # for positionning, take care of the label
