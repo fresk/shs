@@ -6,7 +6,7 @@ from jsondata import JsonData
 from os import makedirs
 from os.path import join, exists, expanduser
 from kivy.app import App
-from kivy.uix.image import Image
+from kivy.uix.image import Image, AsyncImage
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.relativelayout import RelativeLayout
@@ -188,7 +188,7 @@ class AnswerImagePopup(ModalView):
         Animation(alpha=0., d=.5, t='out_quart').start(self)
 
 
-class AnswerImage(Image):
+class AnswerImage(AsyncImage):
     img_data = ObjectProperty()
     text = StringProperty()
 
@@ -356,7 +356,7 @@ class IowaIQApp(App):
                 ascreen.text = q['answer_text']
                 ascreen.images = q['answer_images']
                 self.screen_manager.current = 'answer'
-            Clock.schedule_once(_go_answer, 0.5)
+            Clock.schedule_once(_go_answer, 0.2)
         else:
             self.status_bar.score -= 1
             ui_button.text_wrong = q['answer_corrections'][answer - 1]

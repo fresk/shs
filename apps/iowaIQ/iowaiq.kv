@@ -130,24 +130,28 @@
             size: self.size
             source: 'ui/screens/answer/bg.png'
 
-    Label:
-        font_name: 'ui/fonts/Gotham-Bold.ttf'
-        font_size: '76sp'
-        halign: 'left'
-        valign: 'bottom'
-        size_hint_y: None
-        text: root.feedback
-        height: '100sp'
-        y: root.height - sp(190)
+    BoxLayout:
+        orientation: 'vertical'
+        Widget:
+            size_hint_y: None
+            height: 150
+        Label:
+            font_name: 'ui/fonts/Gotham-Bold.ttf'
+            font_size: '76sp'
+            height: '100sp'
+            halign: 'left'
+            valign: 'bottom'
+            size_hint_y: None
+            text: root.feedback
+        Label:
+            halign: 'left'
+            font_size: '24sp'
+            valign: 'top'
+            text: root.text+"\n"
+        Widget:
+            size_hint_y: None
+            height: 500
 
-
-    Label:
-        halign: 'left'
-        font_size: '24sp'
-        valign: 'top'
-        padding_y: '360sp'
-        text: root.text+"\n"
-        y: root.height - self.height
 
 
     ScrollView:
