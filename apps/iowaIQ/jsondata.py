@@ -88,12 +88,13 @@ class JsonData(object):
             return data
 
         if self._json_mode == 'replace':
-            data['full'] = self._json_cache.get(data['full'][0])
-            if data['medium']:
+            if data['full'][0].startswith('http://'):
+                data['full'] = self._json_cache.get(data['full'][0])
+            if data['medium'] and data['medium'][0].startswith('http://'):
                 data['medium'] = self._json_cache.get(data['medium'][0])
             else:
                 data['medium'] = None
-            if data['large']:
+            if data['large'] and data['large'][0].startswith('http://'):
                 data['large'] = self._json_cache.get(data['large'][0])
             else:
                 data['large'] = None

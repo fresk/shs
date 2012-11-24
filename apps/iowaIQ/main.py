@@ -292,7 +292,7 @@ class IowaIQApp(App):
         qscreen.option_b = q['answers'][1]
         qscreen.option_c = q['answers'][2]
         qscreen.option_d = q['answers'][3]
-        qscreen.bg_image = q['question_bg_image']
+        qscreen.bg_image = q['question_bg_image'].get('full')
         # trigger button reset
         qscreen.reset = True
         qscreen.reset = False
