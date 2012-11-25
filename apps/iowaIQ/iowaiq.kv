@@ -214,16 +214,20 @@
 
 <ProgressionView>:
     auto_dismiss: False
-    size_hint: None, None
-    size: ('400sp', '250sp')
+	background: 'ui/screens/loading/loading-logo.png'
+	border: (0, 0, 0, 0)
 
-    BoxLayout:
-        orientation: 'vertical'
-        padding: '50dp'
-        Label:
-            text: root.text
-        ProgressBar:
-            value: root.progression
+	AnchorLayout:
+
+		BoxLayout:
+			size_hint: None, None
+			size: ('400sp', '250sp')
+			orientation: 'vertical'
+			padding: '50dp'
+			Label:
+				text: root.text
+			ProgressBar:
+				value: root.progression
 
 <AnswerImage>:
     mipmap: True
