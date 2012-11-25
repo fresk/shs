@@ -7,7 +7,11 @@ from kivy.graphics.transformation import Matrix
 from kivy.graphics.opengl import *
 from kivy.properties import StringProperty
 
-from objloader import OBJ
+from objloader import ObjFile
+
+
+import random
+
 
 
 class Renderer(Widget):
@@ -15,56 +19,61 @@ class Renderer(Widget):
     vs = StringProperty(None)
 
     def __init__(self, **kwargs):
+        _vs = kwargs.pop('vs', "")
+        _fs = kwargs.pop('fs', "")
+
         self.canvas = RenderContext()
         super(Renderer, self).__init__(**kwargs)
+
+        #must be set in right order on some gpu, or fs will fail linking
+        self.vs = _vs
+        self.fs = _fs
+
         Clock.schedule_interval(self.update_glsl, 1 / 60.)
 
-        self.model = OBJ("map/iowa.obj")
-
-        self.vertex_format = [
-            ('v_pos', 3, 'float'),
-            ('v_normal', 3, 'float'),
-            ('v_tc0', 2, 'float')]
-
-        self.vertices = []
-        self.indices = []
-        idx = 0
-        for f in self.model.faces:
-            verts =  f[0]
-            norms = f[1]
-            for i in range(3):
-                v = self.model.vertices[verts[i]-1]
-                n = self.model.normals[norms[i]-1]
-                data = [v[0], v[1], v[2], n[0], n[1], n[2], 0.0,0.0]
-                self.vertices.extend(data)
-            tri = [idx, idx+1, idx+2]
-            self.indices.extend(tri)
-            idx += 3
-
+        with self.canvas.before:
+            self.cb = Callback(self.setup_gl_context)
+            PushMatrix()
 
         with self.canvas:
-            self.cb = Callback(self.gl_callback)
-            PushMatrix()
-            Translate(-0,0,-7.0)
-            self.rot = Rotate(10.0, 0.0, 1.0, 0.0)
-            self.rot2 = Rotate(70.0, 1.0, 0.0, 0.0)
+            self.setup_scene()
 
-            self.mesh = Mesh(
-                vertices=self.vertices,
-                indices=self.indices,
-                fmt = self.vertex_format,
+        with self.canvas.after:
+            PopMatrix();
+            self.cb = Callback(self.reset_gl_context)
+
+
+    def setup_scene(self):
+        self.scene = ObjFile("map/iowa.obj")
+
+        Translate(-0,0,-2.0)
+        self.rot = Rotate(20.0, 0.0, 1.0, 0.0)
+        self.rot = Rotate(-20.0, 1.0, 0.0, 0.0)
+        Rotate(90.0, 1.0, 0.0, 0.0)
+
+        self.meshes = {}
+        self.mesh_transforms = {}
+        self.start_t = {}
+        for name, mesh in self.scene.objects.iteritems():
+            PushMatrix()
+            self.start_t[name] = random.random()
+            self.mesh_transforms[name] = Transform()
+            self.meshes[name] = Mesh(
+                vertices=mesh.vertices,
+                indices=mesh.indices,
+                fmt = mesh.vertex_format,
                 mode = 'triangles'
             )
+            PopMatrix()
 
-            PopMatrix();
-
-
-    def gl_callback(self, *args):
+    def setup_gl_context(self, *args):
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
         glFrontFace(GL_CCW)
         glEnable(GL_DEPTH_TEST)
 
+    def reset_gl_context(self, *args):
+        glDisable(GL_DEPTH_TEST)
 
 
     def on_fs(self, instance, value):
@@ -87,18 +96,22 @@ class Renderer(Widget):
             raise Exception('setting vertex shader failed')
 
     def update_glsl(self, *largs):
-        self.canvas['time'] = Clock.get_boottime()
+        self.canvas['time'] = t = Clock.get_boottime()
         self.canvas['resolution'] = map(float, self.size)
-        #self.canvas['projection_mat'] = Window.render_context['projection_mat']
         self.canvas['projection_mat'] = Matrix().view_clip(-1,1,-1,1, 1,100, 1)
         self.canvas['light_pos'] = [0, 0.0, 0]
-        self.rot.angle +=1
+        for k in self.mesh_transforms.keys():
+            self.mesh_transforms[k].matrix = Matrix().scale(
+                1,  (sin(t+t*(self.start_t[k]+1))+2)*2, 1)
+
+        #self.rot.angle +=1
+
 
 class RenderApp(App):
     def build(self):
         return Renderer(
-            vs = open('shaders/3D.vs', 'r').read(),
-            fs = open('shaders/3D.fs', 'r').read()
-        )
-
+            vs = open("shaders/3D.vs").read(),
+            fs = open("shaders/3D.fs").read()
+            )
+from math import sin
 RenderApp().run()
