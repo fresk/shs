@@ -6,10 +6,11 @@ from jsondata import JsonData
 from os import makedirs
 from os.path import join, exists, expanduser
 from kivy.app import App
-from kivy.uix.image import Image
+from kivy.uix.image import Image, AsyncImage
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
@@ -139,6 +140,7 @@ class QuestionButton(Button):
 class QuestionScreen(Screen):
     bg_image = StringProperty(errorvalue="ui/images/trans.png")
     text = StringProperty()
+    markedup_text = StringProperty()
     option_a = StringProperty()
     option_b = StringProperty()
     option_c = StringProperty()
@@ -149,6 +151,12 @@ class QuestionScreen(Screen):
     option_wrong_d = StringProperty()
     button_grid = ObjectProperty(None)
     reset = BooleanProperty()
+
+    def on_text(self, *args):
+        first_words = " ".join(self.text.split(" ")[:3])
+        other_words = " ".join(self.text.split(" ")[3:])
+        text_parts = (first_words, other_words)
+        self.markedup_text = "[size=60sp]%s[/size] %s\n" % text_parts
 
     def on_reset(self, *args):
         for c in self.button_grid.children:
@@ -180,9 +188,9 @@ class AnswerImagePopup(ModalView):
         Animation(alpha=0., d=.5, t='out_quart').start(self)
 
 
-class AnswerImage(Image):
+class AnswerImage(AsyncImage):
+    img_data = ObjectProperty()
     text = StringProperty()
-    source_full = StringProperty()
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
@@ -190,9 +198,51 @@ class AnswerImage(Image):
             return True
         super(AnswerImage, self).on_touch_down(touch)
 
+
+    def _get_smallest(self):
+        print "XXXX", self.img_data
+        if self.img_data.get('medium'):
+            return self.img_data['medium'][0]
+        return self.img_data['full']
+
+    def on_img_data(self, *args):
+        self.source = self._get_smallest()
+        self.text = self.img_data.get('caption') or ''
+
     def open(self):
         self._popup = AnswerImagePopup(answer=self)
         self._popup.open()
+
+
+
+class ThumnailList(BoxLayout):
+    def clear(self):
+        self._next_x = 50
+        self.clear_widgets()
+
+
+    def add_thumb(self, img):
+        print "ADDING", img
+        if not img.get('full'):
+            return
+        w = AnswerImage(img_data=img)
+        w.size_hint = (None, None)
+        w.height = 400
+        w.width = 400 * w.image_ratio
+        self.minimum_width = self.minimum_width + w.width + 50
+        self.add_widget(w)
+
+    def add_images(self, images):
+        self.clear()
+        self.minimum_width = 50
+        for img in images:
+            self.add_thumb(img)
+        self.add_widget(Widget(size_hint=(None, None), width=200))
+        self.minimum_width = self.minimum_width + 250
+        self.width = self.minimum_width
+        self.parent.update_from_scroll()
+        print "THIMBS", self.width
+
 
 
 class AnswerScreen(Screen):
@@ -212,19 +262,12 @@ class AnswerScreen(Screen):
             self.feedback = random.choice(self._feedback_wrong).strip()
 
     def on_images(self, *args):
-        self.image_layout.clear_widgets()
-        print "IMAGES:", self.images
-        for img in self.images:
-            if not img.get('full'):
-                continue
-            src = img['full']
-            if img.get('medium'):
-                src = img['medium'][0]
-            self.image_layout.add_widget(AnswerImage(
-                source=src,
-                source_full=img['full'],
-                text=img.get('caption') or '',
-            ))
+        self.image_layout.clear()
+        self.image_layout.add_images(self.images)
+
+
+
+
 
 
 class ResultsScreen(Screen):
@@ -232,11 +275,12 @@ class ResultsScreen(Screen):
 
 
 class StatusBar(RelativeLayout):
+    score = NumericProperty(0)
+    questions_left = NumericProperty(0)
     alpha_show = NumericProperty(0.0)
+
     def show(self, *args):
-        (
-        Animation(d=0.8) +
-        Animation(alpha_show=1.0, t='out_quad', d=1.0)
+        (Animation(d=0.8) + Animation(alpha_show=1.0, t='out_quad', d=1.0)
         ).start(self)
 
     def hide(self, *args):
@@ -251,7 +295,7 @@ class IowaIQApp(App):
             config.setdefaults(k, v)
 
     def build(self):
-        self.root = FloatLayout()
+        self.root = self.viewport = Viewport(size=(2048, 1536))
         self.ensure_directories()
         self.load_questions()
 
@@ -262,7 +306,6 @@ class IowaIQApp(App):
 
     def show_app(self, *args):
         self._hide_progression()
-        self.viewport = Viewport(size=(2048, 1536))
 
         self.screen_manager = ScreenManager(transition=SlideTransition())
         self.screen_manager.add_widget(IntroScreen(name='intro'))
@@ -274,26 +317,27 @@ class IowaIQApp(App):
         self.status_bar = StatusBar()
         self.viewport.add_widget(self.status_bar)
 
-        self.root.add_widget(self.viewport)
 
     def start_quiz(self):
-        self.score = 0
-        self.status_bar.show()
         self.quiz = random.sample(self.questions, 5)
+        self.status_bar.score = 0
+        self.status_bar.show()
         self.next_question()
 
     def next_question(self):
         if not self.quiz:
             return self.finish_quiz()
         q = self.question = self.quiz.pop()
+        self.status_bar.questions_left = 5 - len(self.quiz)
+
         qscreen = self.screen_manager.get_screen('question')
         qscreen.text = q['question']
         qscreen.option_a = q['answers'][0]
         qscreen.option_b = q['answers'][1]
         qscreen.option_c = q['answers'][2]
         qscreen.option_d = q['answers'][3]
-        qscreen.bg_image = q['question_bg_image'].get('full')
-        # trigger button reset
+        #qscreen.bg_image = q['question_bg_image']
+
         qscreen.reset = True
         qscreen.reset = False
 
@@ -303,7 +347,7 @@ class IowaIQApp(App):
         q = self.question
         is_correct = (answer == int(q['correct_answer']))
         if is_correct:
-            self.score += 1
+            self.status_bar.score += 4
             ui_button.background_normal = "ui/screens/question/qbg_correct.png"
             ui_button._update_mesh()
             def _go_answer(*args):
@@ -312,14 +356,15 @@ class IowaIQApp(App):
                 ascreen.text = q['answer_text']
                 ascreen.images = q['answer_images']
                 self.screen_manager.current = 'answer'
-            Clock.schedule_once(_go_answer, 0.5)
+            Clock.schedule_once(_go_answer, 0.2)
         else:
+            self.status_bar.score -= 1
             ui_button.text_wrong = q['answer_corrections'][answer - 1]
             ui_button.disable()
 
     def finish_quiz(self):
         rscreen = self.screen_manager.get_screen('results')
-        rscreen.text = "You got {0} out of 4".format(self.score)
+        rscreen.text = "Your score: {0}".format(self.status_bar.score)
         self.screen_manager.current = 'results'
 
     def get_data_dir(self):
