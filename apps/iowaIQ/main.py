@@ -6,9 +6,8 @@ from jsondata import JsonData
 from os import makedirs
 from os.path import join, exists, expanduser
 from kivy.app import App
-from kivy.uix.image import Image, AsyncImage
+from kivy.uix.image import AsyncImage
 from kivy.uix.widget import Widget
-from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
@@ -284,7 +283,7 @@ class StatusBar(RelativeLayout):
         ).start(self)
 
     def hide(self, *args):
-        Animation(alpha_show=1.0, t='out_quad', d=0.0).start(self)
+        Animation(alpha_show=0.0, t='out_quad', d=1.0).start(self)
 
 
 class IowaIQApp(App):
@@ -368,6 +367,7 @@ class IowaIQApp(App):
         rscreen = self.screen_manager.get_screen('results')
         rscreen.text = "Your score: {0}".format(self.status_bar.score)
         self.screen_manager.current = 'results'
+        self.status_bar.hide()
 
     def get_data_dir(self):
         if platform() == 'ios':
