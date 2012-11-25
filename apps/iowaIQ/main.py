@@ -123,11 +123,11 @@ class QuestionButton(Button):
         if self.alpha_rotation > 0:
             return
         d = 1.
-        hd = d / 2.0
+        hd = 0.16 # at 0.16, the animation will be at the middle
         t = 'out_quart'
         Animation(alpha_rotation=1., t=t, d=d).start(self)
         (Animation(color=self.color_wrong, t=t, d=hd) +
-         Animation(color=self.color, t=t, d=hd)).start(self)
+         Animation(color=self.color, t=t, d=1 - hd)).start(self)
 
     def reset(self):
         self.alpha_rotation = 0
