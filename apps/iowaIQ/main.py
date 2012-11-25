@@ -317,6 +317,8 @@ class IowaIQApp(App):
         self.status_bar = StatusBar()
         self.viewport.add_widget(self.status_bar)
 
+    def start_viewstandings(self):
+        pass
 
     def start_quiz(self):
         self.quiz = random.sample(self.questions, 5)
