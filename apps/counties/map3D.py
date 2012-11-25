@@ -46,9 +46,9 @@ class Renderer(Widget):
     def setup_scene(self):
         self.scene = ObjFile("map/iowa.obj")
 
-        Translate(-0,0,-2.0)
-        self.rot = Rotate(20.0, 0.0, 1.0, 0.0)
-        self.rot = Rotate(-20.0, 1.0, 0.0, 0.0)
+        Translate(-.5,-.25,-2)
+        #self.rot = Rotate(20.0, 0.0, 1.0, 0.0)
+        #self.rot = Rotate(-20.0, 1.0, 0.0, 0.0)
         Rotate(90.0, 1.0, 0.0, 0.0)
 
         self.meshes = {}
@@ -98,11 +98,11 @@ class Renderer(Widget):
     def update_glsl(self, *largs):
         self.canvas['time'] = t = Clock.get_boottime()
         self.canvas['resolution'] = map(float, self.size)
-        self.canvas['projection_mat'] = Matrix().view_clip(-1,1,-1,1, 1,100, 1)
+        self.canvas['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, 1,100, 1)
         self.canvas['light_pos'] = [0, 0.0, 0]
-        for k in self.mesh_transforms.keys():
-            self.mesh_transforms[k].matrix = Matrix().scale(
-                1,  (sin(t+t*(self.start_t[k]+1))+2)*2, 1)
+        #for k in self.mesh_transforms.keys():
+        #    self.mesh_transforms[k].matrix = Matrix().scale(
+        #        1,  (sin(t+t*(self.start_t[k]+1))+2)*2, 1)
 
         #self.rot.angle +=1
 
