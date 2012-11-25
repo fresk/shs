@@ -1,22 +1,63 @@
 
 
 
+class MeshData(object):
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name")
+        self.vertex_format = [
+            ('v_pos', 3, 'float'),
+            ('v_normal', 3, 'float'),
+            ('v_tc0', 2, 'float')]
+        self.vertices = []
+        self.indices = []
 
-class OBJ:
+
+class ObjFile:
+
+    def finish_object(self):
+        if self._current_object == None:
+            return
+
+        mesh = MeshData()
+        idx = 0
+        for f in self.faces:
+            verts =  f[0]
+            norms = f[1]
+            for i in range(3):
+                v = self.vertices[verts[i]-1]
+                n = self.normals[norms[i]-1]
+                data = [v[0], v[1], v[2], n[0], n[1], n[2], 0.0,0.0]
+                mesh.vertices.extend(data)
+            tri = [idx, idx+1, idx+2]
+            mesh.indices.extend(tri)
+            idx += 3
+
+        self.objects[self._current_object] = mesh
+        self.faces = []
+
     def __init__(self, filename, swapyz=False):
         """Loads a Wavefront OBJ file. """
+        self.objects = {}
         self.vertices = []
         self.normals = []
         self.texcoords = []
         self.faces = []
 
+        self._current_object = None
+
         material = None
         for line in open(filename, "r"):
             if line.startswith('#'): continue
-            if line.startswith('o'): continue
             if line.startswith('s'): continue
             values = line.split()
             if not values: continue
+            if values[0] == 'o':
+                self.finish_object()
+                self._current_object = values[1]
+            elif values[0] == 'mtllib':
+                self.mtl = MTL(values[1])
+            elif values[0] in ('usemtl', 'usemat'):
+                material = values[1]
             if values[0] == 'v':
                 v = map(float, values[1:4])
                 if swapyz:
@@ -29,10 +70,6 @@ class OBJ:
                 self.normals.append(v)
             elif values[0] == 'vt':
                 self.texcoords.append(map(float, values[1:3]))
-            elif values[0] in ('usemtl', 'usemat'):
-                material = values[1]
-            elif values[0] == 'mtllib':
-                self.mtl = MTL(values[1])
             elif values[0] == 'f':
                 face = []
                 texcoords = []
@@ -49,6 +86,7 @@ class OBJ:
                     else:
                         norms.append(0)
                 self.faces.append((face, norms, texcoords, material))
+        self.finish_object()
 
 
 def MTL(filename):
