@@ -12,7 +12,8 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
-from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
+from kivy.uix.screenmanager import (Screen, ScreenManager, SlideTransition,
+        FadeTransition, WipeTransition, SwapTransition)
 from kivy.network.urlrequest import UrlRequest
 from kivy.utils import platform
 from kivy.clock import Clock
@@ -312,7 +313,7 @@ class IowaIQApp(App):
     def show_app(self, *args):
         self._hide_progression()
 
-        self.screen_manager = ScreenManager(transition=SlideTransition())
+        self.screen_manager = ScreenManager(transition=WipeTransition())
         self.screen_manager.add_widget(IntroScreen(name='intro'))
         self.screen_manager.add_widget(QuestionScreen(name='question'))
         self.screen_manager.add_widget(AnswerScreen(name='answer'))
@@ -326,7 +327,7 @@ class IowaIQApp(App):
         pass
 
     def start_quiz(self):
-        self.quiz = random.sample(self.questions, 5)
+        self.quiz = random.sample(self.questions, 1)
         self.status_bar.score = 0
         self.status_bar.show()
         self.next_question()
@@ -378,7 +379,7 @@ class IowaIQApp(App):
 
     def finish_quiz(self):
         rscreen = self.screen_manager.get_screen('results')
-        rscreen.text = "Your score: {0}".format(self.status_bar.score)
+        rscreen.text = "You got {0} points.".format(self.status_bar.score)
         self.screen_manager.current = 'results'
         self.status_bar.hide()
 

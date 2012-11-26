@@ -1,9 +1,9 @@
 
 <Label>:
     font_name: 'ui/fonts/Gotham-Book.ttf'
-    font_size: '22sp'
+    font_size: '22dp'
     text_size: self.width-self.padding_x, self.height-self.padding_y
-    padding: ('50sp', '5sp')
+    padding: ('50dp', '5dp')
     valign: 'middle'
     halign: 'center'
     line_height: 1.3
@@ -36,14 +36,21 @@
         size_hint: None, None
         text_size: 2000, 150
 
-<ScreenManager>:
+
+<Screen>:
     canvas:
+        Color:
+            rgba: 0,0,0,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
         Color:
             rgba: 1,1,1,1
         Rectangle:
             pos: self.pos
             size: self.size
             source: 'ui/images/bg.png'
+
 
 
 <IntroScreen>:
@@ -91,7 +98,7 @@
             text: root.text
             markup: True
             font_name: 'ui/fonts/Gotham-Bold.ttf'
-            font_size: '28sp'
+            font_size: '28dp'
             halign: 'left'
             size_hint: None, 1
             width: root.width - 250
@@ -123,7 +130,7 @@
 <QuestionButton>:
     font_name: 'ui/fonts/Gotham-Bold.ttf' if self.alpha_rotation < 0.5 else 'ui/fonts/Gotham-Book.ttf'
     halign: 'center' if self.alpha_rotation < 0.5 else 'left'
-    font_size: '22sp' if self.alpha_rotation < 0.5 else '14sp'
+    font_size: '22dp' if self.alpha_rotation < 0.5 else '14dp'
     background_normal: "ui/screens/question/qbg.png"
     background_down: "ui/screens/question/qbg_down.png"
     background_wrong: "ui/screens/question/qbg_wrong.png"
@@ -145,15 +152,15 @@
             height: 150
         Label:
             font_name: 'ui/fonts/Gotham-Bold.ttf'
-            font_size: '76sp'
-            height: '100sp'
+            font_size: '76dp'
+            height: '100dp'
             halign: 'left'
             valign: 'bottom'
             size_hint_y: None
             text: root.feedback
         Label:
             halign: 'left'
-            font_size: '24sp'
+            font_size: '24dp'
             valign: 'top'
             text: root.text+"\n"
         Widget:
@@ -204,21 +211,74 @@
             size: self.size
             source: 'ui/screens/results/bg.png'
 
-    BoxLayout:
-        orientation:'vertical'
+    Label:
+        id: title
+        size_hint: 1, None
+        text: "Nice work, firend!"
+        height: '120dp'
+        top: root.top - dp(10)
+        valign: 'bottom'
+        halign: 'left'
+        font_name: 'ui/fonts/Gotham-Bold.ttf'
+        font_size: '100dp'
+
+
+    Label:
+        id: score_text
+        text: root.text
+        size_hint: 1, None
+        height: '120dp'
+        top: title.y - dp(10)
+        valign: 'top'
+        halign: 'left'
+        font_size: '65dp'
+
+
+    GridLayout:
+        cols: 2
+        size_hint: 1, None
+        height: '250dp'
+        top: score_text.y + dp(20)
+        padding: dp(50)
+        spacing: dp(50)
         Label:
-            font_name: 'ui/fonts/Gotham-Bold.ttf'
-            font_size: '38sp'
-            size_hint: 1, 0.5
-            text: root.text
+            text: "Where are you from?"
+            font_size: '36dp'
+            halign: 'left'
+            padding: 0,0
+        Label:
+            text: "What's your name?"
+            font_size: '36dp'
+            halign: 'left'
+            padding: 0,0
+
+        TextInput:
+            font_size: '50dp'
+            text: ""
+        TextInput:
+            font_size: '50dp'
+            text: ""
+
+
     Button:
-        on_release: app.screen_manager.current = 'intro'
-        size: 800,250
+        id: submit_btn
+        size: dp(430), dp(100)
         size_hint: None, None
-        center_x: root.center_x
         background_normal: 'ui/screens/results/donebtn.png'
         background_down: 'ui/screens/results/donebtn_down.png'
-        y: 200
+        y: '100dp'
+        right: root.right - dp(50)
+
+    Button:
+        text: "Don't submit score - start over."
+        background_normal: 'ui/images/trans.png'
+        background_down: 'ui/images/trans.png'
+        on_release: app.screen_manager.current = 'intro'
+        size: dp(420), dp(50)
+        size_hint: None, None
+        top: submit_btn.y - dp(20)
+        right: submit_btn.right
+
 
 <ProgressionView>:
     auto_dismiss: False
@@ -229,7 +289,7 @@
 
 		BoxLayout:
 			size_hint: None, None
-			size: ('400sp', '250sp')
+			size: ('400dp', '250dp')
 			orientation: 'vertical'
 			padding: '50dp'
 			Label:
@@ -271,8 +331,8 @@
         Label:
             text: root.answer.text or ''
             size_hint_y: None
-            height: '50sp'
-            font_size: '12sp'
+            height: '50dp'
+            font_size: '12dp'
             y: -(1 - root.alpha) * self.height
             on_touch_down: root.dismiss() if self.collide_point(*args[1].pos) else None
 
