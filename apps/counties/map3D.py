@@ -45,19 +45,17 @@ class Renderer(Widget):
 
     def setup_scene(self):
         self.scene = ObjFile("map/iowa.obj")
-
-        Translate(-.5,-.25,-2)
-        #self.rot = Rotate(20.0, 0.0, 1.0, 0.0)
-        #self.rot = Rotate(-20.0, 1.0, 0.0, 0.0)
-        Rotate(90.0, 1.0, 0.0, 0.0)
-
+        Translate(0,0,-2)
+        Rotate(-10, 1,0,0)
+        Rotate(30, 0,1,0)
+        Translate(-.5,-.25, 0)
         self.meshes = {}
         self.mesh_transforms = {}
         self.start_t = {}
         for name, mesh in self.scene.objects.iteritems():
             PushMatrix()
             self.start_t[name] = random.random()
-            self.mesh_transforms[name] = Transform()
+            self.mesh_transforms[name] = MatrixInstruction()
             self.meshes[name] = Mesh(
                 vertices=mesh.vertices,
                 indices=mesh.indices,
@@ -100,9 +98,9 @@ class Renderer(Widget):
         self.canvas['resolution'] = map(float, self.size)
         self.canvas['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, 1,100, 1)
         self.canvas['light_pos'] = [0, 0.0, 0]
-        #for k in self.mesh_transforms.keys():
-        #    self.mesh_transforms[k].matrix = Matrix().scale(
-        #        1,  (sin(t+t*(self.start_t[k]+1))+2)*2, 1)
+        for k in self.mesh_transforms.keys():
+            self.mesh_transforms[k].matrix = Matrix().scale(
+                1,  1, (sin(t+t*(self.start_t[k]+1))+2)*2)
 
         #self.rot.angle +=1
 
