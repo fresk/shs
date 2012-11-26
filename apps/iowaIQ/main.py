@@ -162,6 +162,12 @@ class QuestionScreen(Screen):
             c.reset()
 
 
+    def on_transition_progress(self, *args):
+        if self.transition_progress == 1.0 and self.transition_state == "in":
+            print "done transitioning"
+            App.get_running_app().preload_answer_screen()
+
+
 class AnswerImagePopup(ModalView):
     answer = ObjectProperty()
     alpha = NumericProperty(0)
@@ -337,12 +343,23 @@ class IowaIQApp(App):
         qscreen.option_b = q['answers'][1]
         qscreen.option_c = q['answers'][2]
         qscreen.option_d = q['answers'][3]
-        #qscreen.bg_image = q['question_bg_image']
 
+        #qscreen.bg_image = q['question_bg_image']
         qscreen.reset = True
         qscreen.reset = False
 
-        self.screen_manager.current = 'question'
+        def _goto_screen(*args):
+            self.screen_manager.current = 'question'
+        Clock.schedule_once(_goto_screen, 0.2)
+
+    def preload_answer_screen(self):
+        q = self.question
+        ascreen = self.screen_manager.get_screen('answer')
+        ascreen.correct = True
+        ascreen.text = q['answer_text']
+        ascreen.images = q['answer_images']
+
+
 
     def check_answer(self, ui_question, ui_button, answer):
         q = self.question
@@ -352,10 +369,6 @@ class IowaIQApp(App):
             ui_button.background_normal = "ui/screens/question/qbg_correct.png"
             ui_button._update_mesh()
             def _go_answer(*args):
-                ascreen = self.screen_manager.get_screen('answer')
-                ascreen.correct = True
-                ascreen.text = q['answer_text']
-                ascreen.images = q['answer_images']
                 self.screen_manager.current = 'answer'
             Clock.schedule_once(_go_answer, 0.2)
         else:
