@@ -28,6 +28,7 @@
         halign: 'left'
         size_hint: None, None
         text_size: 2000, 150
+        color: 0,0,0,0.8
 
     Label:
         text: "Score: {0}".format(root.score)
@@ -35,6 +36,7 @@
         size: 2048, 150
         size_hint: None, None
         text_size: 2000, 150
+        color: 0,0,0,0.8
 
 <ScreenManager>:
     canvas:
@@ -169,7 +171,7 @@
 
         canvas.before:
             Color:
-                rgba: 1,0,0,0.4
+                rgba: 1,0,0,0.0
             Rectangle:
                 pos: self.pos
                 size: self.size
