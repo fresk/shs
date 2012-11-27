@@ -1,0 +1,35 @@
+<County>:
+    do_scale: False
+    do_translation: False
+    do_rotation: False
+
+
+<TopDisplay>:
+    size_hint: None, None
+    size: (1920,1080)
+    y: 1080
+
+<BottomDisplay>:
+    size_hint: None, None
+    size: (1920,1080)
+    year: year_slider.value
+
+
+    BoxLayout:
+        size_hint_y: None
+        height: 400
+        center_y: root.center_y
+        orientation: 'vertical'
+        padding: 100
+
+        Label:
+            font_size: "50pt"
+            text: "year: %d" % year_slider.value
+
+        Slider:
+            id: year_slider
+            value: 1900
+            step: 10
+            min: 1900
+            max: 1990
+

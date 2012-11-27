@@ -31,16 +31,20 @@ def parse_section(s):
             v = r.pop(0)
             county[col] = int(v)
         name = county['name'] = " ".join(r)
-        name = name.lower().replace(" ", "_")
-        county_population[name] = county
+        id_name = name.lower().replace(" ", "_").replace('_county', '')
+        county['id'] = id_name
+
+        county_population[fips] = county
 
 for s in sections:
     parse_section(s)
 
-
+population_by_name = {}
+for k,v in county_population.iteritems():
+    population_by_name[v['id']] = v
 
 import json
-json.dump(county_population, open("county_population.json", "w"))
+json.dump(population_by_name, open("county_population.json", "w"))
 
 
 
