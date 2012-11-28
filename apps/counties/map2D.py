@@ -6,6 +6,7 @@ import xml.etree.ElementTree
 
 import kivy
 from kivy.app import App
+from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.scatter import Widget
 from kivy.uix.scatter import Scatter, ScatterPlane
@@ -133,11 +134,18 @@ class County(Scatter):
         self.svg = SVGImage(source=svg_file)
         self.add_widget(self.svg)
 
+Builder.load_string("""
+<County>:
+    do_scale: False
+    do_translation: False
+    do_rotation: False
+
+""")
 
 
 class SVGTestApp(App):
     def build(self):
-        self.root = ScatterPlane()
+        self.root = ScatterPlane(scale=0.25)
         county_data = json_load('counties.json')
         for county in county_data.values():
             self.root.add_widget(County(**county))

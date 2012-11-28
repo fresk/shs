@@ -46,22 +46,36 @@ class Renderer(Widget):
     def setup_scene(self):
         self.scene = ObjFile("map/iowa.obj")
         Translate(0,0,-2)
-        Rotate(-10, 1,0,0)
-        Rotate(30, 0,1,0)
-        Translate(-.5,-.25, 0)
+
+        Rotate(-8, 0,1,0) # tilt
+        Rotate(-15, 1,0,0) # tilt
+        Scale(2,2,2)
+        Translate(-.5,-.25, 0.05)
         self.meshes = {}
         self.mesh_transforms = {}
         self.start_t = {}
         for name, mesh in self.scene.objects.iteritems():
+            BindTexture(source='map/iowa_land.png', index=1)
+            self.canvas['iowa_tex'] = 1
+
             PushMatrix()
-            self.start_t[name] = random.random()
+            self.start_t[name] = 1.0# random.random()
+            if "polk" in name:
+                print "POLK", name
+                self.start_t[name] = 4.0
+                Color(1.0,.7,.4,1)
+            #elif random.random() < .8:
+            #    self.start_t[name] *= .5
+
             self.mesh_transforms[name] = MatrixInstruction()
             self.meshes[name] = Mesh(
                 vertices=mesh.vertices,
                 indices=mesh.indices,
                 fmt = mesh.vertex_format,
-                mode = 'triangles'
+                mode = 'triangles',
+                source = "map/iowa_normal.png"
             )
+            Color(1,1,1,1)
             PopMatrix()
 
     def setup_gl_context(self, *args):
@@ -99,8 +113,10 @@ class Renderer(Widget):
         self.canvas['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, 1,100, 1)
         self.canvas['light_pos'] = [0, 0.0, 0]
         for k in self.mesh_transforms.keys():
-            self.mesh_transforms[k].matrix = Matrix().scale(
-                1,  1, (sin(t+t*(self.start_t[k]+1))+2)*2)
+            #v = t+t*(self.start_t[k]+1)
+            #v = (sin(v)*cos(v)+2)
+            v = self.start_t[k] + 1.0
+            self.mesh_transforms[k].matrix = Matrix().scale(1,  1, v)
 
         #self.rot.angle +=1
 
@@ -111,5 +127,5 @@ class RenderApp(App):
             vs = open("shaders/3D.vs").read(),
             fs = open("shaders/3D.fs").read()
             )
-from math import sin
+from math import sin, cos
 RenderApp().run()
