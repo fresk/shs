@@ -47,8 +47,8 @@ class Renderer(Widget):
         self.scene = ObjFile("map/iowa.obj")
         Translate(0,0,-2)
 
-        Rotate(-8, 0,1,0) # tilt
-        Rotate(-15, 1,0,0) # tilt
+        Rotate(-20, 0,1,0) # tilt
+        Rotate(-45, 1,0,0) # tilt
         Scale(2,2,2)
         Translate(-.5,-.25, 0.05)
         self.meshes = {}
