@@ -1,3 +1,4 @@
+import os
 import kivy
 from kivy.app import App
 from kivy.clock import Clock
@@ -10,22 +11,29 @@ from viewport import DualDisplayWindow
 
 Builder.load_string("""
 
-<ProjectorScreen>:
-    text: "TOP  %s" % self.size
-
-<MainScreen>:
-    text: "MAIN  %s" % self.size
+<DisplayScreen>:
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: "data/img/bg.png"
 
 """)
 
-class ProjectorScreen(F.Button):
+class DisplayScreen(F.FloatLayout):
     app = ObjectProperty(None)
 
-class MainScreen(F.Button):
-    app = ObjectProperty(None)
+class ProjectorScreen(DisplayScreen):
+    pass
+
+class MainScreen(DisplayScreen):
+    pass
 
 class ExhibitApp(App):
     def build(self):
+        kivy.resources.resource_add_path(os.path.join(self.directory, "data"))
         self.root = DualDisplayWindow(display_size=(1920,1080))
         self.projector_screen = ProjectorScreen(app=self)
         self.main_screen = MainScreen(app=self)
