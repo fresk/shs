@@ -5,7 +5,7 @@ from kivy.properties import NumericProperty, ObjectProperty
 from kivy.properties import ReferenceListProperty
 
 
-class Layer(ScatterPlane):
+class TransformLayer(ScatterPlane):
     def __init__(self, **kwargs):
         kwargs.setdefault('size', (1920, 1080))
         kwargs.setdefault('rotate_to_fit', False)
@@ -13,14 +13,14 @@ class Layer(ScatterPlane):
         kwargs.setdefault('do_scale', False)
         kwargs.setdefault('do_translation', False)
         kwargs.setdefault('do_rotation', False)
-        super(Layer, self).__init__(**kwargs)
+        super(TransformLayer, self).__init__(**kwargs)
 
     def on_size(self, *args):
         for w in self.children:
             self._set_child_size(w)
 
     def add_widget(self, w, *args, **kwargs):
-        super(Layer, self).add_widget(w, *args, **kwargs)
+        super(TransformLayer, self).add_widget(w, *args, **kwargs)
         self._set_child_size(w)
 
     def _set_child_size(self, child):
@@ -31,7 +31,7 @@ class Layer(ScatterPlane):
             child.height = shx * self.height
 
 
-class Viewport(Layer):
+class Viewport(TransformLayer):
     aspect_ratio = NumericProperty(1.0)
     '''Aspect ratio of the layer (width/height).
 

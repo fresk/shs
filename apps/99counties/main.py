@@ -20,6 +20,25 @@ Builder.load_string("""
             size: self.size
             source: "data/img/bg.png"
 
+[VideoBG@Video]:
+    source: ctx.source
+    allow_stretch: True
+    options: {'eos':'loop'}
+    play: True
+
+
+
+<ProjectorScreen>:
+    VideoBG:
+        source: 'data/video/1920p.ogg'
+
+
+<MainScreen>:
+    VideoBG:
+        source: 'data/video/720p.ogg'
+
+
+
 """)
 
 class DisplayScreen(F.FloatLayout):
