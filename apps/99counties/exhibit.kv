@@ -1,0 +1,49 @@
+[VideoBG@Video]:
+    source: ctx.source
+    allow_stretch: True
+    options: {'eos':'loop'}
+    play: True
+
+
+<DualDisplayWindow>:
+    display_size: (1920,1080)
+
+
+<DualDisplayScreen>:
+    background: "data/img/bg.png"
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: self.background
+
+
+<TopScreen>:
+    background: "data/img/menu-top-bg.png"
+
+
+<BottomScreen>:
+    background: "data/img/menu-bottom-bg.png"
+    on_touch_down: app.show_menu()
+
+
+<Intro>:
+    TopScreen:
+        VideoBG:
+            source: 'data/video/1920p.ogg'
+    BottomScreen:
+        canvas.after:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'data/img/bottom-video-overlay.png'
+        VideoBG:
+            source: 'data/video/720p.ogg'
+
+
+
+<Menu>:
+    TopScreen
+    BottomScreen

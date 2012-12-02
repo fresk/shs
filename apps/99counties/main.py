@@ -3,62 +3,52 @@ import kivy
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.lang import Builder
+from kivy.animation import Animation
 from kivy.factory import Factory as F
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.properties import StringProperty, NumericProperty
 from kivy.properties import ObjectProperty, DictProperty
 from viewport import DualDisplayWindow
 
-Builder.load_string("""
-
-<DisplayScreen>:
-    canvas:
-        Color:
-            rgba: 1,1,1,1
-        Rectangle:
-            pos: self.pos
-            size: self.size
-            source: "data/img/bg.png"
-
-[VideoBG@Video]:
-    source: ctx.source
-    allow_stretch: True
-    options: {'eos':'loop'}
-    play: True
 
 
-
-<ProjectorScreen>:
-    VideoBG:
-        source: 'data/video/1920p.ogg'
-
-
-<MainScreen>:
-    VideoBG:
-        source: 'data/video/720p.ogg'
+class DualDisplayScreen(F.FloatLayout):
+    app = ObjectProperty(None)
+    background = StringProperty("")
 
 
+class TopScreen(DualDisplayScreen):
+    pass
 
-""")
 
-class DisplayScreen(F.FloatLayout):
+class BottomScreen(DualDisplayScreen):
+    pass
+
+
+class DualDisplay(DualDisplayWindow):
     app = ObjectProperty(None)
 
-class ProjectorScreen(DisplayScreen):
+
+class Intro(DualDisplay):
     pass
 
-class MainScreen(DisplayScreen):
+
+class Menu(DualDisplay):
     pass
+
 
 class ExhibitApp(App):
     def build(self):
         kivy.resources.resource_add_path(os.path.join(self.directory, "data"))
-        self.root = DualDisplayWindow(display_size=(1920,1080))
-        self.projector_screen = ProjectorScreen(app=self)
-        self.main_screen = MainScreen(app=self)
-        self.root.primary_display.add_widget(self.main_screen)
-        self.root.secondary_display.add_widget(self.projector_screen)
+        self.root = F.Widget()
+        self.menu_screen = Menu(app=self)
+        self.active_screen = Intro(app=self)
+        self.root.add_widget(self.menu_screen)
+        self.root.add_widget(self.active_screen)
         return self.root
+
+    def show_menu(self, *args):
+        Animation(opacity=0.0).start(self.active_screen)
 
 
 ExhibitApp().run()

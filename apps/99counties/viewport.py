@@ -101,11 +101,20 @@ class DualDisplayWindow(Viewport):
     '''
 
     def __init__(self, **kwargs):
-        self.primary_display = Layer(size=self.display_size)
-        self.secondary_display = Layer(size=self.display_size)
+        self.primary_display = TransformLayer(size=self.display_size)
+        self.secondary_display = TransformLayer(size=self.display_size)
         super(DualDisplayWindow, self).__init__(**kwargs)
-        self.add_widget(self.primary_display)
-        self.add_widget(self.secondary_display)
+
+
+    def add_widget(self, w, *args):
+        if  len(self.children) == 1:
+            super(DualDisplayWindow, self).add_widget(self.primary_display)
+            return self.primary_display.add_widget(w)
+        if  len(self.children) == 0:
+            super(DualDisplayWindow, self).add_widget(self.secondary_display)
+            return self.secondary_display.add_widget(w)
+        raise Exception("DualDisplayWindow can only hold two children")
+
 
     def on_display_size(self, *args):
         self.primary_display.size = self.display_size
