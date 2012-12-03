@@ -28,7 +28,8 @@ void main (void){
 
 
 
-    vec3 v_normal = normalize(texture2D(texture0, tex_coord0).xzy); //normalize(normal_vec);
+    vec3 v_normal = normalize(normal_vec);//
+    //vec3 v_normal = normalize(texture2D(texture0, tex_coord0).xzy);
     mat4  nmat = transpose(inverse(modelview_mat));
     v_normal = normalize(vec3( nmat* vec4(v_normal.xyz, 0.0)));
 
@@ -42,7 +43,8 @@ void main (void){
     //vec3 half_vec = dot(v_normal, normalize(v_eye + v_light));
     //float spec_color = min(LIGHT_COLOR +0.5, 1.0);
     //specular += spec_color * pow(clamp(half_vec, 0.0,1.0), 16.0);
-    vec4 col = frag_color;//texture2D(iowa_tex, tex_coord0);
+    //vec4 col = frag_color;
+    vec4 col = texture2D(iowa_tex, tex_coord0) * frag_color;
     gl_FragColor = vec4(clamp(col.rgb * (diffuse + AMBIENT) + specular, 0.0, 1.0), frag_color.a);
 }
 

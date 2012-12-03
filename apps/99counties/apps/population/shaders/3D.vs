@@ -28,7 +28,7 @@ void main (void) {
     // the vector from the vertex to the camera
     vec4 position = modelview_mat * vec4(v_pos,1.0);
     eye_vec = vec3(0,0,0) -  position.xyz;
-    light_vec = vec3(0,1,0);
+    light_vec = eye_vec;//modelview_mat * vec4(0,0,0,1);
     normal_vec = v_normal; //vec3(modelview_mat * vec4(v_normal.xyz, 0.0));
     frag_color = color * vec4(.5,.5,.5, opacity);
     tex_coord0 = vec2(v_pos.x, 1.0-v_pos.y);

@@ -16,19 +16,17 @@
 
 
 <Intro>:
-    opacity: 1.0 - self.alpha_hide
-    alpha_hide: 1.0 - self.alpha_show
     TopScreen:
         Video:
             source: 'data/video/1920p.ogg'
     BottomScreen:
-        canvas.after:
-            Rectangle:
-                pos: self.pos
-                size: self.size
-                source: 'data/img/bottom-video-overlay.png'
         Video:
+            size: 500,600
+            pos: 0,0
             source: 'data/video/720p.ogg'
+        ImageButton:
+            background_normal: 'data/img/bottom-video-overlay.png'
+            background_down: 'data/img/bottom-video-overlay.png'
 
 
 <Menu>:

@@ -22,22 +22,15 @@
 DualDisplay
 
     TopScreen:
-        opacity: root.alpha_show
-        y: (root.alpha_hide) * 1920
         background: 'bg-top.png'
 
         Renderer:
-            vs: open("shaders/3D.vs").read()
-            fs: open("shaders/3D.fs").read()
+            size_hint: 1,1
 
     BottomScreen:
-        opacity: root.alpha_show
-        y: (root.alpha_hide) * -1920
         background: 'bg-bottom.png'
 
         BackToMenuButton:
-            y: root.display_height - self.height
-            opacity: root.alpha_show - root.alpha_hide
             background_normal: 'btn-back-to-menu.png'
             background_down: 'btn-back-to-menu_down.png'
 
