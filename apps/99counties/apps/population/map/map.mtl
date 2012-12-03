@@ -1,0 +1,13 @@
+# Blender MTL File: 'map.blend'
+# Material Count: 1
+newmtl iowa_heightmap.002
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.368302 0.368302 0.368302
+Ks 0.254717 0.254717 0.254717
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd iowa.png
+
+

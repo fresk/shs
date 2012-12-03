@@ -1,0 +1,47 @@
+<Slider>:
+    size: slider_track.size
+    size_hint: None, None
+
+    canvas:
+        Clear
+
+    Image:
+        id: slider_track
+        size_hint: None, None
+        pos: (root.x, root.y)
+        size: self.texture_size
+        center: root.center
+        source: 'slider-track.png'
+    Image:
+        source: 'slider-handle.png'
+        size: self.texture_size
+        center: (root.value_pos[0] , root.center_y)
+
+
+
+DualDisplay
+
+    TopScreen:
+        opacity: root.alpha_show
+        y: (root.alpha_hide) * 1920
+        background: 'bg-top.png'
+
+        Renderer:
+            vs: open("shaders/3D.vs").read()
+            fs: open("shaders/3D.fs").read()
+
+    BottomScreen:
+        opacity: root.alpha_show
+        y: (root.alpha_hide) * -1920
+        background: 'bg-bottom.png'
+
+        BackToMenuButton:
+            y: root.display_height - self.height
+            opacity: root.alpha_show - root.alpha_hide
+            background_normal: 'btn-back-to-menu.png'
+            background_down: 'btn-back-to-menu_down.png'
+
+        Slider:
+            center: self.parent.center if self.parent else (0,0)
+            min: 1900
+            max: 1990
