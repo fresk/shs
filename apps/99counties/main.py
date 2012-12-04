@@ -2,6 +2,7 @@ import os
 import sys
 import imp
 import kivy
+import glob
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.lang import Builder
@@ -47,9 +48,14 @@ class ExhibitApp(App):
         self.menu_screen = Menu(app=self)
         self.app_screen = Intro(app=self)
         self.root.add_widget(self.app_screen)
-
-        self.menu_screen.add_app('population')
+        self.load_app_list()
         return self.root
+
+    def load_app_list(self):
+        for folder in glob.glob("apps/*"):
+            app_name = os.path.basename(folder)
+            if not app_name.startswith("_"):
+                self.menu_screen.add_app(app_name)
 
     def show_menu(self, *args):
         self.root.clear_widgets()
