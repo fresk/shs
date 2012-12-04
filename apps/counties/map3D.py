@@ -3,6 +3,7 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.graphics import *
+from kivy.graphics.shader import Shader
 from kivy.graphics.transformation import Matrix
 from kivy.graphics.opengl import *
 from kivy.properties import StringProperty
@@ -19,18 +20,22 @@ class Renderer(Widget):
     vs = StringProperty(None)
 
     def __init__(self, **kwargs):
-        _vs = kwargs.pop('vs', "")
-        _fs = kwargs.pop('fs', "")
 
-        self.canvas = RenderContext()
+        _vs = open("shaders/3D.vs").read()
+        _fs = open("shaders/3D.fs").read()
+        #s = Shader()
+        self.canvas = RenderContext(vs=_vs, fs=_fs)
         super(Renderer, self).__init__(**kwargs)
 
         #must be set in right order on some gpu, or fs will fail linking
-        self.vs = _vs
-        self.fs = _fs
 
-        Clock.schedule_interval(self.update_glsl, 1 / 60.)
 
+        Clock.schedule_once(self.init_canvas, 1)
+
+
+
+    def init_canvas(self, *args):
+        print "CANVAS INIT"
         with self.canvas.before:
             self.cb = Callback(self.setup_gl_context)
             PushMatrix()
@@ -41,6 +46,7 @@ class Renderer(Widget):
         with self.canvas.after:
             PopMatrix();
             self.cb = Callback(self.reset_gl_context)
+        Clock.schedule_interval(self.update_glsl, 1 / 60.)
 
 
     def setup_scene(self):
@@ -66,7 +72,7 @@ class Renderer(Widget):
                 Color(1.0,.7,.4,1)
             #elif random.random() < .8:
             #    self.start_t[name] *= .5
-
+            mat_cb = Callback(self.set_normal_mat)
             self.mesh_transforms[name] = MatrixInstruction()
             self.meshes[name] = Mesh(
                 vertices=mesh.vertices,
@@ -77,6 +83,10 @@ class Renderer(Widget):
             )
             Color(1,1,1,1)
             PopMatrix()
+
+    def set_normal_mat(self, *args):
+        mvm = self.canvas['modelview_mat']
+        self.canvas['normal_mat'] = mvm.inverse().transpose()
 
     def setup_gl_context(self, *args):
         glEnable(GL_CULL_FACE)
@@ -123,9 +133,8 @@ class Renderer(Widget):
 
 class RenderApp(App):
     def build(self):
-        return Renderer(
-            vs = open("shaders/3D.vs").read(),
-            fs = open("shaders/3D.fs").read()
-            )
+        return Renderer()
+
+
 from math import sin, cos
 RenderApp().run()

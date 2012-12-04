@@ -10,6 +10,7 @@ uniform sampler2D texture0;
 uniform sampler2D iowa_tex;
 
 uniform mat4 modelview_mat;
+uniform mat4 normal_mat;
 
 /* Outputs from the vertex shader */
 varying vec3 normal_vec;
@@ -29,8 +30,8 @@ void main (void){
 
 
     vec3 v_normal = normalize(texture2D(texture0, tex_coord0).xzy); //normalize(normal_vec);
-    mat4  nmat = transpose(inverse(modelview_mat));
-    v_normal = normalize(vec3( nmat* vec4(v_normal.xyz, 0.0)));
+    //mat4  nmat = transpose(inverse(modelview_mat));
+    v_normal = normalize(vec3( normal_mat* vec4(v_normal.xyz, 0.0)));
 
     vec3 v_eye = normalize(eye_vec);
     vec3 v_light = normalize(light_vec);

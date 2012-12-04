@@ -17,6 +17,7 @@ attribute vec2     v_tc0;
 /* uniform variables */
 uniform mat4       modelview_mat;
 uniform mat4       projection_mat;
+uniform mat4       normal_mat;
 uniform vec3       light_pos;
 uniform vec4       color;
 uniform float      opacity;
