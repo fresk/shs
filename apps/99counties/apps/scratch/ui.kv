@@ -6,37 +6,15 @@ DualDisplay
         Image:
             source: "facts.jpg"
 
-        AlphaMaskedImage:
-            canvas:
-                Color:
-                    rgba: 1,1,1,1
-                BindTexture:
-                    index: 1
-                    source: "mask.jpg"
-                Rectangle:
-                    pos: 0,0
-                    size: 1920,1080
-                    source: "black.jpg"
 
 
     BottomScreen:
         background: 'bg-bottom.png'
 
         Image:
-            source: 'historic.jpg'
+            source: "historic.jpg"
 
         AlphaMaskedImage:
-            canvas:
-                Color:
-                    rgba: 1,1,1,1
-                BindTexture:
-                    index: 1
-                    source: "mask.jpg"
-                Rectangle:
-                    pos: 0,0
-                    size: 1920,1080
-                    source: "present.jpg"
-
 
 
         BackToMenuButton:
