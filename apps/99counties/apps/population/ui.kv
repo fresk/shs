@@ -25,6 +25,7 @@ DualDisplay
         background: 'bg-top.png'
 
         Renderer:
+            slider_val: str(int(slider.value))
             size_hint: 1,1
 
     BottomScreen:
@@ -35,6 +36,9 @@ DualDisplay
             background_down: 'btn-back-to-menu_down.png'
 
         Slider:
+            id: slider
             center: self.parent.center if self.parent else (0,0)
-            min: 1900
-            max: 1990
+            step: 10
+            range: 1900, 1990
+            value: 1900
+

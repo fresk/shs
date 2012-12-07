@@ -2,8 +2,8 @@
     precision highp float;
 #endif
 
-const vec3 LIGHT_COLOR = vec3(.9, .86, 0.92);
-const vec3 AMBIENT = vec3(0.1, 0.1, 0.1);
+const vec3 LIGHT_COLOR = vec3(1,1,1);
+const vec3 AMBIENT = vec3(0.2, 0.2, 0.2);
 
 /* uniforms */
 uniform sampler2D texture0;
@@ -45,6 +45,6 @@ void main (void){
     //specular += spec_color * pow(clamp(half_vec, 0.0,1.0), 16.0);
     //vec4 col = frag_color;
     vec4 col = texture2D(iowa_tex, tex_coord0) * frag_color;
-    gl_FragColor = vec4(clamp(col.rgb * (diffuse + AMBIENT) + specular, 0.0, 1.0), frag_color.a);
+    gl_FragColor = vec4(clamp(col.rgb * diffuse + AMBIENT, 0.0, 1.0), frag_color.a);
 }
 
