@@ -5,7 +5,12 @@ DualDisplay
 
         Image:
             source: "facts.jpg"
+            opacity: 0 if root.opacity < 1.0 else 1.0
 
+        AlphaMaskedImage:
+            source: "black.jpg"
+            opacity: root.opacity
+            mask_texture: bottom_scratch.mask_texture
 
 
     BottomScreen:
@@ -13,8 +18,12 @@ DualDisplay
 
         Image:
             source: "historic.jpg"
+            opacity: 0 if root.opacity < 1.0 else 1.0
 
-        AlphaMaskedImage:
+        ScratchImage:
+            id: bottom_scratch
+            opacity: root.opacity
+            source: "present.jpg"
 
 
         BackToMenuButton:
