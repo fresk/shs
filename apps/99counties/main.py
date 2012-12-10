@@ -44,21 +44,21 @@ class Menu(DualDisplay):
 
 class ExhibitRoot(F.Widget):
 
-    def tuio_tranform(self, touch):
+    def tuio_transform(self, touch):
         if touch.device == 'tuio':
             touch.apply_transform_2d(lambda x,y: (x,y/2.0))
 
     def on_touch_down(self, touch):
         self.tuio_transform(touch)
-        super(ExhibitRoot, self).on_touch_down()
+        super(ExhibitRoot, self).on_touch_down(touch)
 
     def on_touch_move(self, touch):
         self.tuio_transform(touch)
-        return super(ExhibitRoot, self).on_touch_move()
+        return super(ExhibitRoot, self).on_touch_move(touch)
 
     def on_touch_up(self, touch):
         self.tuio_transform(touch)
-        return super(ExhibitRoot, self).on_touch_up()
+        return super(ExhibitRoot, self).on_touch_up(touch)
 
 
 class ExhibitApp(App):
