@@ -57,7 +57,7 @@ class ExhibitRoot(F.Widget):
         return super(ExhibitRoot, self).on_touch_move()
 
     def on_touch_up(self, touch):
-        if touch.device == 'tuio':
+        self.tuio_transform(touch)
         return super(ExhibitRoot, self).on_touch_up()
 
 
