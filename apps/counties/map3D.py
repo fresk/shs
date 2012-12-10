@@ -50,8 +50,8 @@ class Renderer(Widget):
 
 
     def setup_scene(self):
-        self.scene = ObjFile("map/iowa.obj")
-        Translate(0,0,-2)
+        self.scene = ObjFile("monkey.obj")
+        Translate(0,0,0)
 
         Rotate(-20, 0,1,0) # tilt
         Rotate(-45, 1,0,0) # tilt

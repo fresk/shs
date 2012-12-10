@@ -1,0 +1,33 @@
+DualDisplay
+
+    TopScreen:
+        background: 'bg-top.png'
+
+        Image:
+            source: "facts.jpg"
+            opacity: 0 if root.opacity < 1.0 else 1.0
+
+        AlphaMaskedImage:
+            source: "black.jpg"
+            opacity: root.opacity
+            mask_texture: bottom_scratch.mask_texture
+
+
+    BottomScreen:
+        background: 'bg-bottom.png'
+
+        Image:
+            source: "historic.jpg"
+            opacity: 0 if root.opacity < 1.0 else 1.0
+
+        ScratchImage:
+            id: bottom_scratch
+            opacity: root.opacity
+            source: "present.jpg"
+
+
+        BackToMenuButton:
+            y: 1080 - self.height
+            background_normal: 'btn-back-to-menu.png'
+            background_down: 'btn-back-to-menu_down.png'
+

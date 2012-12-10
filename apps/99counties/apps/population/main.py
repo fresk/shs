@@ -6,16 +6,19 @@ from kivy.uix.widget import Widget
 from kivy.graphics import *
 from kivy.graphics.transformation import Matrix
 from kivy.graphics.opengl import *
+from kivy.graphics.texture import *
 from kivy.properties import StringProperty, ObjectProperty
 from objloader import ObjFile
 import random
-
+import json
+from math import sin, cos
 
 
 class Renderer(Widget):
     fs = StringProperty(None)
     vs = StringProperty(None)
     texture = ObjectProperty(None, allownone=True)
+    slider_val = StringProperty("1900")
 
     def __init__(self, **kwargs):
         _vs = kwargs.pop('vs', "")
@@ -23,7 +26,8 @@ class Renderer(Widget):
 
         self.canvas = Canvas()
         with self.canvas:
-            self.fbo = Fbo(size=self.size, with_depthbuffer=True, do_clear=True)
+            fbo_size = self.width*2, self.height*2
+            self.fbo = Fbo(size=fbo_size, with_depthbuffer=True, do_clear=True)
             self.fbo_color = Color(1, 1, 1, 1)
             self.fbo_rect = Rectangle()
 
@@ -46,6 +50,7 @@ class Renderer(Widget):
         #must be set in right order on some gpu, or fs will fail linking
         self.vs = open(resource_find("shaders/3D.vs")).read()
         self.fs = open(resource_find("shaders/3D.fs")).read()
+        self.population_data = json.load(open(resource_find('data/county_population.json'), 'r'))
 
 
         Clock.schedule_interval(self.update_glsl, 1 / 60.)
@@ -84,20 +89,22 @@ class Renderer(Widget):
 
         Translate(0,-.12,-1.5)
 
-        self.rot = Rotate(-20, 0,1,0) # tilt
-        Rotate(-45, 1,0,0) # tilt
+        self.rot = Rotate(0, 0,1,0) # tilt
+        Rotate(-0, 0,1,0) # tilt
+        self.roty = Rotate(0,1,0,0)
+        Rotate(-30, 1,0,0) # tilt
         Scale(2,2,2)
         Translate(-.5,-.25, 0.05)
         self.meshes = {}
         self.mesh_transforms = {}
         self.start_t = {}
+        Color(1,1,1,1)
         for name, mesh in self.scene.objects.iteritems():
             BindTexture(source=land_txt, index=1)
             self.render_ctx['iowa_tex'] = 1
 
             PushMatrix()
             self.start_t[name] = 1.0# random.random()
-
             self.mesh_transforms[name] = MatrixInstruction()
             self.meshes[name] = Mesh(
                 vertices=mesh.vertices,
@@ -136,15 +143,22 @@ class Renderer(Widget):
         self.render_ctx['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, .95,10, 1)
         self.render_ctx['light_pos'] = [0, 0.0, 0]
         for k in self.mesh_transforms.keys():
+            parts = k.split("_")
+            county = parts[1]
+            if len(parts) > 3:
+                county += "_" +parts[2]
+
+            pop = self.population_data[county][self.slider_val]
             #v = t+t*(self.start_t[k]+1)
             #v = (sin(v)*cos(v)+2)
-            v = self.start_t[k] + 1.0
+            v = pop / 50000.0 + 0.5
             self.mesh_transforms[k].matrix = Matrix().scale(1,  1, v)
         self.cb.ask_update()
         self.render_ctx.ask_update()
         self.fbo.ask_update()
         self.canvas.ask_update()
-        self.rot.angle +=1
+        self.rot.angle = sin(t*0.12)*cos(t*0.22)*20
+        self.roty.angle = cos(sin(t*0.23))*15
 
 
 

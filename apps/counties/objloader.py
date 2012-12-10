@@ -54,10 +54,10 @@ class ObjFile:
             if values[0] == 'o':
                 self.finish_object()
                 self._current_object = values[1]
-            elif values[0] == 'mtllib':
-                self.mtl = MTL(values[1])
-            elif values[0] in ('usemtl', 'usemat'):
-                material = values[1]
+            #elif values[0] == 'mtllib':
+            #    self.mtl = MTL(values[1])
+            #elif values[0] in ('usemtl', 'usemat'):
+            #    material = values[1]
             if values[0] == 'v':
                 v = map(float, values[1:4])
                 if swapyz:
