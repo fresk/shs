@@ -40,10 +40,30 @@ class Menu(DualDisplay):
         btn = MenuAppButton(app_name=app_name)
         self.layout.add_widget(btn)
 
+
+class ExhibitRoot(F.Widget):
+
+    def tuio_tranform(self, touch):
+        if touch.device == 'tuio':
+            touch.apply_transform_2d(lambda x,y: (x,y/2.0))
+
+    def on_touch_down(self, touch):
+        self.tuio_transform(touch)
+        super(ExhibitRoot, self).on_touch_down()
+
+    def on_touch_move(self, touch):
+        self.tuio_transform(touch)
+        return super(ExhibitRoot, self).on_touch_move()
+
+    def on_touch_up(self, touch):
+        if touch.device == 'tuio':
+        return super(ExhibitRoot, self).on_touch_up()
+
+
 class ExhibitApp(App):
     def build(self):
         self._child_apps = {}
-        self.root = F.Widget()
+        self.root = ExhibitRoot()
         self.menu_screen = Menu(app=self)
         self.app_screen = Intro(app=self)
         self.root.add_widget(self.app_screen)
