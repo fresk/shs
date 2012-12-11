@@ -22,7 +22,7 @@ class CountyMap(Widget):
     vs = StringProperty(None)
     texture = ObjectProperty(None, allownone=True)
     p_texture = ObjectProperty(None, allownone=True)
-    map_texture = StringProperty("data/map/iowa_borders.png")
+    map_texture = StringProperty("data/map/iowa_wiki.png")
 
     def __init__(self, **kwargs):
         _vs = kwargs.pop('vs', "")
@@ -144,9 +144,7 @@ class CountyMap(Widget):
         Translate(0,-.12,-2)
 
         self.rot = Rotate(0, 0,1,0) # tilt
-        Rotate(-0, 0,1,0) # tilt
         self.roty = Rotate(0,1,0,0)
-        Rotate(0, 1,0,0) # tilt
         Scale(1.8)
         Translate(-.5,-.25, 0.05)
         self.meshes = {}
@@ -178,7 +176,6 @@ class CountyMap(Widget):
     def setup_scene_picking(self):
         Translate(0,-.12,-2)
         self._p_rot = Rotate(0, 0,1,0) # tilt
-        Rotate(-0, 0,1,0) # tilt
         self._p_roty = Rotate(0,1,0,0)
         Rotate(0, 1,0,0) # tilt
         Scale(1.8)
@@ -227,9 +224,10 @@ class CountyMap(Widget):
         self.tex_binding1.source = src
 
     def update_glsl(self, *largs):
+        va = (self.width/float(self.height)) /2.0
         self.render_ctx['time'] = t = Clock.get_boottime()
         self.render_ctx['resolution'] = map(float, self.size)
-        self.render_ctx['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, .95,100, 1)
+        self.render_ctx['projection_mat'] = Matrix().view_clip(-va,va,-.5,.5, .95,100, 1)
         self.render_ctx['light_pos'] = [0, 0.0, 0]
 
         for k in self.mesh_colors.keys():
@@ -245,7 +243,7 @@ class CountyMap(Widget):
 
         self._p_render_ctx['time'] = t = Clock.get_boottime()
         self._p_render_ctx['resolution'] = map(float, self.size)
-        self._p_render_ctx['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, .95,100, 1)
+        self._p_render_ctx['projection_mat'] = Matrix().view_clip(-va,va,-.5,.5, .95,100, 1)
         self._p_render_ctx['light_pos'] = [0, 0.0, 0]
         self._p_cb.ask_update()
         self._p_render_ctx.ask_update()

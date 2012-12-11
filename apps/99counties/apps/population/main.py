@@ -143,9 +143,10 @@ class Renderer(Widget):
         self.tex_binding1.source = src
 
     def update_glsl(self, *largs):
+        va = (self.width/float(self.height)) /2.0
         self.render_ctx['time'] = t = Clock.get_boottime()
         self.render_ctx['resolution'] = map(float, self.size)
-        self.render_ctx['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, .95,100, 1)
+        self.render_ctx['projection_mat'] = Matrix().view_clip(-va,va,-.5,.5, .95,100, 1)
         self.render_ctx['light_pos'] = [0, 0.0, 0]
         for k in self.mesh_transforms.keys():
             parts = k.split("_")
