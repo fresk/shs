@@ -92,7 +92,7 @@ class ScratchImage(AlphaMaskedImage):
 
     def paint_scratch(self, touch):
         x,y = touch.pos
-        ox,oy = touch.ppos
+        ox,oy/2.0 = touch.ppos
         d = 100.0
         ocx,ocy = ox - d/2., self.height - (oy + d/2)
         cx,cy = x - d/2., self.height - (y + d/2)
@@ -102,7 +102,7 @@ class ScratchImage(AlphaMaskedImage):
         self.fbo.remove_group('scratching')
         with self.fbo:
             for p in point_list:
-                Ellipse(pos=p, size=(d,d), source="scratch.png", group='scratching')
+                Ellipse(pos=p, size=(d,d), source="scratch.png")
 
     def on_mask_texture(self, *args):
         pass
