@@ -30,7 +30,7 @@ void main (void){
 MASK = None
 
 
-def calculate_points(x1, y1, x2, y2, steps=5):
+def calculate_points(x1, y1, x2, y2, steps=25):
     dx = x2 - x1
     dy = y2 - y1
     dist = sqrt(dx * dx + dy * dy)
@@ -95,7 +95,7 @@ class ScratchImage(AlphaMaskedImage):
     def paint_scratch(self, touch):
         x,y = touch.pos
         ox,oy = self.ox, self.oy
-        d = 100.0
+        d = 200.0
         ocx,ocy = ox - d/2., self.height - (oy + d/2)
         cx,cy = x - d/2., self.height - (y + d/2)
         point_list = calculate_points(ocx, ocy, cx,cy)
