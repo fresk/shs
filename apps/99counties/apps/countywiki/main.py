@@ -22,7 +22,7 @@ class CountyListButton(F.ToggleButton):
 
 
 class CountyList(F.FloatLayout):
-    drag_threshold = NumericProperty(10)
+    drag_threshold = NumericProperty(5)
     drag_offset = NumericProperty(0)
     total_offset = NumericProperty(0)
     scroll_layer = ObjectProperty(None)
@@ -46,7 +46,10 @@ class CountyList(F.FloatLayout):
             return False
         if self.collide_point(*touch.pos):
             self.drag_touch_id = touch.uid
+            self.velocity = 0
             touch.ud['last_y'] = touch.y
+            t = (touch.time_update, touch.y)
+            touch.ud['t_update'] = [t,t,t,t]
             touch.ud['move_distance'] = 0
             return True
 
@@ -55,19 +58,48 @@ class CountyList(F.FloatLayout):
             dy = touch.y - touch.ud['last_y']
             touch.ud['last_y'] = touch.y
             touch.ud['move_distance'] += abs(dy)
+            t = (touch.time_update, touch.y)
+            tupdate = touch.ud['t_update'][1:]
+            tupdate.append(t)
+            touch.ud['t_update'] = tupdate
             self.drag_offset += dy
-            if 'motacc' in touch.profile:
-                print touch.m, touch.X, touch.Y
             return True
+
+    def update_velocity(self, *args):
+        print self.velocity
+        if (self.velocity * self.velocity < 1.0):
+            return
+
+        self.total_offset += self.velocity
+        dx, dy = self.x, self.y + self.total_offset
+        self.scroll_layer.transform = Matrix().translate(dx, dy, 0)
+        self.velocity =  self.velocity * 0.9
+        Clock.schedule_once(self.update_velocity)
+
+
 
     def on_touch_up(self, touch):
         if self.drag_touch_id == touch.uid:
             dy = touch.y - touch.ud['last_y']
             touch.ud['move_distance'] += abs(dy)
             self.drag_offset += dy
-            if self.drag_offset > self.drag_threshold:
+            if touch.ud['move_distance'] > self.drag_threshold:
                 self.total_offset += self.drag_offset
                 self.drag_offset  = 0
+
+                tup = touch.ud['t_update']
+                dura = (tup[3][0] - tup[0][0]) * 100.0
+                dist = tup[3][1] - tup[0][1]
+
+                self.velocity = dist/dura
+                Clock.schedule_once(self.update_velocity)
+            #if 'mov' in touch.profile:
+            #    touch.Y
+            else:
+                self.drag_offset  = 0
+                self.velocity = 0
+                print "SELECT ITEM AT", touch.pos, self.total_offset
+
             self.drag_touch_id = None
             return True
 
