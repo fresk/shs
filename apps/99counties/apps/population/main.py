@@ -18,7 +18,7 @@ class Renderer(Widget):
     fs = StringProperty(None)
     vs = StringProperty(None)
     texture = ObjectProperty(None, allownone=True)
-    map_texture = StringProperty("map/image_map_2.png")
+    map_texture = StringProperty("map/iowa_borders.png")
     slider_val = StringProperty("1900")
 
     def __init__(self, **kwargs):
