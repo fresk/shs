@@ -74,8 +74,8 @@ class CountyList(F.FloatLayout):
         self.total_offset += self.velocity
         dx, dy = self.x, self.y + self.total_offset
         self.scroll_layer.transform = Matrix().translate(dx, dy, 0)
-        self.velocity =  self.velocity * 0.9
-        Clock.schedule_once(self.update_velocity)
+        self.velocity =  self.velocity * 0.95
+        Clock.schedule_once(self.update_velocity, 1.0/30.0)
 
 
 
@@ -91,8 +91,8 @@ class CountyList(F.FloatLayout):
                 dura = (tup[3][0] - tup[0][0]) * 100.0
                 dist = tup[3][1] - tup[0][1]
 
-                self.velocity = 2.0 * (dist/dura)
-                Clock.schedule_once(self.update_velocity)
+                self.velocity = 2.5 * (dist/dura)
+                Clock.schedule_once(self.update_velocity, 1.0/30.0)
             #if 'mov' in touch.profile:
             #    touch.Y
             else:
