@@ -1,5 +1,6 @@
 import random
 import json
+import csv
 from jsondata import JsonData
 
 
@@ -12,6 +13,7 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.screenmanager import (Screen, ScreenManager, SlideTransition,
         FadeTransition, WipeTransition, SwapTransition)
 from kivy.network.urlrequest import UrlRequest
@@ -25,6 +27,143 @@ from kivy.properties import (
 
 from math import sin, pi
 from viewport import Viewport
+
+class StringIndex(object):
+    def __init__(self, str_list):
+        records = [s.strip() for s in str_list]
+        self.index = self.create_index(records)
+
+    def create_index(self, items, level=0):
+        if len(items) < 10 or level>10:
+            return items
+
+        lookup = {}
+        for i in items:
+            k = ''
+            if len(i) > level:
+                k = i[level].lower()
+            lookup[k] = lookup.get(k) or []
+            lookup[k].append(i)
+
+        for idx in lookup.keys():
+            lookup[idx] = self.create_index(lookup[idx], level+1)
+        return lookup
+
+    def find_all(self, root):
+        matches = []
+        for k in root.keys():
+            sub = root[k]
+            if type(sub) == type([]):
+                matches.extend(sub)
+            else:
+                matches.extend(self.find_all(sub))
+        return matches
+
+    def find_prefix(self, prefix):
+        root = self.index
+        for c in prefix.lower():
+            root = root.get(c, [])
+            if type(root) == type([]):
+                return root
+        return self.find_all(root)
+
+
+class CompletionButton(Button):
+    pass
+
+class CompletionLabel(Label):
+    pass
+
+class CustomTextInput(Label):
+    rawtext = StringProperty()
+    _keyboard = ObjectProperty(allownone=True)
+    autocomplete_source = StringProperty()
+    autocomplete_placeholder = ObjectProperty()
+    autocomplete_hidelist = ListProperty()
+    _autocomplete_index = ObjectProperty()
+
+    def on_touch_down(self, touch):
+        if self.opacity == 0:
+            return False
+        if not self.collide_point(*touch.pos):
+            if self._keyboard:
+                self._keyboard.release()
+                self._keyboard = None
+            return False
+        if self._keyboard:
+            return True
+        self._keyboard = self.get_root_window().request_keyboard(
+                self._on_keyboard_closed, self)
+        self._keyboard.bind(on_key_down=self._on_key_down)
+        self._on_open()
+        return True
+
+    def _on_keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self._on_key_down)
+        self._keyboard = None
+        self.rawtext = self.rawtext.strip()
+        self._on_close()
+
+    def _on_key_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'backspace':
+            self.rawtext = self.rawtext[:-1]
+        elif keycode[1] == 'escape':
+            keyboard.release()
+        elif keycode[1] == 'delete':
+            pass
+        elif len(text):
+            self.rawtext += text
+        return True
+
+    def _on_open(self):
+        if not self.autocomplete_source:
+            return
+        a = Animation(opacity=0, d=0.3, t='out_quart')
+        for child in self.autocomplete_hidelist:
+            a.start(child)
+        a = Animation(opacity=1., d=0.3, t='out_quart')
+        a.start(self.autocomplete_placeholder)
+
+    def _on_close(self):
+        if not self.autocomplete_source:
+            return
+        a = Animation(opacity=1., d=0.3, t='out_quart')
+        for child in self.autocomplete_hidelist:
+            a.start(child)
+        a = Animation(opacity=0., d=0.3, t='out_quart')
+        a.start(self.autocomplete_placeholder)
+
+    def on_autocomplete_source(self, instance, value):
+        places = []
+        with open(value, 'rb') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                place = "{0}, {1}\n".format(row['name'], row['state_code'])
+                places.append(place)
+        self._autocomplete_index = StringIndex(places)
+
+    def on_rawtext(self, instance, value):
+        if not self.autocomplete_source:
+            return
+
+        completions = self._autocomplete_index.find_prefix(value)[:10]
+        completions = [c for c in completions if c.lower().startswith(value.lower())]
+        if len(completions) == 1:
+            return
+
+        ph = self.autocomplete_placeholder
+        ph.clear_widgets()
+        ph.add_widget(CompletionLabel(text='Do you mean?'))
+        for text in completions[:3]:
+            btn = CompletionButton(text=text)
+            btn.bind(on_release=self._set_text)
+            ph.add_widget(btn)
+
+    def _set_text(self, instance):
+        if self._keyboard:
+            self.rawtext = instance.text
+            self._keyboard.release()
+
 
 
 class ProgressionView(ModalView):
@@ -278,6 +417,14 @@ class AnswerScreen(Screen):
 
 class ResultsScreen(Screen):
     text = StringProperty("")
+
+    def fadein(self, fadelist):
+        a = Animation(color=(.5, .5, .5, .7), d=0.3, t='out_quart')
+        [a.start(x) for x in fadelist]
+
+    def fadeout(self, fadelist):
+        a = Animation(color=(1, 1, 1, 1), d=0.3, t='out_quart')
+        [a.start(x) for x in fadelist]
 
 
 class StatusBar(RelativeLayout):

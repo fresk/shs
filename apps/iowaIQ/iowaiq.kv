@@ -64,21 +64,21 @@
             size: self.size
             source: 'ui/screens/intro/bg.png'
 
-	BoxLayout:
+    BoxLayout:
         size: '400dp', '250dp'
         size_hint: None, None
         center: root.center_x, root.center_y - dp(100)
-		orientation: 'vertical'
+        orientation: 'vertical'
 
-		Button:
-			background_normal: 'ui/screens/intro/btn.png'
-			background_down: 'ui/screens/intro/btn_down.png'
-			on_release: app.start_quiz()
+        Button:
+            background_normal: 'ui/screens/intro/btn.png'
+            background_down: 'ui/screens/intro/btn_down.png'
+            on_release: app.start_quiz()
 
-		Button:
-			background_normal: 'ui/screens/intro/viewstandings_btn.png'
-			background_down: 'ui/screens/intro/viewstandings_btn_down.png'
-			on_release: app.start_quiz()
+        Button:
+            background_normal: 'ui/screens/intro/viewstandings_btn.png'
+            background_down: 'ui/screens/intro/viewstandings_btn_down.png'
+            on_release: app.start_quiz()
 
 
 
@@ -205,6 +205,8 @@
 
 
 <ResultsScreen>:
+    fadelist_1: [title, score_text]
+    fadelist_2: [title, score_text, cityinput, citylabel]
     canvas:
         Color:
             rgba: 1,1,1,1
@@ -216,8 +218,8 @@
     Label:
         id: title
         size_hint: 1, None
-        text: "Nice work, firend!"
-        height: '120dp'
+        text: "Nice work, friend."
+        height: '100dp'
         top: root.top - dp(10)
         valign: 'bottom'
         halign: 'left'
@@ -229,11 +231,12 @@
         id: score_text
         text: root.text
         size_hint: 1, None
-        height: '120dp'
+        height: '100dp'
         top: title.y - dp(10)
         valign: 'top'
         halign: 'left'
         font_size: '65dp'
+        font_name: 'ui/fonts/Gotham-Book.ttf'
 
 
     GridLayout:
@@ -242,24 +245,43 @@
         height: '250dp'
         top: score_text.y + dp(20)
         padding: dp(50)
-        spacing: dp(50)
         Label:
+		    id: citylabel
             text: "Where are you from?"
             font_size: '36dp'
             halign: 'left'
             padding: 0,0
         Label:
+            id: nicklabel
             text: "What's your name?"
             font_size: '36dp'
             halign: 'left'
             padding: 0,0
 
-        TextInput:
-            font_size: '45dp'
+        CustomTextInput:
+            id: cityinput
             text: ""
-        TextInput:
-            font_size: '45dp'
-            text: ""
+            on__keyboard: root.fadein(root.fadelist_1) if self._keyboard else root.fadeout(root.fadelist_1)
+            autocomplete_source: 'ui/uscities.csv'
+            autocomplete_placeholder: city_placeholder
+            autocomplete_hidelist: [nickinput, nicklabel]
+
+        FloatLayout:
+            # mimic the height of the cityinput
+            id: fl
+            size_hint_y: None
+            height: cityinput.height
+
+            BoxLayout:
+                id: city_placeholder
+                pos: fl.pos
+                orientation: 'vertical'
+
+            CustomTextInput:
+                id: nickinput
+                pos: fl.pos
+                text: ""
+				on__keyboard: root.fadein(root.fadelist_2) if self._keyboard else root.fadeout(root.fadelist_2)
 
 
     Button:
@@ -284,20 +306,20 @@
 
 <ProgressionView>:
     auto_dismiss: False
-	background: 'ui/screens/loading/loading-logo.png'
-	border: (0, 0, 0, 0)
+    background: 'ui/screens/loading/loading-logo.png'
+    border: (0, 0, 0, 0)
 
-	AnchorLayout:
+    AnchorLayout:
 
-		BoxLayout:
-			size_hint: None, None
-			size: ('400dp', '250dp')
-			orientation: 'vertical'
-			padding: '50dp'
-			Label:
-				text: root.text
-			ProgressBar:
-				value: root.progression
+        BoxLayout:
+            size_hint: None, None
+            size: ('400dp', '250dp')
+            orientation: 'vertical'
+            padding: '50dp'
+            Label:
+                text: root.text
+            ProgressBar:
+                value: root.progression
 
 <AnswerImage>:
     mipmap: True
@@ -344,3 +366,24 @@
                 Rectangle:
                     pos: self.pos
                     size: self.size
+
+<CustomTextInput>:
+    text: self.rawtext + ('|' if self._keyboard else '')
+    font_size: '30sp'
+    height: img.texture_size[1]
+    size_hint_y: None
+
+    Image:
+        id: img
+		color: root.color
+        pos: root.pos
+        size: root.size
+        source: 'ui/screens/results/input_bg.png'
+        height: self.texture_size[1]
+        allow_stretch: True
+
+<CompletionLabel>:
+    font_size: '18sp'
+
+<CompletionButton>:
+    background_color: 0, 0, 0, 0
