@@ -91,7 +91,7 @@ class CountyList(F.FloatLayout):
                 dura = (tup[3][0] - tup[0][0]) * 100.0
                 dist = tup[3][1] - tup[0][1]
 
-                self.velocity = dist/dura
+                self.velocity = 2.0 * (dist/dura)
                 Clock.schedule_once(self.update_velocity)
             #if 'mov' in touch.profile:
             #    touch.Y
