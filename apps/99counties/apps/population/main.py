@@ -87,13 +87,13 @@ class Renderer(Widget):
         normal_txt = resource_find('map/iowa_tex.png')
         self.scene = ObjFile(map_obj)
 
-        Translate(0,-.12,-1.5)
+        Translate(0,-.12,-2)
 
         self.rot = Rotate(0, 0,1,0) # tilt
         Rotate(-0, 0,1,0) # tilt
         self.roty = Rotate(0,1,0,0)
         Rotate(-30, 1,0,0) # tilt
-        Scale(2,2,2)
+        Scale(1.8)
         Translate(-.5,-.25, 0.05)
         self.meshes = {}
         self.mesh_transforms = {}
@@ -140,7 +140,7 @@ class Renderer(Widget):
     def update_glsl(self, *largs):
         self.render_ctx['time'] = t = Clock.get_boottime()
         self.render_ctx['resolution'] = map(float, self.size)
-        self.render_ctx['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, .95,10, 1)
+        self.render_ctx['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, .95,100, 1)
         self.render_ctx['light_pos'] = [0, 0.0, 0]
         for k in self.mesh_transforms.keys():
             parts = k.split("_")
