@@ -156,7 +156,7 @@ class Renderer(Widget):
             pop = self.population_data[county][self.slider_val]
             #v = t+t*(self.start_t[k]+1)
             #v = (sin(v)*cos(v)+2)
-            v = pop / 50000.0 + 0.5
+            v = pop / 100000.0 + 0.5
             self.mesh_transforms[k].matrix = Matrix().scale(1,  1, v)
         self.cb.ask_update()
         self.render_ctx.ask_update()

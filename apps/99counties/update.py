@@ -12,7 +12,7 @@ class JsonDataLoader(object):
         self.dataset = dataset
         self.storage_dir = storage_dir
         self.fname = "%s.json" % self.dataset
-        self.raw_fname = join(self.storage_dir, self.fname)
+        self.raw_fname = join(self.storage_dir, "_"+self.fname)
 
         self.fetch_raw_dataset()
         self.parse_dataset()
