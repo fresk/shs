@@ -31,6 +31,7 @@ class CountyList(F.FloatLayout):
     def __init__(self, **kwargs):
         super(CountyList, self).__init__(**kwargs)
         self.drag_touch_id = None
+        self.anim = None
         Clock.schedule_once(self.load_data)
 
     def on_drag_offset(self, *args):
@@ -45,6 +46,9 @@ class CountyList(F.FloatLayout):
         if self.drag_touch_id != None:
             return False
         if self.collide_point(*touch.pos):
+            if self.anim:
+                Animation.cancel_all(self, 'total_offset')
+                self.anim = None
             self.drag_touch_id = touch.uid
             self.velocity = 0
             touch.ud['last_y'] = touch.y
@@ -69,7 +73,20 @@ class CountyList(F.FloatLayout):
     def update_velocity(self, *args):
         print self.velocity
         if (self.velocity * self.velocity < 1.0):
+            self.velocity = 0
+            if self.total_offset > 0:
+                self.anim = Animation(total_offset = 0)
+                self.anim.star(self)
+            if self.total_offset < (1080 - self.item_list.height):
+                self.anim = Animation(total_offset = (1080 - self.item_list.height))
+                self.anim.star(self)
             return
+
+
+        if self.total_offset > 0:
+            self.velocity =  self.velocity * 0.5
+        if self.total_offset < (1080 - self.item_list.height):
+            self.velocity =  self.velocity * 0.5
 
         self.total_offset += self.velocity
         dx, dy = self.x, self.y + self.total_offset
