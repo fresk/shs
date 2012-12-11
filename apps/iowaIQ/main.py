@@ -12,6 +12,7 @@ from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.screenmanager import (Screen, ScreenManager, SlideTransition,
         FadeTransition, WipeTransition, SwapTransition)
 from kivy.network.urlrequest import UrlRequest
@@ -25,6 +26,38 @@ from kivy.properties import (
 
 from math import sin, pi
 from viewport import Viewport
+
+class CustomTextInput(Label):
+    rawtext = StringProperty()
+    _keyboard = ObjectProperty(allownone=True)
+
+    def on_touch_down(self, touch):
+        if not self.collide_point(*touch.pos):
+            if self._keyboard:
+                self._keyboard.release()
+                self._keyboard = None
+            return False
+        if self._keyboard:
+            return
+        self._keyboard = self.get_root_window().request_keyboard(
+                self._on_keyboard_closed, self)
+        self._keyboard.bind(on_key_down=self._on_key_down)
+
+    def _on_keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self._on_key_down)
+        self._keyboard = None
+        self.rawtext = self.rawtext.strip()
+
+    def _on_key_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'backspace':
+            self.rawtext = self.rawtext[:-1]
+        elif keycode[1] == 'escape':
+            keyboard.release()
+        elif keycode[1] == 'delete':
+            pass
+        elif len(text):
+            self.rawtext += text
+        return True
 
 
 class ProgressionView(ModalView):

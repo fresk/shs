@@ -216,8 +216,8 @@
     Label:
         id: title
         size_hint: 1, None
-        text: "Nice work, firend!"
-        height: '120dp'
+        text: "Nice work, friend."
+        height: '100dp'
         top: root.top - dp(10)
         valign: 'bottom'
         halign: 'left'
@@ -229,11 +229,12 @@
         id: score_text
         text: root.text
         size_hint: 1, None
-        height: '120dp'
+        height: '100dp'
         top: title.y - dp(10)
         valign: 'top'
         halign: 'left'
         font_size: '65dp'
+		font_name: 'ui/fonts/Gotham-Book.ttf'
 
 
     GridLayout:
@@ -242,7 +243,6 @@
         height: '250dp'
         top: score_text.y + dp(20)
         padding: dp(50)
-        spacing: dp(50)
         Label:
             text: "Where are you from?"
             font_size: '36dp'
@@ -254,10 +254,10 @@
             halign: 'left'
             padding: 0,0
 
-        TextInput:
+        CustomTextInput:
             font_size: '45dp'
             text: ""
-        TextInput:
+        CustomTextInput:
             font_size: '45dp'
             text: ""
 
@@ -344,3 +344,18 @@
                 Rectangle:
                     pos: self.pos
                     size: self.size
+
+<CustomTextInput>:
+	text: self.rawtext + ('|' if self._keyboard else '')
+	font_size: '38sp'
+	height: img.texture_size[1]
+	size_hint_y: None
+	font_name: 'ui/fonts/Gotham-Bold.ttf'
+
+	Image:
+		id: img
+		pos: root.pos
+		size: root.size
+		source: 'ui/screens/results/input_bg.png'
+		height: self.texture_size[1]
+		allow_stretch: True
