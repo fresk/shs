@@ -7,6 +7,7 @@ from kivy.properties import StringProperty
 from kivy.factory import Factory as F
 from imagebutton import ImageButton
 from kivy.resources import resource_add_path, resource_remove_path
+import gc
 
 def show_menu():
     App.get_running_app().show_menu()
@@ -25,7 +26,7 @@ class ChildApp(object):
         resource_add_path(self.app_path)
 
         #load code
-        m_name = "_app_{0}".format(self.name)
+        m_name = "_child_app_"#.format(self.name)
         f_name = os.path.join(self.app_path, 'main.py')
         self.module = imp.load_source(m_name, f_name, open(f_name, 'r'))
 
@@ -39,8 +40,11 @@ class ChildApp(object):
     def unload(self):
         Builder.unload_file(self.kv_file)
         del self.module
-        resource_remove_path(self.app_path)
+        self.module = None
+        gc.collect()
+
         sys.path.remove(self.app_path)
+        resource_remove_path(self.app_path)
 
 
 

@@ -12,6 +12,7 @@ from dualdisplay import BottomScreen, DualDisplay
 from exhibit import BackToMenuButton
 import json
 import random
+from math import sqrt
 
 fs_alpha_mask = """
 $HEADER$
@@ -27,6 +28,24 @@ void main (void){
 
 
 MASK = None
+
+
+def calculate_points(x1, y1, x2, y2, steps=5):
+    dx = x2 - x1
+    dy = y2 - y1
+    dist = sqrt(dx * dx + dy * dy)
+    if dist < steps:
+        return None
+    o = []
+    m = dist / steps
+    for i in xrange(1, int(m)):
+        mi = i / m
+        lastx = x1 + dx * mi
+        lasty = y1 + dy * mi
+        o.append([lastx, lasty])
+    return o
+
+
 
 class AlphaMaskedImage(F.Widget):
     mask_texture = ObjectProperty(None)
@@ -59,17 +78,31 @@ class AlphaMaskedImage(F.Widget):
 class ScratchImage(AlphaMaskedImage):
     display = ObjectProperty(None)
 
-    def on_touch_move(self, touch):
+    def on_touch_down(self, touch):
         if self.display.top_mask:
             self.display.top_mask.mask_texture = self.mask_texture
+        self.paint_scratch(touch)
+
+    def on_touch_move(self, touch):
+        self.paint_scratch(touch)
+
+    def on_touch_up(self, touch):
+        self.paint_scratch(touch)
+
+
+    def paint_scratch(self, touch):
+        x,y = touch.pos
+        ox,oy = touch.ppos
+        d = 200.0
+        ocx,ocy = ox - d/2., self.height - (oy + d/2)
+        cx,cy = x - d/2., self.height - (y + d/2)
+        point_list = calculate_points(ocx, ocy, cx,cy)
+        if not point_list:
+            return
+        self.fbo.remove_group('scratching')
         with self.fbo:
-            Color(1,1,1,1)
-            d = 200.0
-            c = touch.x - d/2., self.height - (touch.y + d/2)
-            PushMatrix()
-            Translate(touch.x, self.height-(touch.y), 0)
-            Ellipse(pos=(-d/2.0,-d/2.0), size=(d,d), source="scratch.png")
-            PopMatrix()
+            for p in point_list:
+                Ellipse(pos=p, size=(d,d), source="scratch.png", group='scratching')
 
     def on_mask_texture(self, *args):
         pass
@@ -85,6 +118,9 @@ class ScratchImage(AlphaMaskedImage):
             Color(1,1,1,1)
             BindTexture(index=1, texture=self.mask_texture)
             Rectangle(pos=self.pos, size=self.size, source=self.source)
+
+        with self.fbo:
+            Color(1,1,1,1)
         Clock.schedule_once(self.update_mask)
 
     def update_mask(self, *args):
@@ -104,18 +140,35 @@ class ScratchDualDisplay(DualDisplay):
     fact_img = StringProperty("")
     present_img = StringProperty("")
     historic_img = StringProperty("")
+    transitioning = BooleanProperty(False)
+
+    def on_touch_down(self, touch):
+        if self.transitioning:
+            return True
+        super(ScratchDualDisplay, self).on_touch_down(touch)
+
+    def on_touch_move(self, touch):
+        if self.transitioning:
+            return True
+        super(ScratchDualDisplay, self).on_touch_move(touch)
+
+    def on_touch_up(self, touch):
+        if self.transitioning:
+            return True
+        super(ScratchDualDisplay, self).on_touch_up(touch)
 
     def start_scratch(self, item, *args):
+        if self.transitioning:
+            return
+        self.transitioning = True
         self.data = item
         self.fact_img = resource_find(self.data['img_facts'])
         self.present_img = resource_find(self.data['img_present'])
         self.historic_img = resource_find(self.data['img_historic'])
 
-
         transition_img_top = F.Image(source="black.jpg", opacity=0.0)
         self.top_screen.add_widget(transition_img_top)
         Animation(opacity=1.0).start(transition_img_top)
-
 
         transition_img = F.Image(source=self.historic_img, opacity=0.0)
         self.bottom_screen.add_widget(transition_img)
@@ -141,8 +194,6 @@ class ScratchDualDisplay(DualDisplay):
 
         Clock.schedule_once(self.scratch_img.update_mask)
         Clock.schedule_once(self.remove_black, 0.2)
-
-
         back_btn = ScratchBackButton(display=self)
         self.bottom_screen.add_widget(back_btn)
 
@@ -151,8 +202,12 @@ class ScratchDualDisplay(DualDisplay):
         self.top_screen.content.remove_widget(self.img_top)
         self.img_top = None
         self.top_mask.mask_texture = self.scratch_img.mask_texture
+        self.transitioning = False
 
     def show_menu(self, *args):
+        if self.transitioning:
+            return
+        self.transitioning = True
         for c in self.bottom_screen.content.children:
             Animation(opacity=0.0).start(c)
         for c in self.top_screen.content.children:
@@ -169,6 +224,7 @@ class ScratchDualDisplay(DualDisplay):
         self.top_screen.content.clear_widgets()
         self.bottom_screen.add_widget(self.menu)
         self.bottom_screen.add_widget(BackToMenuButton())
+        self.transitioning = False
 
 
 

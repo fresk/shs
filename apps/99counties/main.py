@@ -13,8 +13,9 @@ from kivy.properties import ObjectProperty, DictProperty
 from kivy.factory import Factory as F
 from dualdisplay import DualDisplay
 from imagebutton import ImageButton
+from kivy.cache import Cache
 from exhibit import show_menu, ChildApp
-
+import gc
 
 
 class Intro(DualDisplay):
@@ -49,21 +50,28 @@ class ExhibitRoot(F.Widget):
             touch.apply_transform_2d(lambda x,y: (x,y/2.0))
 
     def on_touch_down(self, touch):
+        if App.get_running_app().transitioning:
+            return True
         self.tuio_transform(touch)
         super(ExhibitRoot, self).on_touch_down(touch)
 
     def on_touch_move(self, touch):
+        if App.get_running_app().transitioning:
+            return True
         self.tuio_transform(touch)
         return super(ExhibitRoot, self).on_touch_move(touch)
 
     def on_touch_up(self, touch):
+        if App.get_running_app().transitioning:
+            return True
         self.tuio_transform(touch)
         return super(ExhibitRoot, self).on_touch_up(touch)
 
 
 class ExhibitApp(App):
     def build(self):
-        self._child_apps = {}
+        self._child_app = None
+        self.transitioning = False
         self.root = ExhibitRoot()
         self.menu_screen = Menu(app=self)
         self.app_screen = Intro(app=self)
@@ -78,31 +86,41 @@ class ExhibitApp(App):
                 self.menu_screen.add_app(app_name)
 
     def show_menu(self, *args):
+        if self.transitioning:
+            return
+        self.transitioning = True
         self.root.clear_widgets()
         self.root.add_widget(self.menu_screen)
         self.root.add_widget(self.app_screen)
         def anim_done(*args):
+            self.transitioning = False
             self.root.remove_widget(self.app_screen)
             self.app_screen = None
         self.app_screen.hide(callback=anim_done)
 
     def load_app(self, app_name):
-        if self._child_apps.get(app_name):
-            return self._child_apps[app_name]
-        child_app = ChildApp(app_name)
-        self._child_apps[app_name] = child_app
-        return child_app
+        if self._child_app:
+            self.unload_app(self._child_app)
+        self._child_app = ChildApp(app_name)
+        return self._child_app
 
     def unload_app(self, child_app):
         app_name = child_app.name
         child_app.unload()
-        self._child_apps.pop(app_name)
+        Cache._objects['kv.image'] = {}
+        Cache.register('kv.image', timeout=10)
+        self._child_app = None
+        gc.collect()
 
     def start_app(self, app_name):
-        self.child_app = self.load_app(app_name)
-        self.app_screen = self.child_app.build()
+        if self.transitioning:
+            return
+        self.transitioning = True
+        self._child_app = self.load_app(app_name)
+        self.app_screen = self._child_app.build()
 
         def anim_done(*args):
+            self.transitioning = False
             self.root.remove_widget(self.menu_screen)
         self.root.add_widget(self.app_screen)
         self.app_screen.show(callback=anim_done)

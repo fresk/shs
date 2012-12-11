@@ -26,7 +26,7 @@ class CountyList(F.ScrollView):
         with open(resource_find('countywiki.json'), 'r') as fp:
             self.data = json.load(fp)
 
-        layout = F.GridLayout(cols=1, spacing=2, size_hint_y=None )
+        layout = F.GridLayout(cols=1, size_hint_y=None )
         layout.bind(minimum_height=layout.setter('height'))
         #layout = F.BoxLayout()
         self.add_widget(layout)
