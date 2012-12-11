@@ -57,7 +57,7 @@ class CountyList(F.FloatLayout):
             touch.ud['move_distance'] += abs(dy)
             self.drag_offset += dy
             if 'motacc' in touch.profile:
-                print touch.motacc, touch.mov
+                print touch.m, touch.X, touch.Y
             return True
 
     def on_touch_up(self, touch):
