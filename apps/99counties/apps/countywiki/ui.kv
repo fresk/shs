@@ -1,13 +1,43 @@
-<ListItemButton>:
+<CountyListButton>:
+    text: self.data.get("title")
     size_hint_y: None
     height: 72
-    font_name: "fonts/Gotham-Black.ttf" if self.is_selected else "fonts/Gotham-Book.ttf"
-    font_size: 47 if self.is_selected else 45
+    font_name: "fonts/Gotham-Black.ttf" if self.state=='down' else "fonts/Gotham-Book.ttf"
+    font_size: 47 if self.state=='down' else 45
     text_size: 400,72
     halign: 'left'
     valign: 'middle'
     background_normal: "data/img/trans.png"
     background_down: "data/img/trans.png"
+    group: 'countylist'
+
+<CountyList>:
+    scroll_layer: scroll_layer
+    item_list: item_list
+
+    canvas:
+        Color:
+            rgba: 1,0,0,0.3
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    StencilView:
+        size_hint:None, None
+        size: root.size
+        pos: root.pos
+
+        TransformLayer:
+            id: scroll_layer
+            size_hint:None, None
+            size: root.size
+            pos: root.pos
+
+            GridLayout:
+                id: item_list
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
 
 WikiDisplay
     id: wiki
