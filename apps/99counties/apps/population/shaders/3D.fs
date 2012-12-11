@@ -7,7 +7,7 @@ const vec3 AMBIENT = vec3(0.2, 0.2, 0.2);
 
 /* uniforms */
 uniform sampler2D texture0;
-uniform sampler2D iowa_tex;
+uniform sampler2D texture1;
 
 uniform mat4 modelview_mat;
 
@@ -44,7 +44,7 @@ void main (void){
     //float spec_color = min(LIGHT_COLOR +0.5, 1.0);
     //specular += spec_color * pow(clamp(half_vec, 0.0,1.0), 16.0);
     //vec4 col = frag_color;
-    vec4 col = texture2D(iowa_tex, tex_coord0) * frag_color;
+    vec4 col = texture2D(texture1, tex_coord0) * frag_color;
     gl_FragColor = vec4(clamp(col.rgb * diffuse + AMBIENT, 0.0, 1.0), frag_color.a);
 }
 

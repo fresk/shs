@@ -18,6 +18,7 @@ class Renderer(Widget):
     fs = StringProperty(None)
     vs = StringProperty(None)
     texture = ObjectProperty(None, allownone=True)
+    map_texture = StringProperty("map/iowa_borders.png")
     slider_val = StringProperty("1900")
 
     def __init__(self, **kwargs):
@@ -83,8 +84,8 @@ class Renderer(Widget):
 
     def setup_scene(self):
         map_obj = resource_find("map/iowa.obj")
-        land_txt = resource_find('map/iowa_tex.png')
         normal_txt = resource_find('map/iowa_tex.png')
+        map_txt = resource_find(self.map_texture)
         self.scene = ObjFile(map_obj)
 
         Translate(0,-.12,-2)
@@ -100,8 +101,8 @@ class Renderer(Widget):
         self.start_t = {}
         Color(1,1,1,1)
         for name, mesh in self.scene.objects.iteritems():
-            BindTexture(source=land_txt, index=1)
-            self.render_ctx['iowa_tex'] = 1
+            self.tex_binding_1 = BindTexture(source=self.map_texture, index=1)
+            self.render_ctx['texture1'] = 1
 
             PushMatrix()
             self.start_t[name] = 1.0# random.random()
@@ -136,6 +137,10 @@ class Renderer(Widget):
         shader = self.render_ctx.shader
         old_value = shader.vs
         shader.vs = value
+
+    def on_map_texture(self, *args):
+        src = resource_find(self.map_texture)
+        self.tex_binding1.source = src
 
     def update_glsl(self, *largs):
         self.render_ctx['time'] = t = Clock.get_boottime()

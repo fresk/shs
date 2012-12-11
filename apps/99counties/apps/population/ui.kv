@@ -27,6 +27,7 @@ DualDisplay
         background: 'bg-top.png'
 
         Renderer:
+            id: renderer
             slider_val: str(int(slider.value)/10 * 10)
             size_hint: 1,1
         Label:
@@ -42,6 +43,9 @@ DualDisplay
             y: 1080 - self.height
             background_normal: 'btn-back-to-menu.png'
             background_down: 'btn-back-to-menu_down.png'
+
+
+
 
         Slider:
             id: slider
