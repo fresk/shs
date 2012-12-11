@@ -93,7 +93,7 @@ class ScratchImage(AlphaMaskedImage):
     def on_touch_up(self, touch):
         touch.ud['old_pos']  = touch.ud.get('old_pos', touch.pos)
         self.paint_scratch(touch)
-        self.fbo.remove_group(touch.id)
+        self.fbo.remove_group(str(touch.id))
 
 
     def paint_scratch(self, touch):
@@ -103,12 +103,12 @@ class ScratchImage(AlphaMaskedImage):
         point_list = calculate_points(ox, oy, x,y)
         if not point_list:
             return
-        self.fbo.remove_group(touch.id)
+        self.fbo.remove_group(str(touch.id))
         with self.fbo:
             for p in point_list:
                 #Ellipse(pos=p, size=(d,d), source="scratch.png", group=touch.id)
                 pos = (p[0]-d/2.0,  self.height - p[1]-d/2.0)
-                Rectangle(pos=pos, size=(d,d), group=touch.id, source='scratch.png')
+                Rectangle(pos=pos, size=(d,d), group=str(touch.id), source='scratch.png')
 
 
 
