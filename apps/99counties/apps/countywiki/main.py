@@ -33,5 +33,4 @@ class CountyList(F.ScrollView):
         for c in self.data:
             btn = CountyListButton(text=c['title'])
             layout.add_widget(btn)
-            layout.height += 10
 

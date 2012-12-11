@@ -102,7 +102,7 @@ class ScratchImage(AlphaMaskedImage):
         d = 200.0
         point_list = calculate_points(ox, oy, x,y)
         if not point_list:
-            return
+            point_list = [touch.pos]
         self.fbo.remove_group(str(touch.id))
         with self.fbo:
             for p in point_list:
