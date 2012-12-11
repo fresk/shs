@@ -22,7 +22,7 @@ class CountyListButton(F.ToggleButton):
 
 
 class CountyList(F.FloatLayout):
-    drag_threshold = NumericProperty(5)
+    drag_threshold = NumericProperty(20)
     drag_offset = NumericProperty(0)
     total_offset = NumericProperty(0)
     scroll_layer = ObjectProperty(None)
@@ -62,7 +62,8 @@ class CountyList(F.FloatLayout):
             tupdate = touch.ud['t_update'][1:]
             tupdate.append(t)
             touch.ud['t_update'] = tupdate
-            self.drag_offset += dy
+            if touch.ud['move_distance'] > self.drag_threshold:
+                self.drag_offset += dy
             return True
 
     def update_velocity(self, *args):
@@ -82,9 +83,8 @@ class CountyList(F.FloatLayout):
         if self.drag_touch_id == touch.uid:
             dy = touch.y - touch.ud['last_y']
             touch.ud['move_distance'] += abs(dy)
-            self.drag_offset += dy
             if touch.ud['move_distance'] > self.drag_threshold:
-                self.total_offset += self.drag_offset
+                self.total_offset += self.drag_offset + dy
                 self.drag_offset  = 0
 
                 tup = touch.ud['t_update']
