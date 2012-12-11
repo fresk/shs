@@ -93,7 +93,7 @@ class ScratchImage(AlphaMaskedImage):
     def paint_scratch(self, touch):
         x,y = touch.pos
         ox,oy = touch.ppos
-        d = 200.0
+        d = 100.0
         ocx,ocy = ox - d/2., self.height - (oy + d/2)
         cx,cy = x - d/2., self.height - (y + d/2)
         point_list = calculate_points(ocx, ocy, cx,cy)
