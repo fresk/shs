@@ -1,0 +1,37 @@
+<CountyListButton>:
+    size_hint_y: None
+    height: 100
+    font_name: "fonts/Gotham-Black.ttf" if self.state == "down" else "fonts/Gotham-Book.ttf"
+    font_size: 45 if self.state == "down" else 40
+    text_width: 350
+    halign: 'left'
+    background_normal: "trans.png"
+    background_down: "trans.png"
+    group: 'county'
+
+WikiDisplay
+    id: wiki
+    county_list: county_list
+
+    TopScreen:
+        background: 'bg-top.png'
+
+
+    BottomScreen:
+        id: bottom_screen
+        background: 'bg-bottom.png'
+
+        BackToMenuButton:
+            y: 1080 - self.height
+            background_normal: 'btn-back-to-menu.png'
+            background_down: 'btn-back-to-menu_down.png'
+
+        CountyList:
+            id: county_list
+            size_hint:None, None
+            size: 400,1080
+            x: 1920-400
+
+
+
+

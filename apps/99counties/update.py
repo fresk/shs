@@ -80,9 +80,13 @@ class JsonDataLoader(object):
             rv[key] = value
         return rv
 
-
+print "updating history scrachtes..."
 scratches = JsonDataLoader("scratches")
 scratches.save('scratches.json')
+
+print "updating county wiki..."
+countywiki = JsonDataLoader("countywiki")
+countywiki.save('countywiki.json')
 
 
 
