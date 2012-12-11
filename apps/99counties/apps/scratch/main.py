@@ -30,7 +30,7 @@ void main (void){
 MASK = None
 
 
-def calculate_points(x1, y1, x2, y2, steps=5):
+def calculate_points(x1, y1, x2, y2, steps=50):
     dx = x2 - x1
     dy = y2 - y1
     dist = sqrt(dx * dx + dy * dy)
