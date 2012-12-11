@@ -19,26 +19,33 @@
 
 
 
+
+
 DualDisplay
 
     TopScreen:
         background: 'bg-top.png'
 
         Renderer:
-            slider_val: str(int(slider.value))
+            slider_val: str(int(slider.value)/10 * 10)
             size_hint: 1,1
+        Label:
+            size_hint: 1,None
+            font_size: 80
+            y: 50
+            text: str(int(slider.value)/10 * 10)
 
     BottomScreen:
         background: 'bg-bottom.png'
 
         BackToMenuButton:
+            y: 1080 - self.height
             background_normal: 'btn-back-to-menu.png'
             background_down: 'btn-back-to-menu_down.png'
 
         Slider:
             id: slider
             center: self.parent.center if self.parent else (0,0)
-            step: 10
             range: 1900, 1990
             value: 1900
 
