@@ -82,29 +82,35 @@ class ScratchImage(AlphaMaskedImage):
         if self.display.top_mask:
             self.display.top_mask.mask_texture = self.mask_texture
         self.ox, self.oy = touch.pos
+        touch.ud['old_pos']  = touch.pos
         self.paint_scratch(touch)
 
     def on_touch_move(self, touch):
+        touch.ud['old_pos']  = touch.ud.get('old_pos', touch.pos)
         self.paint_scratch(touch)
-        self.ox, self.oy = touch.pos
+        touch.ud['old_pos']  = touch.pos
 
     def on_touch_up(self, touch):
+        touch.ud['old_pos']  = touch.ud.get('old_pos', touch.pos)
         self.paint_scratch(touch)
+        self.fbo.remove_group(touch.id)
 
 
     def paint_scratch(self, touch):
         x,y = touch.pos
-        ox,oy = self.ox, self.oy
+        ox,oy = touch.ud['old_pos']
         d = 200.0
-        ocx,ocy = ox - d/2., self.height - (oy + d/2)
-        cx,cy = x - d/2., self.height - (y + d/2)
-        point_list = calculate_points(ocx, ocy, cx,cy)
+        point_list = calculate_points(ox, oy, x,y)
         if not point_list:
             return
-        self.fbo.remove_group('scratching')
+        self.fbo.remove_group(touch.id)
         with self.fbo:
             for p in point_list:
-                Ellipse(pos=p, size=(d,d), source="scratch.png")
+                #Ellipse(pos=p, size=(d,d), source="scratch.png", group=touch.id)
+                pos = (p[0]-d/2.0,  self.height - p[1]-d/2.0)
+                Rectangle(pos=pos, size=(d,d), group=touch.id, source='scratch.png')
+
+
 
     def on_mask_texture(self, *args):
         pass
