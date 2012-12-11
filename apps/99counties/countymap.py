@@ -17,6 +17,7 @@ from kivy.graphics.opengl import glReadPixels, GL_RGBA, GL_UNSIGNED_BYTE
 
 class CountyMap(Widget):
     display = ObjectProperty(None)
+    selcted_county = StringProperty("")
     fs = StringProperty(None)
     vs = StringProperty(None)
     texture = ObjectProperty(None, allownone=True)
@@ -130,6 +131,12 @@ class CountyMap(Widget):
         k = f_close(p[0], self.picking_colors.keys())
         self.display.selected_county = self.picking_colors.get(k, "")
 
+    def on_selected_county(self, *args):
+        for k in self.mesh_colors.keys():
+            self.mesh_colors[k].rgba = (1,1,1,1)
+        if self.mesh_colors.get(self.selected_county):
+            self.mesh_colors[self.selected_county].rgba = (1,0,0,1)
+
     def setup_scene(self):
         normal_txt = resource_find('data/map/iowa_tex.png')
         map_txt = resource_find(self.map_texture)
@@ -144,6 +151,7 @@ class CountyMap(Widget):
         Translate(-.5,-.25, 0.05)
         self.meshes = {}
         self.mesh_transforms = {}
+        self.mesh_colors = {}
         Color(1,1,1,1)
         self.picking_colors = {}
         c = 0.0 #f=lambda a,l:min(l,key=lambda x:abs(x-a))
@@ -152,8 +160,9 @@ class CountyMap(Widget):
             self.tex_binding_1 = BindTexture(source=self.map_texture, index=1)
             self.render_ctx['texture1'] = 1
             PushMatrix()
-            self.mesh_transforms[name] = MatrixInstruction()
-            Color(1,1,1,1)
+            cn = self.mesh2county(name)
+            self.mesh_transforms[cn] = MatrixInstruction()
+            self.mesh_colors[cn] = Color(1,1,1,1)
             self.meshes[name] = Mesh(
                 vertices=mesh.vertices,
                 indices=mesh.indices,
@@ -222,6 +231,12 @@ class CountyMap(Widget):
         self.render_ctx['resolution'] = map(float, self.size)
         self.render_ctx['projection_mat'] = Matrix().view_clip(-.5,.5,-.5,.5, .95,100, 1)
         self.render_ctx['light_pos'] = [0, 0.0, 0]
+
+        for k in self.mesh_colors.keys():
+            self.mesh_colors[k].rgba = (1,1,1,1)
+        if self.mesh_colors.get(self.selected_county):
+            self.mesh_colors[self.selected_county].rgba = (1,0,0,1)
+
         self.cb.ask_update()
         self.render_ctx.ask_update()
         self.fbo.ask_update()
@@ -235,6 +250,7 @@ class CountyMap(Widget):
         self._p_cb.ask_update()
         self._p_render_ctx.ask_update()
         self._p_fbo.ask_update()
+
         #self._p_rot.angle = sin(t*0.12)*cos(t*0.22)*20
         #self._p_roty.angle = cos(sin(t*0.23))*15
         self.canvas.ask_update()
