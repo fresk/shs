@@ -1,14 +1,13 @@
-<CountyListButton>:
+<ListItemButton>:
     size_hint_y: None
     height: 72
-    font_name: "fonts/Gotham-Black.ttf" if self.state == "down" else "fonts/Gotham-Book.ttf"
-    font_size: 47 if self.state == "down" else 45
+    font_name: "fonts/Gotham-Black.ttf" if self.is_selected else "fonts/Gotham-Book.ttf"
+    font_size: 47 if self.is_selected else 45
     text_size: 400,72
     halign: 'left'
     valign: 'middle'
     background_normal: "trans.png"
     background_down: "trans.png"
-    group: 'county'
 
 WikiDisplay
     id: wiki
