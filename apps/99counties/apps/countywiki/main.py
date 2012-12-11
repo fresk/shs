@@ -18,14 +18,55 @@ class WikiDisplay(DualDisplay):
 
     def __init__(self, **kwargs):
         super(WikiDisplay, self).__init__(**kwargs)
+        with open(resource_find('countywiki.json'), 'r') as fp:
+            self.data = sorted(json.load(fp), key=lambda c: c['title'])
+        self.counties = {}
+        for c in self.data:
+            self.counties[c['name'].replace('-', "_")] = c
+        def set_polk(*args):
+            self.selected_county = "polk"
+        Clock.schedule_once(set_polk)
+
+    def on_county_list(self, *args):
+        self.county_list.data = self.data
+        self.county_list.load_data()
 
     def on_selected_county(self, *args):
         print "wiki selection", self.selected_county
 
+class FactTitle(F.Label):
+    pass
+
+class FactText(F.Label):
+    pass
+
+class CountyHeader(F.Widget):
+    text = StringProperty("")
+
+class CountyInfoWiki(F.FloatLayout):
+    display = ObjectProperty(None)
+    selected_county = StringProperty("")
+    county_name = StringProperty("")
+    county_seat = StringProperty("")
+    county_size = StringProperty("")
+    established = StringProperty("")
+    formed_from = StringProperty("")
+    population = StringProperty("")
+
+    def on_selected_county(self, *args):
+        self.data = self.display.counties[self.selected_county]
+        self.county_name = self.data['title']
+        self.county_seat = self.data['county_seat']
+        self.county_size = self.data['size'] + "sq. miles"
+        self.etymology = self.data['etymology']
+        self.established = self.data['established']
+        self.formed_from = self.data['formed_from']
+        self.population = self.data['population']
+
+
+
 class CountyListButton(F.ToggleButton):
     data = DictProperty()
-
-
 
 class CountyList(F.FloatLayout):
     display = ObjectProperty(None)
@@ -89,10 +130,10 @@ class CountyList(F.FloatLayout):
             return True
 
     def update_velocity(self, *args):
-        print self.velocity, self.total_offset
+        #print self.velocity, self.total_offset
         if (self.velocity * self.velocity < 1.0):
             self.velocity = 0
-            print self.total_offset
+            #print self.total_offset
             if self.total_offset > 0:
                 of = self.total_offset *2.0
                 dd = min(of, self.height) / (self.height+1.0)
@@ -161,8 +202,6 @@ class CountyList(F.FloatLayout):
             return True
 
     def load_data(self, *args):
-        with open(resource_find('countywiki.json'), 'r') as fp:
-            self.data = sorted(json.load(fp), key=lambda c: c['title'])
         for county in self.data:
             self.item_list.add_widget(CountyListButton(data=county))
 
