@@ -8,6 +8,7 @@ from kivy.adapters.dictadapter import DictAdapter
 from viewport import TransformLayer
 from kivy.graphics.transformation import Matrix
 from kivy.clock import Clock
+from kivy.animation import Animation
 
 class WikiDisplay(DualDisplay):
     county_list = ObjectProperty(None)
