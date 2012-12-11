@@ -50,8 +50,6 @@ class ChildApp(object):
 
 
 class BackToMenuButton(ImageButton):
-    def on_release(self, *args):
-        show_menu()
-
+    pass
 
 
