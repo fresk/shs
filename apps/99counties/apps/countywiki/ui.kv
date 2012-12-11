@@ -1,10 +1,10 @@
 <CountyListButton>:
     text: self.data.get("title")
     size_hint_y: None
-    height: 72
+    height: 80
     font_name: "fonts/Gotham-Black.ttf" if self.state=='down' else "fonts/Gotham-Book.ttf"
     font_size: 47 if self.state=='down' else 45
-    text_size: 400,72
+    text_size: 400,80
     halign: 'left'
     valign: 'middle'
     background_normal: "data/img/trans.png"
@@ -42,6 +42,8 @@
 WikiDisplay
     id: wiki
     county_list: county_list
+    county_map: county_map
+
 
     TopScreen:
         background: 'apps/countywiki/bg-top.png'
@@ -54,7 +56,17 @@ WikiDisplay
         BackToMenuButton:
             y: 1080 - self.height
 
+        CountyMap:
+            selected_county: root.selected_county
+            display: root
+            id: county_map
+            id: county_map
+            size_hint: None, None
+            size: 1920-400,1080
+
         CountyList:
+            selected_county: root.selected_county
+            display: root
             id: county_list
             size_hint:None, None
             size: 400,1080

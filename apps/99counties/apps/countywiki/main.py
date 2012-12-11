@@ -9,13 +9,18 @@ from viewport import TransformLayer
 from kivy.graphics.transformation import Matrix
 from kivy.clock import Clock
 from kivy.animation import Animation
+from countymap import CountyMap
 
 class WikiDisplay(DualDisplay):
+    selected_county = StringProperty("")
     county_list = ObjectProperty(None)
+    county_map = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(WikiDisplay, self).__init__(**kwargs)
 
+    def on_selected_county(self, *args):
+        print "wiki selection", self.selected_county
 
 class CountyListButton(F.ToggleButton):
     data = DictProperty()
@@ -23,6 +28,8 @@ class CountyListButton(F.ToggleButton):
 
 
 class CountyList(F.FloatLayout):
+    display = ObjectProperty(None)
+    selected_county = StringProperty("")
     drag_threshold = NumericProperty(20)
     drag_offset = NumericProperty(0)
     total_offset = NumericProperty(0)
@@ -42,6 +49,16 @@ class CountyList(F.FloatLayout):
         doy = self.drag_offset
         dx, dy = self.x, self.y + toy + doy
         self.scroll_layer.transform = Matrix().translate(dx, dy, 0)
+
+    def on_total_offset(self, *args):
+        if self.scroll_layer is None:
+            return
+        toy = self.total_offset
+        doy = self.drag_offset
+        dx, dy = self.x, self.y + toy + doy
+        self.scroll_layer.transform = Matrix().translate(dx, dy, 0)
+
+
 
     def on_touch_down(self, touch):
         if self.drag_touch_id != None:
@@ -72,29 +89,48 @@ class CountyList(F.FloatLayout):
             return True
 
     def update_velocity(self, *args):
-        print self.velocity
+        print self.velocity, self.total_offset
         if (self.velocity * self.velocity < 1.0):
             self.velocity = 0
+            print self.total_offset
             if self.total_offset > 0:
-                self.anim = Animation(total_offset = 0)
-                self.anim.star(self)
+                of = self.total_offset *2.0
+                dd = min(of, self.height) / (self.height+1.0)
+                self.anim = Animation(total_offset = 0, t='out_quart', d=dd+0.3)
+                self.anim.start(self)
             if self.total_offset < (1080 - self.item_list.height):
-                self.anim = Animation(total_offset = (1080 - self.item_list.height))
-                self.anim.star(self)
+                of = abs(self.total_offset - (1080 - self.item_list.height)) * 2.0
+                dd = max(of, self.height) / (self.height+1.0)
+                self.anim = Animation(total_offset = (1080 - self.item_list.height),t='out_quart', d=dd+0.3)
+                self.anim.start(self)
             return
 
 
         if self.total_offset > 0:
-            self.velocity =  self.velocity * 0.5
+            of = self.total_offset *2.0
+            dd = min(of, self.height) / (self.height+1.0)
+            self.velocity =  self.velocity * (1.0-dd)
         if self.total_offset < (1080 - self.item_list.height):
-            self.velocity =  self.velocity * 0.5
+            of = abs(self.total_offset - (1080 - self.item_list.height)) * 2.0
+            dd = max(of, self.height) / (self.height+1.0)
+            self.velocity =  self.velocity * (1.0-dd)
 
         self.total_offset += self.velocity
-        dx, dy = self.x, self.y + self.total_offset
-        self.scroll_layer.transform = Matrix().translate(dx, dy, 0)
         self.velocity =  self.velocity * 0.95
         Clock.schedule_once(self.update_velocity, 1.0/30.0)
 
+    def selection(self, item):
+        print "SELECTED", item['title']
+        self.display.selected_county = item['name'].replace("-", "_")
+
+    def on_selected_county(self, *args):
+        print self.selected_county, "from diaplsy"
+        for btn in self.item_list.children:
+            n = btn.data['name'].replace("-", "_")
+            if n == self.selected_county:
+                btn.state="down"
+            else:
+                btn.state="normal"
 
 
     def on_touch_up(self, touch):
@@ -116,7 +152,10 @@ class CountyList(F.FloatLayout):
             else:
                 self.drag_offset  = 0
                 self.velocity = 0
-                print "SELECT ITEM AT", touch.pos, self.total_offset
+                x,y = 10, max(0,min(touch.y - self.total_offset, self.item_list.height-1))
+                idx = int(y / 80)
+                btn = self.item_list.children[idx]
+                self.selection(btn.data)
 
             self.drag_touch_id = None
             return True
