@@ -99,7 +99,7 @@ class CountyMap(Widget):
 
     def on_pos(self, instance, value):
         self.fbo_rect.pos = value
-        self._p_fbo_rect.pos = self.x, -self.height
+        self._p_fbo_rect.pos = self.x, self.height
 
     def on_texture(self, instance, value):
         self.fbo_rect.texture = value
@@ -108,7 +108,7 @@ class CountyMap(Widget):
         self._p_fbo_rect.texture = value
 
     def mesh2county(self, meshname):
-        v = meshname.split("_")
+        v = meshname.replace("'", "").split("_")
         if len(v) == 3:
             return v[1]
         else:

@@ -139,13 +139,15 @@ WikiDisplay
         id: bottom_screen
         background: 'apps/countywiki/bg-bottom.png'
 
+        Image:
+            source: 'apps/countywiki/bg-bottom.png'
+
         BackToMenuButton:
             y: 1080 - self.height
 
         CountyMap:
             selected_county: root.selected_county
             display: root
-            id: county_map
             id: county_map
             size_hint: None, None
             size: 1920-400,1080
