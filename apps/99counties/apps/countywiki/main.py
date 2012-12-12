@@ -51,6 +51,7 @@ class CountyInfoWiki(F.FloatLayout):
     county_size = StringProperty("")
     established = StringProperty("")
     formed_from = StringProperty("")
+    etymology = StringProperty("")
     population = StringProperty("")
 
     def on_selected_county(self, *args):
