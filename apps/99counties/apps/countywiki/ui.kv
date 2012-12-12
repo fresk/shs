@@ -1,30 +1,160 @@
-<ListItemButton>:
+
+
+<CountyListButton>:
+    text: self.data.get("title")
     size_hint_y: None
-    height: 72
-    font_name: "fonts/Gotham-Black.ttf" if self.is_selected else "fonts/Gotham-Book.ttf"
-    font_size: 47 if self.is_selected else 45
-    text_size: 400,72
+    height: 80
+    font_name: "fonts/Gotham-Black.ttf" if self.state=='down' else "fonts/Gotham-Book.ttf"
+    font_size: 47 if self.state=='down' else 45
+    text_size: 400,80
     halign: 'left'
     valign: 'middle'
     background_normal: "data/img/trans.png"
     background_down: "data/img/trans.png"
+    group: 'countylist'
+
+<CountyList>:
+    scroll_layer: scroll_layer
+    item_list: item_list
+
+
+    StencilView:
+        size_hint:None, None
+        size: root.size
+        pos: root.pos
+
+        TransformLayer:
+            id: scroll_layer
+            size_hint:None, None
+            size: root.size
+            pos: root.pos
+
+            GridLayout:
+                id: item_list
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+
+
+
+
+
+<CountyHeader>:
+    Label:
+        text: root.text
+        id: name_label
+        color: 0,0,0,1
+        font_size: 130
+        font_name: "fonts/Gotham-Bold.ttf"
+        size: self.texture_size
+        pos: 0,780
+    Label:
+        color: 0,0,0,1
+        text: "COUNTY"
+        font_size: 80
+        font_name: "fonts/Gotham-Book.ttf"
+        size: self.texture_size
+        pos: name_label.width+ 25,790
+
+<FactTitle>:
+    color: 0,0,0,1
+    font_size: 42
+    font_name: "fonts/Gotham-Bold.ttf"
+    size_hint_x: None
+    text_size: self.width, None
+    halign:'left'
+    width: 300
+
+<FactText>:
+    color: 0,0,0,1
+    font_size: 42
+    text_size: self.width, None
+    halign:'left'
+    font_name: "fonts/Gotham-Book.ttf"
+
+
+
+
+<CountyInfoWiki>:
+    BoxLayout:
+        padding: 100
+        orientation: 'vertical'
+        RelativeLayout:
+            Widget:
+                CountyHeader:
+                    text: root.county_name
+
+                Image:
+                    size: 400,400
+                    pos: 0, 300
+
+                GridLayout:
+                    cols: 2
+                    size: 1000,400
+                    pos: 500, 300
+
+                    FactTitle:
+                        text: "County Seat: "
+                    FactText:
+                        text: root.county_seat
+
+                    FactTitle:
+                        text: "County Size: "
+                    FactText:
+                        text: root.county_size
+
+                    FactTitle:
+                        text: "Population: "
+                    FactText:
+                        text: root.population
+
+                    FactTitle:
+                        text: "Established: "
+                    FactText:
+                        text: root.established
+
+
+
+
+
 
 WikiDisplay
     id: wiki
     county_list: county_list
+    county_map: county_map
+    county_info: county_info
+
 
     TopScreen:
         background: 'apps/countywiki/bg-top.png'
+
+        CountyInfoWiki:
+            id: county_info
+            selected_county: root.selected_county
+            display: root
+            size_hint:1,1
 
 
     BottomScreen:
         id: bottom_screen
         background: 'apps/countywiki/bg-bottom.png'
 
+        Image:
+            source: 'apps/countywiki/bg-bottom.png'
+
         BackToMenuButton:
             y: 1080 - self.height
 
+        CountyMap:
+            selected_county: root.selected_county
+            display: root
+            id: county_map
+            size_hint: None, None
+            size: 1920-400,1080
+
         CountyList:
+            selected_county: root.selected_county
+            display: root
             id: county_list
             size_hint:None, None
             size: 400,1080
