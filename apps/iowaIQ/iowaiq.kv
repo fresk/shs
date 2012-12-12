@@ -290,8 +290,8 @@
 		background_color: (1, 0, 0, 1)
         background_down: 'ui/screens/results/submit_down.png'
         background_normal: 'ui/screens/results/submit.png'
-		on_release: app.submit_score(nickinput.text, cityinput.text) if min([len(x.strip('| ')) for x in (nickinput.text, cityinput.text)]) > 2 else None
-		opacity: 1 if min([len(x.strip('| ')) for x in (nickinput.text, cityinput.text)]) > 2 else 0
+		on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid) else None
+		opacity: 1 if (nickinput.is_valid and cityinput.is_valid) else 0
         right: root.right - dp(50)
         size: dp(320), dp(100)
         size_hint: None, None

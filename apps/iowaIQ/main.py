@@ -24,7 +24,7 @@ from kivy.animation import Animation
 from kivy.graphics import Fbo, Canvas, Color, Quad, Translate
 from kivy.properties import (
     BooleanProperty, NumericProperty, StringProperty, ObjectProperty,
-    ListProperty)
+    ListProperty, DictProperty, AliasProperty)
 
 from math import sin, pi
 from viewport import Viewport
@@ -70,18 +70,24 @@ class StringIndex(object):
 
 
 class CompletionButton(Button):
-    pass
+    data = DictProperty()
 
 class CompletionLabel(Label):
     pass
 
 class CustomTextInput(Label):
     rawtext = StringProperty()
+    data = DictProperty({})
     _keyboard = ObjectProperty(allownone=True)
     autocomplete_source = StringProperty()
     autocomplete_placeholder = ObjectProperty()
     autocomplete_hidelist = ListProperty()
+    autocomplete_minkeys = NumericProperty(0)
     _autocomplete_index = ObjectProperty()
+
+    def _is_valid(self):
+        return len(self.data.keys()) >= self.autocomplete_minkeys and len(self.rawtext) > 2
+    is_valid = AliasProperty(_is_valid, None, bind=('data', 'rawtext'))
 
     def on_touch_down(self, touch):
         if self.opacity == 0:
@@ -108,12 +114,14 @@ class CustomTextInput(Label):
     def _on_key_down(self, keyboard, keycode, text, modifiers):
         if keycode[1] == 'backspace':
             self.rawtext = self.rawtext[:-1]
+            self.data = {}
         elif keycode[1] == 'escape':
             keyboard.release()
         elif keycode[1] == 'delete':
             pass
         elif len(text):
             self.rawtext += text
+            self.data = {}
         return True
 
     def _on_open(self):
@@ -136,12 +144,15 @@ class CustomTextInput(Label):
 
     def on_autocomplete_source(self, instance, value):
         places = []
+        self._rows = {}
         with open(value, 'rb') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                place = "{0}, {1}\n".format(row['name'], row['state_code'])
+                place = "{0}, {1}".format(row['name'], row['state_code'])
+                self._rows[place] = row
                 places.append(place)
         self._autocomplete_index = StringIndex(places)
+        self.autocomplete_minkeys = 2
 
     def on_rawtext(self, instance, value):
         if not self.autocomplete_source:
@@ -156,13 +167,15 @@ class CustomTextInput(Label):
         ph.clear_widgets()
         ph.add_widget(CompletionLabel(text='Do you mean?'))
         for text in completions[:3]:
-            btn = CompletionButton(text=text)
+            btn = CompletionButton(text=text, data=self._rows.get(text, {}))
             btn.bind(on_release=self._set_text)
             ph.add_widget(btn)
 
     def _set_text(self, instance):
         if self._keyboard:
+            print 'SET TEXT FROM', instance, instance.data
             self.rawtext = instance.text
+            self.data = instance.data
             self._keyboard.release()
 
 
@@ -466,7 +479,7 @@ class IowaIQApp(App):
         self.screen_manager.add_widget(QuestionScreen(name='question'))
         self.screen_manager.add_widget(AnswerScreen(name='answer'))
         self.screen_manager.add_widget(ResultsScreen(name='results'))
-        self.screen_manager.add_widget(StandingsScreen(name='results'))
+        self.screen_manager.add_widget(StandingsScreen(name='standings'))
         self.viewport.add_widget(self.screen_manager)
 
         self.status_bar = StatusBar()
@@ -552,15 +565,22 @@ class IowaIQApp(App):
     #
 
     def submit_score(self, nick, city):
-        score = self.status_bar.score
-        body = urllib.urlencode(dict(nick=nick, city=city, score=score))
+        d = dict(
+            nick=nick.rawtext,
+            city=city.data['name'],
+            county=city.data['county'],
+            state=city.data['state'],
+            state_code=city.data['state_code'],
+            score=self.status_bar.score)
+        body = urllib.urlencode(d)
         self._show_progression('Submitting score...', 0, 1)
         self._req = UrlRequest(self.config.get('app', 'score'),
                 req_body=body,
                 on_success=self._on_submit_success,
-                on_progress=self._on_submit_failed)
+                on_error=self._on_submit_failed, debug=True)
 
     def _on_submit_success(self, req, result):
+        print 'SUCCESS', result
         self._hide_progression()
         self.screen_manager.current = 'standings'
 
@@ -576,7 +596,7 @@ class IowaIQApp(App):
         self._req = UrlRequest(self.config.get('app', 'questions'),
             on_success=self._pull_update_success,
             on_error=self._pull_update_failed,
-            on_progress=self._progress_update
+            on_progress=self._progress_update,
         )
 
     def _progress_update(self, req, cursize, totalsize):
