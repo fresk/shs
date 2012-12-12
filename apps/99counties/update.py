@@ -81,8 +81,8 @@ class JsonDataLoader(object):
         return rv
 
 print "updating history scrachtes..."
-scratches = JsonDataLoader("scratches")
-scratches.save('scratches.json')
+#scratches = JsonDataLoader("scratches")
+#scratches.save('scratches.json')
 
 print "updating county wiki..."
 countywiki = JsonDataLoader("countywiki")

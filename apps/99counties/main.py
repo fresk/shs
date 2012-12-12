@@ -3,6 +3,7 @@ import sys
 import imp
 import kivy
 import glob
+import json
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.lang import Builder
@@ -15,6 +16,7 @@ from dualdisplay import DualDisplay
 from imagebutton import ImageButton
 from kivy.cache import Cache
 from exhibit import show_menu, ChildApp
+from objloader import ObjFile
 import gc
 
 
@@ -77,7 +79,27 @@ class ExhibitApp(App):
         self.app_screen = Intro(app=self)
         self.root.add_widget(self.app_screen)
         self.load_app_list()
+        self.load_data()
         return self.root
+
+    def load_data(self, *args):
+        print "laoding obj model"
+        self.map_model = ObjFile("data/map/iowa.obj")
+
+        print "laoding mesh ids"
+        mesh_ids = json.load(open('mesh_ids.json', 'r'))
+
+        print "laoding county data"
+        county_wiki = json.load(open('countywiki.json'))
+
+        print "mixing shit together..."
+        self.counties = {}
+        for c in county_wiki:
+            n = c['name'].replace("'","").replace("-", "_")
+            mid = mesh_ids[n]
+            c['name'] = n
+            self.counties[n] = c
+            self.counties[n]['mesh'] = self.map_model.objects[mid]
 
     def load_app_list(self):
         for folder in glob.glob("apps/*"):

@@ -14,6 +14,129 @@ import json
 from math import sin, cos
 from kivy.graphics.opengl import glReadPixels, GL_RGBA, GL_UNSIGNED_BYTE
 
+class CountyModel(Widget):
+    display = ObjectProperty(None)
+    selected_county = StringProperty("polk")
+    texture = ObjectProperty(None, allownone=True)
+
+    def __init__(self, **kwargs):
+        self.counties = App.get_running_app().counties
+        self.canvas = Canvas()
+        with self.canvas:
+            fbo_size = self.width, self.height
+            self.fbo = Fbo(size=fbo_size, with_depthbuffer=True, do_clear=True)
+            self.fbo_color = Color(1, 1, 1, 1)
+            self.fbo_rect = Rectangle()
+
+        with self.fbo:
+            self.cb = Callback(self.setup_gl_context)
+            self.render_ctx = RenderContext()
+            self.cb2 = Callback(self.reset_gl_context)
+
+        with self.render_ctx:
+            PushMatrix()
+            self.setup_scene()
+            PopMatrix();
+
+        self.texture = self.fbo.texture
+        super(CountyModel, self).__init__(**kwargs)
+        _vs = open('data/shaders/county.vs', 'r').read()
+        _fs = open('data/shaders/county.fs', 'r').read()
+        print "VERTEX: \n", _vs, "\n\n"
+        print "FRAGMENT: \n", _fs, "\n\n"
+        self.render_ctx.shader.vs = _vs
+        self.render_ctx.shader.fs = _fs
+        Clock.schedule_interval(self.update_glsl, 1/30.0)
+
+    def setup_scene(self):
+        PushMatrix()
+        Color(1,1,1,1)
+        mesh = self.counties['des_moines']['mesh']
+        cx, cy, cz = mesh.bounds.center
+
+        Translate(0,0,-3)
+        self.rot2 = Rotate(0, 1,0,0)
+        self.rot = Rotate(0, 0,1,0)
+        Rotate(0, 1,0,0)
+        print cz
+        self.mi = MatrixInstruction()
+        self.trans = Translate(-cx, -cy, 0)
+        self.mesh = Mesh(
+            vertices=mesh.vertices,
+            indices=mesh.indices,
+            fmt = mesh.vertex_format,
+            mode = 'triangles',
+            source = "data/map/iowa_land.png"
+        )
+        PopMatrix()
+
+    def on_selected_county(self, *args):
+        county = self.counties.get(self.selected_county, self.counties['polk'])
+        m = county['mesh']
+        self.mesh.vertices = m.vertices
+        self.mesh.indices = m.indices
+        cx,cy,cz = m.bounds.center
+        self.trans.x = -cx
+        self.trans.y = -cy
+
+
+    def on_size(self, instance, value):
+        self.fbo.size = value
+        self.texture = self.fbo.texture
+        self.fbo_rect.size = self.size
+        self.pos = self.pos
+
+    def on_pos(self, instance, value):
+        self.fbo_rect.pos = value
+
+
+    def on_texture(self, instance, value):
+        self.fbo_rect.texture = value
+
+    def setup_gl_context(self, *args):
+        self.fbo.clear_buffer()
+        glEnable(GL_DEPTH_TEST)
+
+    def reset_gl_context(self, *args):
+        glDisable(GL_DEPTH_TEST)
+
+
+    def update_glsl(self, *largs):
+        va = (self.width/float(self.height)) /2.0
+        self.render_ctx['time'] = t = Clock.get_boottime()
+        self.render_ctx['resolution'] = map(float, self.size)
+        self.render_ctx['projection_mat'] = Matrix().view_clip(-va,va,-.5,.5, .95,100, 1)
+        self.render_ctx['light_pos'] = [0, 0.0, 0]
+        self.rot.angle = sin(t*0.5)* 15.0
+        self.rot2.angle = sin(t*0.3)* 9.0
+        self.mi.matrix = Matrix().scale(5,5,1).scale(6,6,6)
+        self.cb.ask_update()
+        self.render_ctx.ask_update()
+        self.fbo.ask_update()
+        self.canvas.ask_update()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class CountyMap(Widget):
     display = ObjectProperty(None)
@@ -28,8 +151,7 @@ class CountyMap(Widget):
         _vs = kwargs.pop('vs', "")
         _fs = kwargs.pop('fs', "")
 
-        map_obj = resource_find("data/map/iowa.obj")
-        self.scene = ObjFile(map_obj)
+        self.counties = App.get_running_app().counties
 
         self.canvas = Canvas()
         with self.canvas:
@@ -61,32 +183,16 @@ class CountyMap(Widget):
             self.setup_scene_picking()
             PopMatrix();
 
-        # wait that all the instructions are in the canvas to set texture
         self.texture = self.fbo.texture
         super(CountyMap, self).__init__(**kwargs)
-
-        self._p_render_ctx.shader.vs = open(resource_find('data/shaders/picking.vs')).read()
-        self._p_render_ctx.shader.fs = open(resource_find('data/shaders/picking.fs')).read()
-
 
         #must be set in right order on some gpu, or fs will fail linking
         self.vs = open(resource_find("data/shaders/map.vs")).read()
         self.fs = open(resource_find("data/shaders/map.fs")).read()
+        self._p_render_ctx.shader.vs = open(resource_find('data/shaders/picking.vs')).read()
+        self._p_render_ctx.shader.fs = open(resource_find('data/shaders/picking.fs')).read()
+
         Clock.schedule_interval(self.update_glsl, 1 / 60.)
-
-    def add_widget(self, *largs):
-        # trick to attach graphics instructino to fbo instead of canvas
-        canvas = self.canvas
-        self.canvas = self.render_ctx
-        ret = super(CountyMap, self).add_widget(*largs)
-        self.canvas = canvas
-        return ret
-
-    def remove_widget(self, *largs):
-        canvas = self.canvas
-        self.canvas = self.render_ctx
-        super(CountyMap, self).remove_widget(*largs)
-        self.canvas = canvas
 
     def on_size(self, instance, value):
         self.fbo.size = value
@@ -106,13 +212,6 @@ class CountyMap(Widget):
 
     def on_p_texture(self, instance, value):
         self._p_fbo_rect.texture = value
-
-    def mesh2county(self, meshname):
-        v = meshname.replace("'", "").split("_")
-        if len(v) == 3:
-            return v[1]
-        else:
-            return v[1]+"_"+v[2]
 
     def get_pixel(self, x, y):
          self._p_fbo.bind()
@@ -153,14 +252,13 @@ class CountyMap(Widget):
         Color(1,1,1,1)
         self.picking_colors = {}
         c = 0.0 #f=lambda a,l:min(l,key=lambda x:abs(x-a))
-        for name in sorted(self.scene.objects.keys()):
-            mesh = self.scene.objects[name]
+        for name in sorted(self.counties.keys()):
+            mesh = self.counties[name]['mesh']
             self.tex_binding_1 = BindTexture(source=self.map_texture, index=1)
             self.render_ctx['texture1'] = 1
             PushMatrix()
-            cn = self.mesh2county(name)
-            self.mesh_transforms[cn] = MatrixInstruction()
-            self.mesh_colors[cn] = Color(1,1,1,1)
+            self.mesh_transforms[name] = MatrixInstruction()
+            self.mesh_colors[name] = Color(1,1,1,1)
             self.meshes[name] = Mesh(
                 vertices=mesh.vertices,
                 indices=mesh.indices,
@@ -185,8 +283,8 @@ class CountyMap(Widget):
         Color(1,1,1,1)
         self.picking_colors = {}
         c = 0.0 #f=lambda a,l:min(l,key=lambda x:abs(x-a))
-        for name in sorted(self.scene.objects.keys()):
-            mesh = self.scene.objects[name]
+        for name in sorted(self.counties.keys()):
+            mesh = self.counties[name]['mesh']
             Color(c,c,1,1)
             PushMatrix()
             self._p_mesh_transforms[name] = MatrixInstruction()
@@ -197,8 +295,8 @@ class CountyMap(Widget):
                 mode = 'triangles',
             )
             PopMatrix()
-            self.picking_colors[int(c*255)] = self.mesh2county(name)
-            c += 1.0/len(self.scene.objects)
+            self.picking_colors[int(c*255)] = name
+            c += 1.0/len(self.counties)
         Color(1,1,1,1)
 
     def setup_gl_context(self, *args):

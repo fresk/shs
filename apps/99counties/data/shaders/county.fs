@@ -31,14 +31,14 @@ void main (void){
     vec3 v_normal = normalize(normal_vec);//
     //vec3 v_normal = normalize(texture2D(texture0, tex_coord0).xzy);
     //mat4  nmat = transpose(inverse(modelview_mat));
-    mat4  nmat = modelview_mat; //transpose(inverse(modelview_mat));
-    v_normal = normalize(vec3( nmat* vec4(v_normal.xyz, 0.0)));
+    //mat4 nmat = modeview_mat;
+    //v_normal = normalize(vec3( nmat* vec4(v_normal.xyz, 0.0)));
 
     vec3 v_eye = normalize(eye_vec);
     vec3 v_light = normalize(light_vec);
 
     //diffuse light
-    float diffuse_dot = dot(v_normal, v_light);
+    float diffuse_dot = dot(normalize(v_normal), v_light);
     diffuse += LIGHT_COLOR * clamp(diffuse_dot, 0.0, 1.0);
 
     //vec3 half_vec = dot(v_normal, normalize(v_eye + v_light));
@@ -46,6 +46,6 @@ void main (void){
     //specular += spec_color * pow(clamp(half_vec, 0.0,1.0), 16.0);
     //vec4 col = frag_color;
     vec4 col = texture2D(texture1, tex_coord0) * frag_color;
-    gl_FragColor = vec4(clamp(col.rgb * diffuse + AMBIENT, 0.0, 1.0), frag_color.a);
+    gl_FragColor = vec4(clamp(col.rgb* diffuse + AMBIENT, 0.0, 1.0), frag_color.a);
 }
 
