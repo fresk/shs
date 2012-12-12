@@ -60,7 +60,7 @@ class CountyModel(Widget):
         Rotate(0, 1,0,0)
         print cz
         self.mi = MatrixInstruction()
-        Translate(-cx, -cy, 0)
+        self.trans = Translate(-cx, -cy, 0)
         self.mesh = Mesh(
             vertices=mesh.vertices,
             indices=mesh.indices,
@@ -71,10 +71,13 @@ class CountyModel(Widget):
         PopMatrix()
 
     def on_selected_county(self, *args):
-        m = self.counties[self.selected_county]['mesh']
+        county = self.counties.get(self.selected_county, self.counties['polk'])
+        m = county['mesh']
         self.mesh.vertices = m.vertices
         self.mesh.indices = m.indices
-        self.mesh.ask_update()
+        cx,cy,cz = m.bounds.center
+        self.trans.x = -cx
+        self.trans.y = -cy
 
 
     def on_size(self, instance, value):
