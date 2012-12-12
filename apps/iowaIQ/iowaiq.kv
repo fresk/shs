@@ -1,3 +1,4 @@
+#:kivy 1.4
 
 <Label>:
     font_name: 'ui/fonts/Gotham-Book.ttf'
@@ -286,22 +287,26 @@
 
     Button:
         id: submit_btn
-        size: dp(430), dp(100)
-        size_hint: None, None
-        background_normal: 'ui/screens/results/donebtn.png'
-        background_down: 'ui/screens/results/donebtn_down.png'
-        y: '100dp'
+		background_color: (1, 0, 0, 1)
+        background_down: 'ui/screens/results/submit_down.png'
+        background_normal: 'ui/screens/results/submit.png'
+		on_release: app.submit_score(nickinput.text, cityinput.text) if min([len(x.strip('| ')) for x in (nickinput.text, cityinput.text)]) > 2 else None
+		opacity: 1 if min([len(x.strip('| ')) for x in (nickinput.text, cityinput.text)]) > 2 else 0
         right: root.right - dp(50)
+        size: dp(320), dp(100)
+        size_hint: None, None
+        y: '150dp'
 
     Button:
-        text: "Don't submit score - start over."
-        background_normal: 'ui/images/trans.png'
-        background_down: 'ui/images/trans.png'
+		background_color: (0, 1, 0, 1)
+        background_down: 'ui/screens/results/nosubmit_down.png'
+        background_normal: 'ui/screens/results/nosubmit.png'
         on_release: app.screen_manager.current = 'intro'
-        size: dp(420), dp(50)
-        size_hint: None, None
-        top: submit_btn.y - dp(20)
         right: submit_btn.right
+        size: dp(320), dp(100)
+        size_hint: None, None
+        text: "Don't submit score - start over."
+        top: submit_btn.y - dp(20)
 
 
 <ProgressionView>:
