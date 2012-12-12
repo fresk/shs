@@ -1,6 +1,7 @@
 import random
 import json
 import csv
+import urllib
 from jsondata import JsonData
 
 
@@ -411,10 +412,6 @@ class AnswerScreen(Screen):
         self.image_layout.add_images(self.images)
 
 
-
-
-
-
 class ResultsScreen(Screen):
     text = StringProperty("")
 
@@ -425,6 +422,10 @@ class ResultsScreen(Screen):
     def fadeout(self, fadelist):
         a = Animation(color=(1, 1, 1, 1), d=0.3, t='out_quart')
         [a.start(x) for x in fadelist]
+
+
+class StandingsScreen(Screen):
+    pass
 
 
 class StatusBar(RelativeLayout):
@@ -465,6 +466,7 @@ class IowaIQApp(App):
         self.screen_manager.add_widget(QuestionScreen(name='question'))
         self.screen_manager.add_widget(AnswerScreen(name='answer'))
         self.screen_manager.add_widget(ResultsScreen(name='results'))
+        self.screen_manager.add_widget(StandingsScreen(name='results'))
         self.viewport.add_widget(self.screen_manager)
 
         self.status_bar = StatusBar()
@@ -544,6 +546,27 @@ class IowaIQApp(App):
 
     def on_pause(self):
         return True
+
+    #
+    # Score part
+    #
+
+    def submit_score(self, nick, city):
+        score = self.status_bar.score
+        body = urllib.urlencode(dict(nick=nick, city=city, score=score))
+        self._show_progression('Submitting score...', 0, 1)
+        self._req = UrlRequest(self.config.get('app', 'score'),
+                req_body=body,
+                on_success=self._on_submit_success,
+                on_progress=self._on_submit_failed)
+
+    def _on_submit_success(self, req, result):
+        self._hide_progression()
+        self.screen_manager.current = 'standings'
+
+    def _on_submit_failed(self, req, result):
+        self._hide_progression()
+        self.screen_manager.current = 'intro'
 
     # Update part
     # Manage the update of questions.json + associated data
