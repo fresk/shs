@@ -1,12 +1,7 @@
-<BackToMenuButton>:
-    y: 1080 - self.height
-    background_normal: 'btn-back-to-menu.png'
-    background_down: 'btn-back-to-menu_down.png'
 
 <ScratchBackButton>:
     y: 1080 - self.height
-    background_normal: 'back.png'
-    background_down: 'back_down.png'
+    source: 'apps/scratch/back.png'
     on_release: self.display.show_menu()
 
 
@@ -14,32 +9,12 @@ ScratchDualDisplay
     id: display
     menu: menu_layout
 
-
     TopScreen:
-        background: 's-bg-top.png'
-
-        #Image:
-        #    source: display.fact_img
-
-
-        #AlphaMaskedImage:
-        #    id: top_mask
-        #    source: "black.jpg"
-
+        background: 'apps/scratch/s-bg-top.png'
 
     BottomScreen:
         id: bottom_screen
-        background: 's-bg-bottom.png'
-
-        #Image:
-        #    source: "historic.jpg"
-        #    opacity: 0 if root.opacity < 1.0 else 1.0
-
-        #ScratchImage:
-        #    id: bottom_scratch
-        #    opacity: root.opacity
-        #    source: "present.jpg"
-
+        background: 'app/scratch/s-bg-bottom.png'
 
         HistoryScratchMenu:
             id: menu_layout
@@ -51,6 +26,3 @@ ScratchDualDisplay
                 size_hint: None, None
                 height: 100
                 width: root.width-(menu_layout.padding*2)
-
-        BackToMenuButton
-

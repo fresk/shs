@@ -4,15 +4,13 @@
     play: True
 
 <MenuAppButton>:
-    background_normal: 'apps/%s/icon.png' % self.app_name
-    background_down: 'apps/%s/icon_down.png' % self.app_name
+    source: 'apps/%s/icon.png' % self.app_name
     on_release: app.start_app(self.app_name)
 
 <BackToMenuButton>:
     y: 1080 - self.height
     on_release: app.show_menu()
-    background_normal: 'data/img/btn-back-to-menu.png'
-    background_down: 'data/img/btn-back-to-menu_down.png'
+    source: 'data/img/btn-back-to-menu.png'
 
 <TopScreen>:
     background: "data/img/menu-top-bg.png"

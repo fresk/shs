@@ -244,15 +244,10 @@ class HistoryScratchMenu(F.StackLayout):
     screen = ObjectProperty(None)
 
     def on_source(self, *args):
-        print "ON_SROUCE", self.source
         fp = open(resource_find(self.source), 'r')
         self.data = json.load(fp)
         for item in self.data:
-            print "LOADING ITEM", item
-            btn = ImageButton(
-                background_normal=item['img_thumb'],
-                background_down=item['img_thumb'],
-            )
+            btn = ImageButton(source=item['img_thumb'])
             btn.bind(on_release=partial(self.display.start_scratch, item))
             self.add_widget(btn)
 

@@ -71,6 +71,9 @@ class ExhibitRoot(F.Widget):
 
 
 class ExhibitApp(App):
+    selected_county = StringProperty("polk")
+
+
     def build(self):
         self._child_app = None
         self.transitioning = False
@@ -89,6 +92,10 @@ class ExhibitApp(App):
         print "laoding mesh ids"
         mesh_ids = json.load(open('mesh_ids.json', 'r'))
 
+
+        print "laoding historix sites"
+        historic_sites = json.load(open('historicsites.json', 'r'))
+
         print "laoding county data"
         county_wiki = json.load(open('countywiki.json'))
 
@@ -100,6 +107,13 @@ class ExhibitApp(App):
             c['name'] = n
             self.counties[n] = c
             self.counties[n]['mesh'] = self.map_model.objects[mid]
+
+        self.historic_sites = {}
+        for site in historic_sites:
+            n = site['name'].replace("'","").replace("-", "_")
+            site['name']= n
+            self.historic_sites[n] = site
+
 
     def load_app_list(self):
         for folder in glob.glob("apps/*"):
