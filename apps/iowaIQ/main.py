@@ -1,6 +1,5 @@
 import random
 import json
-import csv
 import urllib
 from jsondata import JsonData
 
@@ -145,14 +144,15 @@ class CustomTextInput(Label):
         a.start(self.autocomplete_placeholder)
 
     def on_autocomplete_source(self, instance, value):
-        places = []
-        self._rows = {}
-        with open(value, 'rb') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                place = "{0}, {1}".format(row['name'], row['state_code'])
-                self._rows[place] = row
-                places.append(place)
+        data = json.load(open('ui/uscities.json', 'r'))
+        places = data['places']
+        self._rows = data['rows']
+        #with open(value, 'rb') as f:
+        #    reader = csv.DictReader(f)
+        #    for row in reader:
+        #        place = "{0}, {1}".format(row['name'], row['state_code'])
+        #        self._rows[place] = row
+        #        places.append(place)
         self._autocomplete_index = StringIndex(places)
         self.autocomplete_minkeys = 2
 
@@ -654,7 +654,7 @@ class IowaIQApp(App):
         # second step, download all the outdated resources
         self._questions_fn = join(self.get_data_dir(), 'questions.json')
         with open(self._questions_fn, 'w') as fd:
-            json.dump(result, fd)
+            json.dump(result[:5], fd)
 
         self._jsondata = JsonData('questions.json',
             on_success=self._pull_update_done,
@@ -687,7 +687,6 @@ class IowaIQApp(App):
         if hasattr(self, '_progression'):
             self._progression.dismiss()
             del self._progression
-
 
 APP = IowaIQApp()
 APP.run()
