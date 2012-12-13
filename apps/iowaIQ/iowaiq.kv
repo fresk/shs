@@ -79,7 +79,7 @@
         Button:
             background_normal: 'ui/screens/intro/viewstandings_btn.png'
             background_down: 'ui/screens/intro/viewstandings_btn_down.png'
-            on_release: app.start_quiz()
+            on_release: app.start_viewstandings()
 
 
 
@@ -290,8 +290,8 @@
 		background_color: (1, 0, 0, 1)
         background_down: 'ui/screens/results/submit_down.png'
         background_normal: 'ui/screens/results/submit.png'
-		on_release: app.submit_score(nickinput.text, cityinput.text) if min([len(x.strip('| ')) for x in (nickinput.text, cityinput.text)]) > 2 else None
-		opacity: 1 if min([len(x.strip('| ')) for x in (nickinput.text, cityinput.text)]) > 2 else 0
+		on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid) else None
+		opacity: 1 if (nickinput.is_valid and cityinput.is_valid) else 0
         right: root.right - dp(50)
         size: dp(320), dp(100)
         size_hint: None, None
@@ -392,3 +392,149 @@
 
 <CompletionButton>:
     background_color: 0, 0, 0, 0
+
+
+<StandingsScreen>:
+	container: container
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'ui/screens/standings/bg.png'
+
+    Label:
+        id: title
+        size_hint: 1, None
+        text: 'Standings'
+        height: '100dp'
+        top: root.top - dp(10)
+        valign: 'bottom'
+        halign: 'left'
+        font_name: 'ui/fonts/Gotham-Bold.ttf'
+        font_size: '80dp'
+
+	Button:
+		top: root.top - dp(10)
+		right: root.right - dp(20)
+        size: dp(225), dp(100)
+		size_hint: None, None
+		border: 0, 0, 0, 0
+		background_normal: 'ui/screens/standings/returnbtn.png'
+		background_down: 'ui/screens/standings/returnbtn_down.png'
+		on_release: app.screen_manager.current = 'intro'
+
+
+	GridLayout:
+		height: '50dp'
+		size_hint: 1, None
+		rows: 1
+        top: title.y - dp(5)
+
+
+		Label:
+			text: 'view by:'
+			size_hint_x: None
+			width: '150sp'
+			font_size: '22sp'
+
+		Button:
+			text: 'NICK'
+			background_color: (0, 0, 0, 0)
+			on_release: root.tp = 'nick'
+			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'nick' else 'Book')
+
+		Button:
+			text: 'CITY'
+			background_color: (0, 0, 0, 0)
+			on_release: root.tp = 'city'
+			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'city' else 'Book')
+
+		Button:
+			text: 'COUNTY'
+			background_color: (0, 0, 0, 0)
+			on_release: root.tp = 'county'
+			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'county' else 'Book')
+
+		Button:
+			text: 'STATE'
+			background_color: (0, 0, 0, 0)
+			on_release: root.tp = 'state'
+			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'state' else 'Book')
+
+	BoxLayout:
+		id: container
+		size_hint: None, None
+		size: root.width - dp(100), root.height - dp(250)
+		pos: root.x + dp(50), root.y + dp(50)
+
+<NickStandingEntry>:
+	Label:
+		text: root.entry.get('nick', '')
+		font_name: 'ui/fonts/Gotham-Bold.ttf'
+		halign: 'left'
+		size_hint_x: None
+		width: '150dp'
+	Label:
+		text: root.entry.get('city', '')
+		halign: 'left'
+	Label:
+		text: root.entry.get('county', '')
+		halign: 'left'
+	Label:
+		text: root.entry.get('state_code', '')
+		size_hint_x: None
+		width: '100dp'
+		halign: 'left'
+	Label:
+		text: root.entry.get('score', '')
+		size_hint_x: None
+		width: '120dp'
+		halign: 'center'
+
+<CityStandingEntry>:
+	Label:
+		text: root.entry.get('city', '')
+		font_name: 'ui/fonts/Gotham-Bold.ttf'
+		halign: 'left'
+	Label:
+		text: root.entry.get('county', '')
+		halign: 'left'
+	Label:
+		text: root.entry.get('state_code', '')
+		size_hint_x: None
+		width: '100dp'
+		halign: 'left'
+	Label:
+		text: root.entry.get('score', '')
+		size_hint_x: None
+		width: '120dp'
+		halign: 'center'
+
+<CountyStandingEntry>:
+	Label:
+		text: root.entry.get('county', '')
+		font_name: 'ui/fonts/Gotham-Bold.ttf'
+		halign: 'left'
+	Label:
+		text: root.entry.get('state_code', '')
+		size_hint_x: None
+		width: '100dp'
+		halign: 'left'
+	Label:
+		text: root.entry.get('score', '')
+		size_hint_x: None
+		width: '120dp'
+		halign: 'center'
+
+<StateStandingEntry>:
+	Label:
+		text: root.entry.get('state', '')
+		font_name: 'ui/fonts/Gotham-Bold.ttf'
+		halign: 'left'
+	Label:
+		text: root.entry.get('score', '')
+		size_hint_x: None
+		width: '120dp'
+		halign: 'center'

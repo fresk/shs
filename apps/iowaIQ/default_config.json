@@ -1,6 +1,7 @@
 {
   "app": {
     "questions": "http://www.fresksite.net/dcadb/wp-content/themes/dca/api/questions.php",
-	"score": "http://www.fresksite.net/dcadb/wp-content/themes/dca/api/scores.php"
+	"standings": "http://www.fresksite.net/dcadb/wp-content/themes/dca/api/standings.php",
+	"score": "http://www.fresksite.net/dcadb/wp-content/themes/dca/api/score.php"
   }
 }

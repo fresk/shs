@@ -7,6 +7,7 @@ from jsondata import JsonData
 
 from os import makedirs
 from os.path import join, exists, expanduser
+from functools import partial
 from kivy.app import App
 from kivy.uix.image import AsyncImage
 from kivy.uix.widget import Widget
@@ -15,8 +16,9 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.screenmanager import (Screen, ScreenManager, SlideTransition,
-        FadeTransition, WipeTransition, SwapTransition)
+from kivy.uix.listview import ListView
+from kivy.adapters.listadapter import ListAdapter
+from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
 from kivy.network.urlrequest import UrlRequest
 from kivy.utils import platform
 from kivy.clock import Clock
@@ -24,7 +26,7 @@ from kivy.animation import Animation
 from kivy.graphics import Fbo, Canvas, Color, Quad, Translate
 from kivy.properties import (
     BooleanProperty, NumericProperty, StringProperty, ObjectProperty,
-    ListProperty)
+    ListProperty, DictProperty, AliasProperty, OptionProperty)
 
 from math import sin, pi
 from viewport import Viewport
@@ -70,18 +72,24 @@ class StringIndex(object):
 
 
 class CompletionButton(Button):
-    pass
+    data = DictProperty()
 
 class CompletionLabel(Label):
     pass
 
 class CustomTextInput(Label):
     rawtext = StringProperty()
+    data = DictProperty({})
     _keyboard = ObjectProperty(allownone=True)
     autocomplete_source = StringProperty()
     autocomplete_placeholder = ObjectProperty()
     autocomplete_hidelist = ListProperty()
+    autocomplete_minkeys = NumericProperty(0)
     _autocomplete_index = ObjectProperty()
+
+    def _is_valid(self):
+        return len(self.data.keys()) >= self.autocomplete_minkeys and len(self.rawtext) > 2
+    is_valid = AliasProperty(_is_valid, None, bind=('data', 'rawtext'))
 
     def on_touch_down(self, touch):
         if self.opacity == 0:
@@ -108,12 +116,14 @@ class CustomTextInput(Label):
     def _on_key_down(self, keyboard, keycode, text, modifiers):
         if keycode[1] == 'backspace':
             self.rawtext = self.rawtext[:-1]
+            self.data = {}
         elif keycode[1] == 'escape':
             keyboard.release()
         elif keycode[1] == 'delete':
             pass
         elif len(text):
             self.rawtext += text
+            self.data = {}
         return True
 
     def _on_open(self):
@@ -136,12 +146,15 @@ class CustomTextInput(Label):
 
     def on_autocomplete_source(self, instance, value):
         places = []
+        self._rows = {}
         with open(value, 'rb') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                place = "{0}, {1}\n".format(row['name'], row['state_code'])
+                place = "{0}, {1}".format(row['name'], row['state_code'])
+                self._rows[place] = row
                 places.append(place)
         self._autocomplete_index = StringIndex(places)
+        self.autocomplete_minkeys = 2
 
     def on_rawtext(self, instance, value):
         if not self.autocomplete_source:
@@ -156,13 +169,15 @@ class CustomTextInput(Label):
         ph.clear_widgets()
         ph.add_widget(CompletionLabel(text='Do you mean?'))
         for text in completions[:3]:
-            btn = CompletionButton(text=text)
+            btn = CompletionButton(text=text, data=self._rows.get(text, {}))
             btn.bind(on_release=self._set_text)
             ph.add_widget(btn)
 
     def _set_text(self, instance):
         if self._keyboard:
+            print 'SET TEXT FROM', instance, instance.data
             self.rawtext = instance.text
+            self.data = instance.data
             self._keyboard.release()
 
 
@@ -423,9 +438,41 @@ class ResultsScreen(Screen):
         a = Animation(color=(1, 1, 1, 1), d=0.3, t='out_quart')
         [a.start(x) for x in fadelist]
 
+class NickStandingEntry(BoxLayout):
+    entry = DictProperty()
+class CityStandingEntry(BoxLayout):
+    entry = DictProperty()
+class CountyStandingEntry(BoxLayout):
+    entry = DictProperty()
+class StateStandingEntry(BoxLayout):
+    entry = DictProperty()
 
 class StandingsScreen(Screen):
-    pass
+    tp = OptionProperty('nick', options=('nick', 'city', 'county', 'state'))
+    container = ObjectProperty()
+    def on_transition_state(self, instance, value):
+        if value == 'in':
+            self.reload()
+
+    def reload(self):
+        App.get_running_app().load_standings(self.tp)
+
+    def on_tp(self, instance, value):
+        self.reload()
+
+    def set_standings(self, tp, result):
+        tcls = {'nick': NickStandingEntry,
+                'city': CityStandingEntry,
+                'county': CountyStandingEntry,
+                'state': StateStandingEntry}[tp]
+        args_converter = lambda index, rec: {'entry': rec}
+        adapter = ListAdapter(data=result,
+                args_converter=args_converter,
+                cls=tcls)
+        self.container.clear_widgets()
+        self.container.add_widget(ListView(adapter=adapter))
+
+
 
 
 class StatusBar(RelativeLayout):
@@ -466,14 +513,14 @@ class IowaIQApp(App):
         self.screen_manager.add_widget(QuestionScreen(name='question'))
         self.screen_manager.add_widget(AnswerScreen(name='answer'))
         self.screen_manager.add_widget(ResultsScreen(name='results'))
-        self.screen_manager.add_widget(StandingsScreen(name='results'))
+        self.screen_manager.add_widget(StandingsScreen(name='standings'))
         self.viewport.add_widget(self.screen_manager)
 
         self.status_bar = StatusBar()
         self.viewport.add_widget(self.status_bar)
 
     def start_viewstandings(self):
-        pass
+        self.screen_manager.current = 'standings'
 
     def start_quiz(self):
         self.quiz = random.sample(self.questions, 1)
@@ -552,13 +599,20 @@ class IowaIQApp(App):
     #
 
     def submit_score(self, nick, city):
-        score = self.status_bar.score
-        body = urllib.urlencode(dict(nick=nick, city=city, score=score))
+        d = dict(
+            nick=nick.rawtext,
+            city=city.data['name'],
+            county=city.data['county'],
+            state=city.data['state'],
+            state_code=city.data['state_code'],
+            score=self.status_bar.score)
+        body = urllib.urlencode(d)
         self._show_progression('Submitting score...', 0, 1)
+        headers = {'Content-type': 'application/x-www-form-urlencoded'}
         self._req = UrlRequest(self.config.get('app', 'score'),
-                req_body=body,
+                req_body=body, req_headers=headers,
                 on_success=self._on_submit_success,
-                on_progress=self._on_submit_failed)
+                on_error=self._on_submit_failed, debug=True)
 
     def _on_submit_success(self, req, result):
         self._hide_progression()
@@ -568,6 +622,19 @@ class IowaIQApp(App):
         self._hide_progression()
         self.screen_manager.current = 'intro'
 
+    def load_standings(self, tp):
+        self._req = UrlRequest(self.config.get('app', 'standings') + '?q=' + tp,
+            on_success=partial(self._on_standings_success, tp),
+            on_error=self._on_standings_error)
+
+    def _on_standings_success(self, tp, req, result):
+        self.screen_manager.current = 'standings'
+        self.screen_manager.current_screen.set_standings(tp, result)
+
+    def _on_standings_error(self, req, error):
+        pass
+
+
     # Update part
     # Manage the update of questions.json + associated data
     def load_questions(self):
@@ -576,7 +643,7 @@ class IowaIQApp(App):
         self._req = UrlRequest(self.config.get('app', 'questions'),
             on_success=self._pull_update_success,
             on_error=self._pull_update_failed,
-            on_progress=self._progress_update
+            on_progress=self._progress_update,
         )
 
     def _progress_update(self, req, cursize, totalsize):
