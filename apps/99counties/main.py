@@ -23,6 +23,7 @@ import apps.population
 import apps.scratch
 import apps.historicsites
 import apps.iowans
+import apps.hollywood
 
 
 class Intro(DualDisplay):
@@ -110,6 +111,7 @@ class ExhibitApp(App):
         self.menu_screen.add_app("scratch")
         self.menu_screen.add_app("countywiki")
         self.menu_screen.add_app("iowans")
+        self.menu_screen.add_app("hollywood")
 
         self.child_apps = {}
         self.child_apps['population'] = Builder.load_file('apps/population/ui.kv')
@@ -117,6 +119,7 @@ class ExhibitApp(App):
         self.child_apps['scratch'] = Builder.load_file('apps/scratch/ui.kv')
         self.child_apps['countywiki'] = Builder.load_file('apps/countywiki/ui.kv')
         self.child_apps['iowans'] = Builder.load_file('apps/iowans/ui.kv')
+        self.child_apps['hollywood'] = Builder.load_file('apps/hollywood/ui.kv')
 
         self.root = ExhibitRoot()
         self.show_intro()
