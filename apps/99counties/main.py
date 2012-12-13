@@ -15,14 +15,18 @@ from kivy.factory import Factory as F
 from dualdisplay import DualDisplay
 from imagebutton import ImageButton
 from kivy.cache import Cache
-from exhibit import show_menu, ChildApp
 from objloader import ObjFile
-import gc
+
+import apps.countywiki
+import apps.population
+import apps.scratch
+import apps.historicsites
+import apps.iowans
 
 
 class Intro(DualDisplay):
     def on_touch_down(self, touch):
-        show_menu()
+        App.get_running_app().show_menu()
         return True
 
     def hide(self, callback=None):
@@ -32,6 +36,11 @@ class Intro(DualDisplay):
         if callback:
             anim.bind(on_complete=callback)
         anim.start(self)
+
+
+class BackToMenuButton(ImageButton):
+    pass
+
 
 class MenuAppButton(ImageButton):
     app_name = StringProperty("")
@@ -73,33 +82,53 @@ class ExhibitRoot(F.Widget):
 class ExhibitApp(App):
     selected_county = StringProperty("polk")
 
-
     def build(self):
-        self._child_app = None
         self.transitioning = False
-        self.root = ExhibitRoot()
-        self.menu_screen = Menu(app=self)
-        self.app_screen = Intro(app=self)
-        self.root.add_widget(self.app_screen)
-        self.load_app_list()
+
         self.load_data()
+        self.intro_screen = Intro(app=self)
+        self.menu_screen = Menu(app=self)
+
+        self.menu_screen.add_app("historicsites")
+        self.menu_screen.add_app("population")
+        self.menu_screen.add_app("scratch")
+        self.menu_screen.add_app("countywiki")
+        self.menu_screen.add_app("iowans")
+
+        self.child_apps = {}
+        self.child_apps['population'] = Builder.load_file('apps/population/ui.kv')
+        self.child_apps['historicsites'] = Builder.load_file('apps/historicsites/ui.kv')
+        self.child_apps['scratch'] = Builder.load_file('apps/scratch/ui.kv')
+        self.child_apps['countywiki'] = Builder.load_file('apps/countywiki/ui.kv')
+        self.child_apps['iowans'] = Builder.load_file('apps/iowans/ui.kv')
+
+        self.root = ExhibitRoot()
+        self.show_intro()
         return self.root
+
+    def show_intro(self):
+        self.root.clear_widgets()
+        self.app_screen = self.intro_screen
+        self.root.add_widget(self.intro_screen)
 
     def load_data(self, *args):
         print "laoding obj model"
         self.map_model = ObjFile("data/map/iowa.obj")
 
         print "laoding mesh ids"
-        mesh_ids = json.load(open('mesh_ids.json', 'r'))
+        mesh_ids = json.load(open('data/mesh_ids.json', 'r'))
 
 
         print "laoding historix sites"
-        historic_sites = json.load(open('historicsites.json', 'r'))
+        historic_sites = json.load(open('resources/historicsites.json', 'r'))
 
         print "laoding county data"
-        county_wiki = json.load(open('countywiki.json'))
+        county_wiki = json.load(open('resources/countywiki.json'))
 
-        print "mixing shit together..."
+        print "laoding scratch data"
+        self.scratches = json.load(open('resources/scratches.json'))
+
+        print "prepping data structures..."
         self.counties = {}
         for c in county_wiki:
             n = c['name'].replace("'","").replace("-", "_")
@@ -114,13 +143,6 @@ class ExhibitApp(App):
             site['name']= n
             self.historic_sites[n] = site
 
-
-    def load_app_list(self):
-        for folder in glob.glob("apps/*"):
-            app_name = os.path.basename(folder)
-            if not app_name.startswith("_"):
-                self.menu_screen.add_app(app_name)
-
     def show_menu(self, *args):
         if self.transitioning:
             return
@@ -134,30 +156,15 @@ class ExhibitApp(App):
             self.app_screen = None
         self.app_screen.hide(callback=anim_done)
 
-    def load_app(self, app_name):
-        if self._child_app:
-            self.unload_app(self._child_app)
-        self._child_app = ChildApp(app_name)
-        return self._child_app
-
-    def unload_app(self, child_app):
-        app_name = child_app.name
-        child_app.unload()
-        Cache._objects['kv.image'] = {}
-        Cache.register('kv.image', timeout=10)
-        self._child_app = None
-        gc.collect()
-
     def start_app(self, app_name):
         if self.transitioning:
             return
         self.transitioning = True
-        self._child_app = self.load_app(app_name)
-        self.app_screen = self._child_app.build()
 
         def anim_done(*args):
             self.transitioning = False
             self.root.remove_widget(self.menu_screen)
+        self.app_screen = self.child_apps[app_name]
         self.root.add_widget(self.app_screen)
         self.app_screen.show(callback=anim_done)
 

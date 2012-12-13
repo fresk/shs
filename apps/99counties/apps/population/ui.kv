@@ -11,9 +11,9 @@
         pos: (root.x, root.y)
         size: self.texture_size
         center: root.center
-        source: 'slider-track.png'
+        source: 'apps/population/slider-track.png'
     Image:
-        source: 'slider-handle.png'
+        source: 'apps/population/slider-handle.png'
         size: self.texture_size
         center: (root.value_pos[0] , root.center_y)
 
@@ -24,7 +24,7 @@
 DualDisplay
 
     TopScreen:
-        background: 'pop-bg-top.png'
+        background: 'apps/population/bg-top.png'
 
         Renderer:
             id: renderer
@@ -37,15 +37,7 @@ DualDisplay
             text: str(int(slider.value)/10 * 10)
 
     BottomScreen:
-        background: 'bg-bottom.png'
-
-        BackToMenuButton:
-            y: 1080 - self.height
-            background_normal: 'btn-back-to-menu.png'
-            background_down: 'btn-back-to-menu_down.png'
-
-
-
+        background: 'apps/population/bg-bottom.png'
 
         Slider:
             id: slider
@@ -53,3 +45,4 @@ DualDisplay
             range: 1900, 1990
             value: 1900
 
+        BackToMenuButton:

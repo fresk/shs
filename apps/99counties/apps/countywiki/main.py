@@ -12,6 +12,7 @@ from kivy.animation import Animation
 from countymap import CountyMap
 from dualdisplay import DualDisplay
 
+
 class WikiDisplay(DualDisplay):
     selected_county = StringProperty("")
     county_list = ObjectProperty(None)
@@ -19,30 +20,24 @@ class WikiDisplay(DualDisplay):
 
     def __init__(self, **kwargs):
         super(WikiDisplay, self).__init__(**kwargs)
-        with open(resource_find('countywiki.json'), 'r') as fp:
-            self.data = sorted(json.load(fp), key=lambda c: c['title'])
-        self.counties = {}
-        for c in self.data:
-            self.counties[c['name'].replace('-', "_")] = c
+        self.counties = App.get_running_app().counties
+
         def set_polk(*args):
             self.selected_county = "polk"
         Clock.schedule_once(set_polk)
 
-    def on_county_list(self, *args):
-        self.county_list.data = self.data
-        self.county_list.load_data()
-
-    def on_selected_county(self, *args):
-        print "wiki selection", self.selected_county
 
 class FactTitle(F.Label):
     pass
 
+
 class FactText(F.Label):
     pass
 
+
 class CountyHeader(F.Widget):
     text = StringProperty("")
+
 
 class CountyInfoWiki(F.FloatLayout):
     display = ObjectProperty(None)
@@ -70,6 +65,7 @@ class CountyInfoWiki(F.FloatLayout):
 class CountyListButton(F.ToggleButton):
     data = DictProperty()
 
+from kivy.utils import interpolate
 class CountyList(F.FloatLayout):
     display = ObjectProperty(None)
     selected_county = StringProperty("")
@@ -101,8 +97,6 @@ class CountyList(F.FloatLayout):
         dx, dy = self.x, self.y + toy + doy
         self.scroll_layer.transform = Matrix().translate(dx, dy, 0)
 
-
-
     def on_touch_down(self, touch):
         if self.drag_touch_id != None:
             return False
@@ -131,35 +125,28 @@ class CountyList(F.FloatLayout):
                 self.drag_offset += dy
             return True
 
+
+
+
     def update_velocity(self, *args):
-        #print self.velocity, self.total_offset
-        if (self.velocity * self.velocity < 1.0):
+        if abs(self.velocity) == 0.001:
             self.velocity = 0
-            #print self.total_offset
-            if self.total_offset > 0:
-                of = self.total_offset *2.0
-                dd = min(of, self.height) / (self.height+1.0)
-                self.anim = Animation(total_offset = 0, t='out_quart', d=dd+0.3)
-                self.anim.start(self)
-            if self.total_offset < (1080 - self.item_list.height):
-                of = abs(self.total_offset - (1080 - self.item_list.height)) * 2.0
-                dd = max(of, self.height) / (self.height+1.0)
-                self.anim = Animation(total_offset = (1080 - self.item_list.height),t='out_quart', d=dd+0.3)
-                self.anim.start(self)
+
+        min_offset = (1080 - self.item_list.height)
+        is_too_high = self.total_offset > 0
+        is_too_low = self.total_offset < min_offset
+        within_bounds = not (is_too_high or is_too_low)
+
+        if self.velocity == 0 and within_bounds:
             return
 
-
-        if self.total_offset > 0:
-            of = self.total_offset *2.0
-            dd = min(of, self.height) / (self.height+1.0)
-            self.velocity =  self.velocity * (1.0-dd)
-        if self.total_offset < (1080 - self.item_list.height):
-            of = abs(self.total_offset - (1080 - self.item_list.height)) * 2.0
-            dd = max(of, self.height) / (self.height+1.0)
-            self.velocity =  self.velocity * (1.0-dd)
+        if is_too_high:
+            self.total_offset = interpolate(self.total_offset, 0)
+        if is_too_low:
+            self.total_offset = interpolate(self.total_offset, min_offset)
 
         self.total_offset += self.velocity
-        self.velocity =  self.velocity * 0.95
+        self.velocity = interpolate(self.velocity, 0, 15)
         Clock.schedule_once(self.update_velocity, 1.0/30.0)
 
     def selection(self, item):
@@ -172,7 +159,6 @@ class CountyList(F.FloatLayout):
                 btn.state="down"
             else:
                 btn.state="normal"
-
 
     def on_touch_up(self, touch):
         if self.drag_touch_id == touch.uid:
@@ -202,7 +188,11 @@ class CountyList(F.FloatLayout):
             return True
 
     def load_data(self, *args):
-        for county in self.data:
+        self.counties = App.get_running_app().counties
+        for name in sorted(self.counties.keys()):
+            county = self.counties[name]
             self.item_list.add_widget(CountyListButton(data=county))
 
-
+def log_scale(v, vmin, vmax):
+    logmax = log(vmax / vmin)
+    return log(v / vmin) / logmax

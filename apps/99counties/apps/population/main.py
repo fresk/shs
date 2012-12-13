@@ -18,7 +18,7 @@ class Renderer(Widget):
     fs = StringProperty(None)
     vs = StringProperty(None)
     texture = ObjectProperty(None, allownone=True)
-    map_texture = StringProperty("map/iowa_borders.png")
+    map_texture = StringProperty("data/map/iowa_borders.png")
     slider_val = StringProperty("1900")
 
     def __init__(self, **kwargs):
@@ -37,7 +37,6 @@ class Renderer(Widget):
             self.render_ctx = RenderContext()
             self.cb2 = Callback(self.reset_gl_context)
 
-
         with self.render_ctx:
             PushMatrix()
             self.setup_scene()
@@ -49,12 +48,30 @@ class Renderer(Widget):
         super(Renderer, self).__init__(**kwargs)
 
         #must be set in right order on some gpu, or fs will fail linking
-        self.vs = open(resource_find("shaders/3D.vs")).read()
-        self.fs = open(resource_find("shaders/3D.fs")).read()
+        self.vs = open(resource_find("apps/population/shaders/3D.vs")).read()
+        self.fs = open(resource_find("apps/population/shaders/3D.fs")).read()
         self.population_data = json.load(open(resource_find('data/county_population.json'), 'r'))
-
-
+        self.calulcate_population_bounds()
         Clock.schedule_interval(self.update_glsl, 1 / 60.)
+
+    def calulcate_population_bounds(self):
+        min_by_year = {}
+        max_by_year = {}
+        for c, pop in self.population_data.iteritems():
+            for y in pop.keys():
+                if not y.startswith('19'):
+                    continue
+                miny = min_by_year.get(y, float('inf'))
+                maxy = max_by_year.get(y, float('-inf'))
+                min_by_year[y] = min(miny, pop[y])
+                max_by_year[y] = max(maxy, pop[y])
+        min_all = min(min_by_year.values())
+        max_all = max(max_by_year.values())
+        print "POPULATION STATS:"
+        for y in min_by_year.keys():
+            print "{0}  min:{1:>6}  max:{2:>6}".format(y, min_by_year[y], max_by_year[y])
+        print ""
+        print "alltime:  min:{0}  max:{1}".format(min_all, max_all)
 
     def add_widget(self, *largs):
         # trick to attach graphics instructino to fbo instead of canvas
@@ -83,8 +100,8 @@ class Renderer(Widget):
 
 
     def setup_scene(self):
-        map_obj = resource_find("map/iowa.obj")
-        normal_txt = resource_find('map/iowa_tex.png')
+        map_obj = resource_find("apps/population/map/iowa.obj")
+        normal_txt = resource_find('apps/population/map/iowa_tex.png')
         map_txt = resource_find(self.map_texture)
         self.scene = ObjFile(map_obj)
 
@@ -98,6 +115,7 @@ class Renderer(Widget):
         Translate(-.5,-.25, 0.05)
         self.meshes = {}
         self.mesh_transforms = {}
+        self.mesh_colors = {}
         self.start_t = {}
         Color(1,1,1,1)
         for name, mesh in self.scene.objects.iteritems():
@@ -106,6 +124,7 @@ class Renderer(Widget):
 
             PushMatrix()
             self.start_t[name] = 1.0# random.random()
+            self.mesh_colors[name] = Color(1,1,1,1)
             self.mesh_transforms[name] = MatrixInstruction()
             self.meshes[name] = Mesh(
                 vertices=mesh.vertices,
@@ -124,13 +143,11 @@ class Renderer(Widget):
     def reset_gl_context(self, *args):
         glDisable(GL_DEPTH_TEST)
 
-
     def on_fs(self, instance, value):
         # set the fragment shader to our source code
         shader = self.render_ctx.shader
         old_value = shader.fs
         shader.fs = value
-
 
     def on_vs(self, instance, value):
         # set the fragment shader to our source code
@@ -157,8 +174,10 @@ class Renderer(Widget):
             pop = self.population_data[county][self.slider_val]
             #v = t+t*(self.start_t[k]+1)
             #v = (sin(v)*cos(v)+2)
-            v = pop / 100000.0 + 0.5
-            self.mesh_transforms[k].matrix = Matrix().scale(1,  1, v)
+            v = pop / 400000.0
+            lv = lscale(pop,3900.,360000.)
+            self.mesh_transforms[k].matrix = Matrix().scale(1,  1, lv*4.0+0.5)
+            self.mesh_colors[k].hsv = ((1.0-lv)*0.3 ,1.0,1.0)
         self.cb.ask_update()
         self.render_ctx.ask_update()
         self.fbo.ask_update()
@@ -166,6 +185,9 @@ class Renderer(Widget):
         self.rot.angle = sin(t*0.12)*cos(t*0.22)*20
         self.roty.angle = cos(sin(t*0.23))*15
 
-
-
+from math import log
+def lscale(v, vmin, vmax):
+    logmax = log(vmax / vmin)
+    return log(v / vmin) / logmax
+    #return vmin ** (logmax * X / Xmax)
 

@@ -12,7 +12,12 @@ import gc
 def show_menu():
     App.get_running_app().show_menu()
 
+class BackToMenuButton(ImageButton):
+    pass
 
+
+
+"""
 class ChildApp(object):
 
     def __init__(self, name):
@@ -45,11 +50,8 @@ class ChildApp(object):
 
         sys.path.remove(self.app_path)
         resource_remove_path(self.app_path)
+"""
 
 
-
-
-class BackToMenuButton(ImageButton):
-    pass
 
 

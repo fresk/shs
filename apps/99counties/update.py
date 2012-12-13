@@ -84,17 +84,21 @@ class JsonDataLoader(object):
             rv[key] = value
         return rv
 
+
+if not exists('./resources'):
+    os.mkdir("resources")
+
 print "updating history scrachtes..."
 scratches = JsonDataLoader("scratches")
-scratches.save('scratches.json')
+scratches.save('resources/scratches.json')
 
 print "updating historic sites..."
 scratches = JsonDataLoader("historicsites")
-scratches.save('historicsites.json')
+scratches.save('resources/historicsites.json')
 
 print "updating county wiki..."
 countywiki = JsonDataLoader("countywiki")
-countywiki.save('countywiki.json')
+countywiki.save('resources/countywiki.json')
 
 
 

@@ -10,6 +10,7 @@ from imagebutton import ImageButton
 from viewport import TransformLayer
 from dualdisplay import BottomScreen, DualDisplay
 from exhibit import BackToMenuButton
+from kivy.app import App
 import json
 import random
 from math import sqrt
@@ -108,7 +109,7 @@ class ScratchImage(AlphaMaskedImage):
             for p in point_list:
                 #Ellipse(pos=p, size=(d,d), source="scratch.png", group=touch.id)
                 pos = (p[0]-d/2.0,  self.height - p[1]-d/2.0)
-                Rectangle(pos=pos, size=(d,d), group=str(touch.id), source='scratch.png')
+                Rectangle(pos=pos, size=(d,d), group=str(touch.id), source='apps/scratch/scratch.png')
 
 
 
@@ -174,7 +175,7 @@ class ScratchDualDisplay(DualDisplay):
         self.present_img = resource_find(self.data['img_present'])
         self.historic_img = resource_find(self.data['img_historic'])
 
-        transition_img_top = F.Image(source="black.jpg", opacity=0.0)
+        transition_img_top = F.Image(source="apps/scratch/black.jpg", opacity=0.0)
         self.top_screen.add_widget(transition_img_top)
         Animation(opacity=1.0).start(transition_img_top)
 
@@ -194,8 +195,8 @@ class ScratchDualDisplay(DualDisplay):
         self.bottom_screen.add_widget(self.scratch_img)
 
         image_fact = F.Image(source=self.fact_img)
-        self.top_mask = AlphaMaskedImage(source='black.jpg')
-        self.img_top = F.Image(source="black.jpg", opacity=1.0)
+        self.top_mask = AlphaMaskedImage(source='apps/scratch/black.jpg')
+        self.img_top = F.Image(source="apps/scratch/black.jpg", opacity=1.0)
         self.top_screen.add_widget(image_fact)
         self.top_screen.add_widget(self.top_mask)
         self.top_screen.add_widget(self.img_top)
@@ -240,17 +241,19 @@ class ScratchDualDisplay(DualDisplay):
 
 
 class HistoryScratchMenu(F.StackLayout):
-    source = StringProperty("")
     screen = ObjectProperty(None)
+    display = ObjectProperty(None)
 
-    def on_source(self, *args):
-        fp = open(resource_find(self.source), 'r')
-        self.data = json.load(fp)
+    def __init__(self, **kwargs):
+        super(HistoryScratchMenu, self).__init__(**kwargs)
+        self.data = App.get_running_app().scratches
         for item in self.data:
             btn = ImageButton(source=item['img_thumb'])
-            btn.bind(on_release=partial(self.display.start_scratch, item))
+            btn.bind(on_release=partial(self.select_scratch, item))
             self.add_widget(btn)
 
+    def select_scratch(self, item, *args):
+        self.display.start_scratch(item)
 
 
 
