@@ -7,6 +7,7 @@ from jsondata import JsonData
 
 from os import makedirs
 from os.path import join, exists, expanduser
+from functools import partial
 from kivy.app import App
 from kivy.uix.image import AsyncImage
 from kivy.uix.widget import Widget
@@ -15,8 +16,9 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.screenmanager import (Screen, ScreenManager, SlideTransition,
-        FadeTransition, WipeTransition, SwapTransition)
+from kivy.uix.listview import ListView
+from kivy.adapters.listadapter import ListAdapter
+from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
 from kivy.network.urlrequest import UrlRequest
 from kivy.utils import platform
 from kivy.clock import Clock
@@ -24,7 +26,7 @@ from kivy.animation import Animation
 from kivy.graphics import Fbo, Canvas, Color, Quad, Translate
 from kivy.properties import (
     BooleanProperty, NumericProperty, StringProperty, ObjectProperty,
-    ListProperty, DictProperty, AliasProperty)
+    ListProperty, DictProperty, AliasProperty, OptionProperty)
 
 from math import sin, pi
 from viewport import Viewport
@@ -436,9 +438,41 @@ class ResultsScreen(Screen):
         a = Animation(color=(1, 1, 1, 1), d=0.3, t='out_quart')
         [a.start(x) for x in fadelist]
 
+class NickStandingEntry(BoxLayout):
+    entry = DictProperty()
+class CityStandingEntry(BoxLayout):
+    entry = DictProperty()
+class CountyStandingEntry(BoxLayout):
+    entry = DictProperty()
+class StateStandingEntry(BoxLayout):
+    entry = DictProperty()
 
 class StandingsScreen(Screen):
-    pass
+    tp = OptionProperty('nick', options=('nick', 'city', 'county', 'state'))
+    container = ObjectProperty()
+    def on_transition_state(self, instance, value):
+        if value == 'in':
+            self.reload()
+
+    def reload(self):
+        App.get_running_app().load_standings(self.tp)
+
+    def on_tp(self, instance, value):
+        self.reload()
+
+    def set_standings(self, tp, result):
+        tcls = {'nick': NickStandingEntry,
+                'city': CityStandingEntry,
+                'county': CountyStandingEntry,
+                'state': StateStandingEntry}[tp]
+        args_converter = lambda index, rec: {'entry': rec}
+        adapter = ListAdapter(data=result,
+                args_converter=args_converter,
+                cls=tcls)
+        self.container.clear_widgets()
+        self.container.add_widget(ListView(adapter=adapter))
+
+
 
 
 class StatusBar(RelativeLayout):
@@ -486,7 +520,7 @@ class IowaIQApp(App):
         self.viewport.add_widget(self.status_bar)
 
     def start_viewstandings(self):
-        pass
+        self.screen_manager.current = 'standings'
 
     def start_quiz(self):
         self.quiz = random.sample(self.questions, 1)
@@ -574,19 +608,32 @@ class IowaIQApp(App):
             score=self.status_bar.score)
         body = urllib.urlencode(d)
         self._show_progression('Submitting score...', 0, 1)
+        headers = {'Content-type': 'application/x-www-form-urlencoded'}
         self._req = UrlRequest(self.config.get('app', 'score'),
-                req_body=body,
+                req_body=body, req_headers=headers,
                 on_success=self._on_submit_success,
                 on_error=self._on_submit_failed, debug=True)
 
     def _on_submit_success(self, req, result):
-        print 'SUCCESS', result
         self._hide_progression()
         self.screen_manager.current = 'standings'
 
     def _on_submit_failed(self, req, result):
         self._hide_progression()
         self.screen_manager.current = 'intro'
+
+    def load_standings(self, tp):
+        self._req = UrlRequest(self.config.get('app', 'standings') + '?q=' + tp,
+            on_success=partial(self._on_standings_success, tp),
+            on_error=self._on_standings_error)
+
+    def _on_standings_success(self, tp, req, result):
+        self.screen_manager.current = 'standings'
+        self.screen_manager.current_screen.set_standings(tp, result)
+
+    def _on_standings_error(self, req, error):
+        pass
+
 
     # Update part
     # Manage the update of questions.json + associated data
