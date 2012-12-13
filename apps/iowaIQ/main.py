@@ -17,7 +17,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.listview import ListView
 from kivy.adapters.listadapter import ListAdapter
-from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
+from kivy.uix.screenmanager import *
 from kivy.network.urlrequest import UrlRequest
 from kivy.utils import platform
 from kivy.clock import Clock
@@ -363,7 +363,7 @@ class AnswerImage(AsyncImage):
     def _get_smallest(self):
         print "XXXX", self.img_data
         if self.img_data.get('medium'):
-            return self.img_data['medium'][0]
+            return self.img_data['medium']
         return self.img_data['full']
 
     def on_img_data(self, *args):
@@ -481,7 +481,7 @@ class StatusBar(RelativeLayout):
     alpha_show = NumericProperty(0.0)
 
     def show(self, *args):
-        (Animation(d=0.8) + Animation(alpha_show=1.0, t='out_quad', d=1.0)
+        (Animation(d=1.5) + Animation(alpha_show=1.0, t='out_quad', d=1.0)
         ).start(self)
 
     def hide(self, *args):
@@ -508,7 +508,7 @@ class IowaIQApp(App):
     def show_app(self, *args):
         self._hide_progression()
 
-        self.screen_manager = ScreenManager(transition=WipeTransition())
+        self.screen_manager = ScreenManager(transition=FadeTransition(duration=0.3))
         self.screen_manager.add_widget(IntroScreen(name='intro'))
         self.screen_manager.add_widget(QuestionScreen(name='question'))
         self.screen_manager.add_widget(AnswerScreen(name='answer'))
@@ -523,7 +523,7 @@ class IowaIQApp(App):
         self.screen_manager.current = 'standings'
 
     def start_quiz(self):
-        self.quiz = random.sample(self.questions, 1)
+        self.quiz = random.sample(self.questions, 5)
         self.status_bar.score = 0
         self.status_bar.show()
         self.next_question()
@@ -545,9 +545,9 @@ class IowaIQApp(App):
         qscreen.reset = True
         qscreen.reset = False
 
-        def _goto_screen(*args):
-            self.screen_manager.current = 'question'
-        Clock.schedule_once(_goto_screen, 0.2)
+        #def _goto_screen(*args):
+        self.screen_manager.current = 'question'
+        #Clock.schedule_once(_goto_screen, 0.2)
 
     def preload_answer_screen(self):
         q = self.question
@@ -561,13 +561,14 @@ class IowaIQApp(App):
     def check_answer(self, ui_question, ui_button, answer):
         q = self.question
         is_correct = (answer == int(q['correct_answer']))
+        print "answer is:", is_correct
         if is_correct:
             self.status_bar.score += 4
             ui_button.background_normal = "ui/screens/question/qbg_correct.png"
             ui_button._update_mesh()
-            def _go_answer(*args):
-                self.screen_manager.current = 'answer'
-            Clock.schedule_once(_go_answer, 0.2)
+            #def _go_answer(*args):
+            self.screen_manager.current = 'answer'
+            #Clock.schedule_once(_go_answer, 0)
         else:
             self.status_bar.score -= 1
             ui_button.text_wrong = q['answer_corrections'][answer - 1]
@@ -612,7 +613,7 @@ class IowaIQApp(App):
         self._req = UrlRequest(self.config.get('app', 'score'),
                 req_body=body, req_headers=headers,
                 on_success=self._on_submit_success,
-                on_error=self._on_submit_failed, debug=True)
+                on_error=self._on_submit_failed)
 
     def _on_submit_success(self, req, result):
         self._hide_progression()
@@ -654,7 +655,7 @@ class IowaIQApp(App):
         # second step, download all the outdated resources
         self._questions_fn = join(self.get_data_dir(), 'questions.json')
         with open(self._questions_fn, 'w') as fd:
-            json.dump(result[:5], fd)
+            json.dump(result, fd)
 
         self._jsondata = JsonData('questions.json',
             on_success=self._pull_update_done,
