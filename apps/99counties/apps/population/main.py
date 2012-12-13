@@ -34,7 +34,7 @@ class Renderer(Widget):
 
         with self.fbo:
             self.cb = Callback(self.setup_gl_context)
-            self.render_ctx = RenderContext()
+            self.render_ctx = RenderContext(with_normal_mat=True)
             self.cb2 = Callback(self.reset_gl_context)
 
         with self.render_ctx:
