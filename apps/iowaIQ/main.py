@@ -363,7 +363,7 @@ class AnswerImage(AsyncImage):
     def _get_smallest(self):
         print "XXXX", self.img_data
         if self.img_data.get('medium'):
-            return self.img_data['medium'][0]
+            return self.img_data['medium']
         return self.img_data['full']
 
     def on_img_data(self, *args):
@@ -545,9 +545,9 @@ class IowaIQApp(App):
         qscreen.reset = True
         qscreen.reset = False
 
-        def _goto_screen(*args):
-            self.screen_manager.current = 'question'
-        Clock.schedule_once(_goto_screen, 0.2)
+        #def _goto_screen(*args):
+        self.screen_manager.current = 'question'
+        #Clock.schedule_once(_goto_screen, 0.2)
 
     def preload_answer_screen(self):
         q = self.question
@@ -561,13 +561,14 @@ class IowaIQApp(App):
     def check_answer(self, ui_question, ui_button, answer):
         q = self.question
         is_correct = (answer == int(q['correct_answer']))
+        print "answer is:", is_correct
         if is_correct:
             self.status_bar.score += 4
             ui_button.background_normal = "ui/screens/question/qbg_correct.png"
             ui_button._update_mesh()
-            def _go_answer(*args):
-                self.screen_manager.current = 'answer'
-            Clock.schedule_once(_go_answer, 0)
+            #def _go_answer(*args):
+            self.screen_manager.current = 'answer'
+            #Clock.schedule_once(_go_answer, 0)
         else:
             self.status_bar.score -= 1
             ui_button.text_wrong = q['answer_corrections'][answer - 1]
@@ -654,7 +655,7 @@ class IowaIQApp(App):
         # second step, download all the outdated resources
         self._questions_fn = join(self.get_data_dir(), 'questions.json')
         with open(self._questions_fn, 'w') as fd:
-            json.dump(result[:5], fd)
+            json.dump(result, fd)
 
         self._jsondata = JsonData('questions.json',
             on_success=self._pull_update_done,
