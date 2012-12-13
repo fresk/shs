@@ -48,8 +48,8 @@ class Renderer(Widget):
         super(Renderer, self).__init__(**kwargs)
 
         #must be set in right order on some gpu, or fs will fail linking
-        self.vs = open(resource_find("apps/population/shaders/3D.vs")).read()
-        self.fs = open(resource_find("apps/population/shaders/3D.fs")).read()
+        self.vs = open(resource_find("data/shaders/map.vs")).read()
+        self.fs = open(resource_find("data/shaders/map.fs")).read()
         self.population_data = json.load(open(resource_find('data/county_population.json'), 'r'))
         self.calulcate_population_bounds()
         Clock.schedule_interval(self.update_glsl, 1 / 60.)

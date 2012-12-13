@@ -5,6 +5,7 @@ import kivy
 import glob
 import json
 from kivy.app import App
+from kivy.base import EventLoop
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.animation import Animation
@@ -56,33 +57,48 @@ class Menu(DualDisplay):
 
 class ExhibitRoot(F.Widget):
 
-    def tuio_transform(self, touch):
-        if touch.device == 'tuio':
-            touch.apply_transform_2d(lambda x,y: (x,y/2.0))
+    #def tuio_transform(self, touch):
+    #    if touch.device == 'tuio':
+    #        touch.apply_transform_2d(lambda x,y: (x,y/2.0))
 
     def on_touch_down(self, touch):
         if App.get_running_app().transitioning:
             return True
-        self.tuio_transform(touch)
-        super(ExhibitRoot, self).on_touch_down(touch)
+        #self.tuio_transform(touch)
+        return super(ExhibitRoot, self).on_touch_down(touch)
 
     def on_touch_move(self, touch):
         if App.get_running_app().transitioning:
             return True
-        self.tuio_transform(touch)
+        #self.tuio_transform(touch)
         return super(ExhibitRoot, self).on_touch_move(touch)
 
     def on_touch_up(self, touch):
         if App.get_running_app().transitioning:
             return True
-        self.tuio_transform(touch)
+        #self.tuio_transform(touch)
         return super(ExhibitRoot, self).on_touch_up(touch)
+
+
+
+class TuioTransform(object):
+    def process(self, events):
+        processed = []
+        for etype, touch in events:
+            if not touch.is_touch:
+                continue
+            if touch.device != "mouse":
+                touch.sy = touch.sy/2.0
+            processed.append((etype, touch))
+        return processed
+
 
 
 class ExhibitApp(App):
     selected_county = StringProperty("polk")
 
     def build(self):
+        EventLoop.add_postproc_module(TuioTransform())
         self.transitioning = False
 
         self.load_data()

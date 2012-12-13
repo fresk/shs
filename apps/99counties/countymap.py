@@ -42,8 +42,6 @@ class CountyModel(Widget):
         super(CountyModel, self).__init__(**kwargs)
         _vs = open('data/shaders/county.vs', 'r').read()
         _fs = open('data/shaders/county.fs', 'r').read()
-        print "VERTEX: \n", _vs, "\n\n"
-        print "FRAGMENT: \n", _fs, "\n\n"
         self.render_ctx.shader.vs = _vs
         self.render_ctx.shader.fs = _fs
         Clock.schedule_interval(self.update_glsl, 1/30.0)
@@ -58,7 +56,6 @@ class CountyModel(Widget):
         self.rot2 = Rotate(0, 1,0,0)
         self.rot = Rotate(0, 0,1,0)
         Rotate(0, 1,0,0)
-        print cz
         self.mi = MatrixInstruction()
         self.trans = Translate(-cx, -cy, 0)
         self.mesh = Mesh(
@@ -202,13 +199,8 @@ class CountyMap(Widget):
     def on_touch_down(self, touch):
         x,y = touch.pos
         p = self.get_pixel(x,y)
-        #r = p & 0xFF0000
-        #r = p & 0xFFFF00
-        #r = p & 0x0000FF
-        #print "p:", p, r,g,b
         f_close = lambda a,l:min(l,key=lambda x:abs(x-a))
         k = f_close(p[0], self.picking_colors.keys())
-        #self.display.selected_county = self.picking_colors.get(k, "")
         App.get_running_app().selected_county = self.picking_colors.get(k, "")
 
     def on_selected_county(self, *args):

@@ -126,8 +126,6 @@ class CountyList(F.FloatLayout):
             return True
 
 
-
-
     def update_velocity(self, *args):
         if abs(self.velocity) == 0.001:
             self.velocity = 0
