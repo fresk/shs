@@ -30,6 +30,7 @@
         size_hint: None, None
         text_size: 2000, 150
         color: 0,0,0,0.8
+        padding: 200, 5
 
     Label:
         text: "Score: {0}".format(root.score)
@@ -38,6 +39,7 @@
         size_hint: None, None
         text_size: 2000, 150
         color: 0,0,0,0.8
+        padding: 200, 5
 
 
 <Screen>:
@@ -100,11 +102,14 @@
         Label:
             text: root.text
             markup: True
-            font_name: 'ui/fonts/Gotham-Bold.ttf'
-            font_size: '28dp'
+            font_name: 'ui/fonts/Gotham-Book.ttf'
+            font_size: '32dp'
             halign: 'left'
             size_hint: None, 1
+            padding: 200, 300
             width: root.width - 250
+            line_height: 1.3
+            color: .96, .96, .96, 1
 
         GridLayout:
             on_parent: root.button_grid = self
@@ -131,12 +136,13 @@
 
 
 <QuestionButton>:
-    font_name: 'ui/fonts/Gotham-Bold.ttf' if self.alpha_rotation < 0.5 else 'ui/fonts/Gotham-Book.ttf'
-    halign: 'center' if self.alpha_rotation < 0.5 else 'left'
+    font_name: 'ui/fonts/Gotham-Bold.ttf' if self.alpha_rotation < 0.5 else 'ui/fonts/Gotham-Bold.ttf'
+    halign: 'center' if self.alpha_rotation < 0.5 else 'center'
     font_size: '22dp' if self.alpha_rotation < 0.5 else '14dp'
     background_normal: "ui/screens/question/qbg.png"
     background_down: "ui/screens/question/qbg_down.png"
     background_wrong: "ui/screens/question/qbg_wrong.png"
+    color: .96, .96, .96, 1
 
 
 <AnswerScreen>:
@@ -156,11 +162,12 @@
         Label:
             font_name: 'ui/fonts/Gotham-Bold.ttf'
             font_size: '76dp'
-            height: '100dp'
+            height: '125dp'
             halign: 'left'
             valign: 'bottom'
             size_hint_y: None
             text: root.feedback
+            line_height: 1.3
         Label:
             halign: 'left'
             font_size: '24dp'
@@ -220,20 +227,22 @@
         id: title
         size_hint: 1, None
         text: "Nice work, friend."
-        height: '100dp'
-        top: root.top - dp(10)
+        height: '90dp'
+        top: root.top - dp(-50)
+        x: 50
         valign: 'bottom'
         halign: 'left'
         font_name: 'ui/fonts/Gotham-Bold.ttf'
-        font_size: '100dp'
+        font_size: '90dp'
 
 
     Label:
         id: score_text
         text: root.text
         size_hint: 1, None
-        height: '100dp'
-        top: title.y - dp(10)
+        height: '70dp'
+        top: title.y - dp(60)
+        x: 50
         valign: 'top'
         halign: 'left'
         font_size: '65dp'
@@ -287,7 +296,6 @@
 
     Button:
         id: submit_btn
-		background_color: (1, 0, 0, 1)
         background_down: 'ui/screens/results/submit_down.png'
         background_normal: 'ui/screens/results/submit.png'
 		on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid) else None
@@ -298,14 +306,12 @@
         y: '150dp'
 
     Button:
-		background_color: (0, 1, 0, 1)
         background_down: 'ui/screens/results/nosubmit_down.png'
         background_normal: 'ui/screens/results/nosubmit.png'
         on_release: app.screen_manager.current = 'intro'
         right: submit_btn.right
         size: dp(320), dp(100)
         size_hint: None, None
-        text: "Don't submit score - start over."
         top: submit_btn.y - dp(20)
 
 
@@ -320,9 +326,11 @@
             size_hint: None, None
             size: ('400dp', '250dp')
             orientation: 'vertical'
-            padding: '50dp'
+            padding: '70dp'
             Label:
                 text: root.text
+                color: .20, .20, .20, 1
+                font_size: '15sp'
             ProgressBar:
                 value: root.progression
 
@@ -407,17 +415,17 @@
     Label:
         id: title
         size_hint: 1, None
-        text: 'Standings'
+        text: ''
         height: '100dp'
         top: root.top - dp(10)
         valign: 'bottom'
-        halign: 'left'
+        right: root.right - dp(20)
         font_name: 'ui/fonts/Gotham-Bold.ttf'
         font_size: '80dp'
 
 	Button:
 		top: root.top - dp(10)
-		right: root.right - dp(20)
+		halign: 'left'
         size: dp(225), dp(100)
 		size_hint: None, None
 		border: 0, 0, 0, 0
@@ -430,7 +438,7 @@
 		height: '50dp'
 		size_hint: 1, None
 		rows: 1
-        top: title.y - dp(5)
+        top: title.y - dp(50)
 
 
 		Label:
@@ -440,7 +448,7 @@
 			font_size: '22sp'
 
 		Button:
-			text: 'NICK'
+			text: 'NAME'
 			background_color: (0, 0, 0, 0)
 			on_release: root.tp = 'nick'
 			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'nick' else 'Book')
