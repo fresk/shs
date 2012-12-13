@@ -24,6 +24,7 @@ class JsonDataLoader(object):
 
     def download_resources(self):
         for d in self._downloads:
+            print "downloading", d['etag']
             if not d['etag']:
                 continue
             cache_name = self.cache_name(d)
@@ -65,8 +66,11 @@ class JsonDataLoader(object):
 
         # hook to check if the dict is an image dict
         if 'full' in data and 'etag' in data:
-            self._downloads.append(data)
-            return self.cache_name(data)
+            if data['full']:
+                self._downloads.append(data)
+                return self.cache_name(data)
+            else:
+                return None
 
         for key, value in data.iteritems():
             if isinstance(key, unicode):
@@ -81,8 +85,12 @@ class JsonDataLoader(object):
         return rv
 
 print "updating history scrachtes..."
-#scratches = JsonDataLoader("scratches")
-#scratches.save('scratches.json')
+scratches = JsonDataLoader("scratches")
+scratches.save('scratches.json')
+
+print "updating historic sites..."
+scratches = JsonDataLoader("historicsites")
+scratches.save('historicsites.json')
 
 print "updating county wiki..."
 countywiki = JsonDataLoader("countywiki")

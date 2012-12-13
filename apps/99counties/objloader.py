@@ -1,4 +1,4 @@
-
+from vec3 import vec3
 
 class BoundingBox3D(object):
     def __init__(self, points=None):
@@ -21,16 +21,17 @@ class BoundingBox3D(object):
         self.z = min(z, self.z)
         self.xmax = max(x, self.xmax)
         self.ymax = max(y, self.ymax)
-        self.zmax = max(y, self.zmax)
-
+        self.zmax = max(z, self.zmax)
         self.width = self.xmax - self.x
         self.height = self.ymax - self.y
         self.depth = self.zmax - self.z
-        self.pos = (self.x, self.y, self.z)
-        self.cx = self.x + (self.width/2.0)
-        self.cy = self.y + (self.height/2.0)
-        self.cz = self.z + (self.depth/2.0)
-        self.center = (self.cx, self.cy, self.cz)
+
+        self.pos = vec3(self.x, self.y, self.z)
+        self.size = vec3(self.width, self.height, self.depth)
+        self.center = self.pos + (self.size*0.5)
+        self.cx, self.cy, self.cz = self.center
+
+
 
 
 class MeshData(object):
@@ -66,6 +67,7 @@ class ObjFile:
             tri = [idx, idx+1, idx+2]
             mesh.indices.extend(tri)
             idx += 3
+        mesh.name = self._current_object
         self.objects[self._current_object] = mesh
         self.faces = []
 
@@ -120,7 +122,12 @@ class ObjFile:
                     else:
                         norms.append(0)
                 self.faces.append((face, norms, texcoords, material))
-        self.finish_object()
+        self.finish_object() #last object
+        self.bounds = BoundingBox3D()
+        for o in self.objects.values():
+            self.bounds.add_point(*o.bounds.pos)
+            self.bounds.add_point(*(o.bounds.pos + o.bounds.size))
+
 
 
 def MTL(filename):

@@ -1,8 +1,8 @@
 import json
+from kivy.app import App
 from kivy.factory import Factory as F
 from kivy.resources import resource_find
 from kivy.properties import *
-from dualdisplay import DualDisplay
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.adapters.dictadapter import DictAdapter
 from viewport import TransformLayer
@@ -10,6 +10,7 @@ from kivy.graphics.transformation import Matrix
 from kivy.clock import Clock
 from kivy.animation import Animation
 from countymap import CountyMap
+from dualdisplay import DualDisplay
 
 class WikiDisplay(DualDisplay):
     selected_county = StringProperty("")
@@ -55,7 +56,7 @@ class CountyInfoWiki(F.FloatLayout):
     population = StringProperty("")
 
     def on_selected_county(self, *args):
-        self.data = self.display.counties[self.selected_county]
+        self.data = App.get_running_app().counties[self.selected_county]
         self.county_name = self.data['title']
         self.county_seat = self.data['county_seat']
         self.county_size = self.data['size'] + "sq. miles"
@@ -162,11 +163,9 @@ class CountyList(F.FloatLayout):
         Clock.schedule_once(self.update_velocity, 1.0/30.0)
 
     def selection(self, item):
-        print "SELECTED", item['title']
-        self.display.selected_county = item['name'].replace("-", "_")
+        App.get_running_app().selected_county = item['name'].replace("-", "_")
 
     def on_selected_county(self, *args):
-        print self.selected_county, "from diaplsy"
         for btn in self.item_list.children:
             n = btn.data['name'].replace("-", "_")
             if n == self.selected_county:

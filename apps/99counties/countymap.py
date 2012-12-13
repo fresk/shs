@@ -118,29 +118,9 @@ class CountyModel(Widget):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class CountyMap(Widget):
     display = ObjectProperty(None)
-    selcted_county = StringProperty("")
+    selected_county = StringProperty("")
     fs = StringProperty(None)
     vs = StringProperty(None)
     texture = ObjectProperty(None, allownone=True)
@@ -228,7 +208,8 @@ class CountyMap(Widget):
         #print "p:", p, r,g,b
         f_close = lambda a,l:min(l,key=lambda x:abs(x-a))
         k = f_close(p[0], self.picking_colors.keys())
-        self.display.selected_county = self.picking_colors.get(k, "")
+        #self.display.selected_county = self.picking_colors.get(k, "")
+        App.get_running_app().selected_county = self.picking_colors.get(k, "")
 
     def on_selected_county(self, *args):
         for k in self.mesh_colors.keys():

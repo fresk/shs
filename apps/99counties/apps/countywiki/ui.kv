@@ -96,7 +96,7 @@
                     text: root.county_name
 
                 CountyModel:
-                    selected_county: root.selected_county
+                    selected_county: app.selected_county
                     size: 400,400
                     pos: 0, 300
 
@@ -161,7 +161,7 @@ WikiDisplay
 
         CountyInfoWiki:
             id: county_info
-            selected_county: root.selected_county
+            selected_county: app.selected_county
             display: root
             size_hint:1,1
 
@@ -177,14 +177,14 @@ WikiDisplay
             y: 1080 - self.height
 
         CountyMap:
-            selected_county: root.selected_county
+            selected_county: app.selected_county
             display: root
             id: county_map
             size_hint: None, None
             size: 1920-400,1080
 
         CountyList:
-            selected_county: root.selected_county
+            selected_county: app.selected_county
             display: root
             id: county_list
             size_hint:None, None
