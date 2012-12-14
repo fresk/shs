@@ -7,6 +7,7 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.factory import Factory as F
+from kivy.utils import interpolate
 from kivy.properties import StringProperty, ObjectProperty
 from kivy.graphics.transformation import Matrix
 from kivy.graphics.texture import *
@@ -17,8 +18,6 @@ from objloader import ObjFile
 from math import sin, cos
 from latlon import iowa_relative
 from objloader import ObjFile
-
-
 
 
 class MapView(Widget):
@@ -80,7 +79,11 @@ class MapView(Widget):
 
     def update_glsl(self, *largs):
         self.render_ctx['projection_mat'] = self.projection_mat
+        self.update()
         self.update_scene()
+
+    def update(self):
+        pass
 
     def update_scene(self):
         pass
@@ -93,12 +96,15 @@ class MapView(Widget):
         PushMatrix()
         Translate(0,0,-1.1)
 
-        bbox = self.map_model.bounds
         self.t_viewtrans = MatrixInstruction()
+        cx,cy = self.map_model.bounds.center[:-1]
+        Translate(-cx, -cy, -0.01)
 
-        Translate(-bbox.cx, -bbox.cy, -0.01)
-        self.marker_canvas = Canvas()
-        Translate(0,0,-bbox.zmax)
+        self.map_canvas = Canvas()
+
+        tz = self.map_model.bounds.zmax
+        Translate(0,0,-tz)
+
         Color(1,1,1,1)
         for name in sorted(self.counties.keys()):
             m = self.counties[name]['mesh']
@@ -118,11 +124,18 @@ class InteractiveMapView(MapView):
         self.scatter = F.ScatterPlane(do_rotation=False)
         self.add_widget(self.scatter)
         self.canvas.remove(self.scatter.canvas)
+        self.xpan, self.ypan = 0, 0
 
     def update_scene(self):
+        s = self.scatter.scale
+        if s < 1.5 and not self.scatter._touches:
+            self.scatter.center = interpolate(self.scatter.center, self.center)
+        if s < 1.8 and not self.scatter._touches:
+            self.scatter.center = interpolate(self.scatter.center, self.center, 20)
+        if s < 1 and not self.scatter._touches:
+            self.scatter.scale = interpolate(self.scatter.scale, 1.0, 20)
         xpan = self.scatter.center_x - self.center_x
         ypan = self.scatter.center_y - self.center_y
-        s = self.scatter.scale
         tx = xpan/float(self.height) * 1.3
         ty = ypan/float(self.height) * 1.3
         mat = Matrix().scale(s,s,s).translate(tx,ty,0)
@@ -134,36 +147,80 @@ class InteractiveMapView(MapView):
 
 
 class MapMarker(object):
+
     def __init__(self, name="des moines", loc=(41.590833,-93.620833)):
         self.name = name
         self.loc = loc
+        self.color = (1,0,0,1)
+        self.pos = (0,0)
+        self.selected = False
+        self.data = {}
 
-class MarkerMapView(InteractiveMapView):
+    def update(self, ctx):
+        sx, sy, sz = ctx.map_model.bounds.size
+        rx, ry = iowa_relative(self.loc)
+        self.pos = rx*sx, ry*sy
+
+        self.g_color.rgba = self.color
+        self.t_pos.xy = self.pos
+        self.visible = False
+
+        bl = ctx.scatter.to_local(0, 0)
+        tr = ctx.scatter.to_local(ctx.height, ctx.height)
+        tr = tr[0], tr[1]-0.2
+
+        xok = bl[0]/1080.0 < self.pos[0] < tr[0]/1080.0
+        yok = bl[1]/1080.0 < self.pos[1] < tr[1]/1080.0
+        self.selected = yok and xok
+        print self.name
+        print bl[0]/1080.0 , self.pos[0] , tr[0]/1080.0, xok
+        print  bl[1]/1080.0 , self.pos[1] , tr[1]/1080.0, yok
+
+
+
+    def render(self, ctx):
+        self.t_pos = Translate(self.pos[0], self.pos[1], 0)
+        self.t_scale = Scale3(.04, .04, .001)
+        Translate(0,0,1.0)
+        self.g_color = Color(*self.color)
+        m = ctx.cube_mesh
+        self.g_mesh = Mesh(
+            vertices=m.vertices,
+            indices=m.indices,
+            fmt = m.vertex_format,
+            mode = 'triangles')
+
+
+class IowaMap(InteractiveMapView):
+    cube_mesh = ObjFile("data/map/unitcube.obj").objects.values()[0]
+
     def __init__(self, **kwargs):
-        super(MarkerMapView, self).__init__(**kwargs)
-        self.cube_mesh = ObjFile("data/map/unitcube.obj").objects.values()[0]
-        self.add_marker(MapMarker())
+        super(IowaMap, self).__init__(**kwargs)
+        self.markers = []
+
+    def update_scene(self):
+        super(IowaMap, self).update_scene()
+        sel = []
+        for m in self.markers:
+            m.update(self)
+            if m.selected:
+                sel.append(m)
+        self.selection = sel
 
     def add_marker(self, marker):
-        with self.marker_canvas:
-            m = self.cube_mesh
-            mbox = self.map_model.bounds
-            rx, ry = iowa_relative(marker.loc)
-            rx, ry = rx*mbox.width, ry*mbox.height
-
-            Color(1,0,0,1)
+        self.markers.append(marker)
+        with self.map_canvas:
             PushMatrix()
-            Translate(rx, ry, 0)
-            MatrixInstruction().matrix = Matrix().scale(.01, .01, .01)
-            Mesh(
-                vertices=m.vertices,
-                indices=m.indices,
-                fmt = m.vertex_format,
-                mode = 'triangles')
+            marker.render(self)
             PopMatrix()
 
 
 
+
+def Scale3(sx, sy, sz):
+    mi = MatrixInstruction()
+    mi.matrix = Matrix().scale(sx, sy, sz)
+    return mi
 
 
 

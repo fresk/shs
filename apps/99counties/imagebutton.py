@@ -83,10 +83,7 @@ class ImageButton(Widget):
         assert(self in touch.ud)
         touch.ungrab(self)
         self._do_release()
-        if self.collide_point(touch.x, touch.y):
-            self.dispatch('on_release')
-        else:
-            self.dispatch('on_cancel')
+        self.dispatch('on_release')
 
         return True
 
