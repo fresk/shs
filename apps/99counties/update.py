@@ -1,6 +1,7 @@
 import json
 import urllib2
 import requests
+import os
 from os.path import join, exists
 
 API_URL = 'http://www.fresksite.net/dcadb/wp-content/themes/dca/api/%s.php'
