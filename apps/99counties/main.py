@@ -105,9 +105,12 @@ class ExhibitApp(App):
     def __init__(self, **kwargs):
         self.last_touch_time = time.time()
         super(ExhibitApp, self).__init__(**kwargs)
+        self.last_touch_time = time.time()
 
 
-    def init_app(self, *args):
+    def build(self):
+        self.intro_screen = Intro(app=self)
+        self.root = ExhibitRoot(app=self)
 
         self.load_data()
 
@@ -131,11 +134,7 @@ class ExhibitApp(App):
         self.transitioning = False
 
 
-    def build(self):
-        self.intro_screen = Intro(app=self)
-        self.root = ExhibitRoot(app=self)
         self.show_intro()
-        Clock.schedule_once(self.init_app, 1.0)
         return self.root
 
 
