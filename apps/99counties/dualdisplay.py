@@ -123,8 +123,8 @@ class DualDisplay(DualDisplayWindow):
         anim.start(self)
 
     def hide(self, callback=None):
-        anim_top = Animation(y=self.top_screen.top, t='out_quad', d=0.5)
-        anim_bottom = Animation(top=-self.bottom_screen.y, t='out_quad', d=0.5)
+        anim_top = Animation(y=self.top_screen.top, t='out_quad', d=1.0)
+        anim_bottom = Animation(top=-self.bottom_screen.y, t='out_quad', d=1.0)
         if callback:
             anim_top.bind(on_complete=callback)
         anim_top.start(self.top_screen)

@@ -150,15 +150,15 @@ class InteractiveMapView(MapView):
     def update(self):
         s = self.scatter.scale
         if s < 1.5 and not self.scatter._touches:
-            self.scatter.center = interpolate(self.scatter.center, self.center)
+            self.scatter.center = interpolate(self.scatter.center, self.center, 30)
         if s < 1.8 and not self.scatter._touches:
-            self.scatter.center = interpolate(self.scatter.center, self.center, 20)
+            self.scatter.center = interpolate(self.scatter.center, self.center, 40)
         if s < 1 and not self.scatter._touches:
-            self.scatter.scale = interpolate(self.scatter.scale, 1.0, 20)
+            self.scatter.scale = interpolate(self.scatter.scale, 1.0, 40)
         xpan = self.scatter.center_x - self.center_x
         ypan = self.scatter.center_y - self.center_y
-        tx = xpan/float(1080)
-        ty = ypan/float(1080)
+        tx = xpan/float(1920)
+        ty = ypan/float(1920)
         mat = Matrix().scale(s,s,s).translate(tx,ty,0)
 
         self.t_viewtrans.matrix = mat

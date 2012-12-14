@@ -8,8 +8,7 @@ from kivy.core.image import Image as CoreImage
 from kivy.properties import OptionProperty, ObjectProperty, StringProperty, ListProperty
 from kivy.graphics import Rectangle, Color, Canvas
 
-class ImageButton(Widget):
-    state = OptionProperty('normal', options=('normal', 'down'))
+class ImageButton(F.Button):
     source = StringProperty('')
     image_size = ListProperty([0,0])
 
@@ -18,86 +17,34 @@ class ImageButton(Widget):
         self._fname_down = ""
         self._img_rect = None
 
-        self.register_event_type('on_press')
-        self.register_event_type('on_release')
-        self.register_event_type('on_cancel')
-        self.canvas = Canvas()
-        with self.canvas:
-            Color(1,1,1,1)
-            self._img_rect = Rectangle(pos=self.pos, size=self.size, source=self.source)
         super(ImageButton, self).__init__(**kwargs)
 
 
-    def on_size(self, *args):
-        if self._img_rect:
-            self._img_rect.size = self.size
-
-    def on_pos(self, *args):
-        if self._img_rect:
-            self._img_rect.pos = self.pos
-
-    def on_state(self, *args):
-        self._update_image_src()
-
     def on_source(self, *args):
         v = self.source.split(".")
-        sourc_down = ''.join(v[:-1])+"_down"+v[-1]
+        source_down = ''.join(v[:-1])+"_down"+v[-1]
         self._fname_normal = resource_find(self.source)
-        self._fname_down = resource_find(self.source) or self._fname_normal
+        self._fname_down = resource_find(source_down) or self._fname_normal
         self.image_size = CoreImage.load(self._fname_normal).size
-        self._update_image_src()
+        self.background_normal = self._fname_normal
+        self.background_down = self._fname_down
 
-    def _update_image_src(self):
-        if self.state == "normal":
-            self._img_rect.source = self._fname_normal
-        else:
-            self._img_rect.source = self._fname_down
-
-    def _do_press(self):
-        self.state = 'down'
-
-    def _do_release(self):
-        self.state = 'normal'
-
-    def on_touch_down(self, touch):
-        if 'button' in touch.profile and touch.button in ('scrolldown', 'scrollup'):
-            return False
-        if not self.collide_point(touch.x, touch.y):
-            return False
-        if self in touch.ud:
-            return False
-        touch.grab(self)
-        touch.ud[self] = True
-        self._do_press()
-        self.dispatch('on_press')
-        return True
-
-    def on_touch_move(self, touch):
-        if touch.grab_current is self:
-            return True
-        return self in touch.ud
 
     def on_touch_up(self, touch):
-        if touch.grab_current is not self:
-            return self in touch.ud
-        assert(self in touch.ud)
-        touch.ungrab(self)
-        self._do_release()
-        self.dispatch('on_release')
+        ret = super(ImageButton,self).on_touch_up(touch)
+        if ret and self.collide_point(*touch.pos):
+            return True
 
-        return True
-
-    def on_press(self):
-        pass
-
-    def on_cancel(self):
-        pass
-
-    def on_release(self):
-        pass
 
 Builder.load_string("""
 <ImageButton>:
+    canvas.before:
+        Color:
+            rgba: 1,0,0,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
     size: self.image_size
     size_hint: None, None
 """)
