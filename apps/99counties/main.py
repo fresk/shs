@@ -107,12 +107,11 @@ class ExhibitApp(App):
         super(ExhibitApp, self).__init__(**kwargs)
 
 
-    def build(self):
-        self.transitioning = False
-        self.load_data()
-        self.intro_screen = Intro(app=self)
-        self.menu_screen = Menu(app=self)
+    def init_app(self, *args):
 
+        self.load_data()
+
+        self.menu_screen = Menu(app=self)
         self.menu_screen.add_app("scratch")
         self.menu_screen.add_app("historicsites")
         self.menu_screen.add_app("population")
@@ -129,9 +128,14 @@ class ExhibitApp(App):
         self.child_apps['medals'] = Builder.load_file('apps/medals/ui.kv')
 
         Clock.schedule_interval(self.check_for_inactivity, 5.0)
+        self.transitioning = False
 
-        self.root = ExhibitRoot()
+
+    def build(self):
+        self.intro_screen = Intro(app=self)
+        self.root = ExhibitRoot(app=self)
         self.show_intro()
+        Clock.schedule_once(self.init_app, 1.0)
         return self.root
 
 
@@ -140,9 +144,6 @@ class ExhibitApp(App):
         if since_last_touch > 15:
             if not self.intro_screen in self.root.children:
                 self.show_intro()
-
-
-
 
     def show_intro(self):
         self.root.clear_widgets()
