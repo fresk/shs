@@ -1,17 +1,55 @@
+
+<HSDetails>:
+    canvas.before:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'data/map/itembg.png'
+
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: self.data.get('bgimage', 'data/img/trans.png')
+
+<MedalDetails>:
+    canvas.before:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'data/map/itembg.png'
+
+
+<HollywoodDetails>:
+    canvas.before:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'data/map/itembg.png'
+
+
+
 DualDisplay:
-
-    TopScreen:
-        background: 'apps/historicsites/bg-top.png'
-
-        DetailView:
-            selection: map.selection
-
+    id: display
 
     BottomScreen:
+        on_parent: display.bottom_screen = self
         background: 'apps/historicsites/bg-bottom.png'
         HistoryMap:
             id: map
 
         BackToMenuButton:
 
+
+    TopScreen:
+        background: 'apps/historicsites/bg-top.png'
+        on_parent: display.top_screen = self
+
+        DetailView:
+            selection: map.selection
 

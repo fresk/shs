@@ -22,6 +22,9 @@ import apps.countywiki
 import apps.population
 import apps.scratch
 import shsmap
+import time
+
+
 
 class Intro(DualDisplay):
     def on_touch_down(self, touch):
@@ -54,25 +57,29 @@ class Menu(DualDisplay):
 
 
 class ExhibitRoot(F.Widget):
+    app = ObjectProperty(None)
 
     #def tuio_transform(self, touch):
     #    if touch.device == 'tuio':
     #        touch.apply_transform_2d(lambda x,y: (x,y/2.0))
 
     def on_touch_down(self, touch):
-        if App.get_running_app().transitioning:
+        self.app.last_touch_time = touch.time_update
+        if self.app.transitioning:
             return True
         #self.tuio_transform(touch)
         return super(ExhibitRoot, self).on_touch_down(touch)
 
     def on_touch_move(self, touch):
-        if App.get_running_app().transitioning:
+        self.app.last_touch_time = touch.time_update
+        if self.app.transitioning:
             return True
         #self.tuio_transform(touch)
         return super(ExhibitRoot, self).on_touch_move(touch)
 
     def on_touch_up(self, touch):
-        if App.get_running_app().transitioning:
+        self.app.last_touch_time = touch.time_update
+        if self.app.transitioning:
             return True
         #self.tuio_transform(touch)
         return super(ExhibitRoot, self).on_touch_up(touch)
@@ -95,9 +102,13 @@ class TuioTransform(object):
 class ExhibitApp(App):
     selected_county = StringProperty("polk")
 
+    def __init__(self, **kwargs):
+        self.last_touch_time = time.time()
+        super(ExhibitApp, self).__init__(**kwargs)
+
+
     def build(self):
         self.transitioning = False
-
         self.load_data()
         self.intro_screen = Intro(app=self)
         self.menu_screen = Menu(app=self)
@@ -105,22 +116,33 @@ class ExhibitApp(App):
         self.menu_screen.add_app("scratch")
         self.menu_screen.add_app("historicsites")
         self.menu_screen.add_app("population")
+        self.menu_screen.add_app("hollywood")
         self.menu_screen.add_app("countywiki")
         self.menu_screen.add_app("medals")
-        self.menu_screen.add_app("hollywood")
 
         self.child_apps = {}
         self.child_apps['population'] = Builder.load_file('apps/population/ui.kv')
-        self.child_apps['hollywood'] = Builder.load_file('apps/population/ui.kv')
+        self.child_apps['hollywood'] = Builder.load_file('apps/hollywood/ui.kv')
         self.child_apps['historicsites'] = Builder.load_file('apps/historicsites/ui.kv')
         self.child_apps['scratch'] = Builder.load_file('apps/scratch/ui.kv')
         self.child_apps['countywiki'] = Builder.load_file('apps/countywiki/ui.kv')
         self.child_apps['medals'] = Builder.load_file('apps/medals/ui.kv')
-        self.child_apps['hollywood'] = Builder.load_file('apps/hollywood/ui.kv')
+
+        Clock.schedule_interval(self.check_for_inactivity, 5.0)
 
         self.root = ExhibitRoot()
         self.show_intro()
         return self.root
+
+
+    def check_for_inactivity(self, *args):
+        since_last_touch = time.time() - self.last_touch_time
+        if since_last_touch > 15:
+            if not self.intro_screen in self.root.children:
+                self.show_intro()
+
+
+
 
     def show_intro(self):
         self.root.clear_widgets()

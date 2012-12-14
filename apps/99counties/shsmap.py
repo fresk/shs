@@ -239,18 +239,18 @@ class SHSMap(IowaMap):
         for m in self.markers:
             if m.is_selected:
                 self.scale_up_marker(m)
-            elif m.scal > 0.04 or min(m.color) > 0.75:
+            elif m.scal > 0.05 or min(m.color) > 0.85:
                 self.scale_back_marker(m)
 
     def scale_back_marker(self, marker, *args):
-        marker.color = interpolate(marker.color, (.75, .75, .75, .75))
-        marker.scal = interpolate(marker.scal, 0.04)
+        marker.color = interpolate(marker.color, (.85, .85, .85, .85))
+        marker.scal = interpolate(marker.scal, 0.05)
         marker.g_color.rgba = marker.color
         marker.g_scale.matrix = Matrix().scale(marker.scal, marker.scal, marker.scal)
 
     def scale_up_marker(self, marker, *args):
         marker.color = interpolate(marker.color, (1,1,1,1))
-        marker.scal = interpolate(marker.scal, 0.06)
+        marker.scal = interpolate(marker.scal, 0.065)
         marker.g_color.rgba = marker.color
         marker.g_scale.matrix = Matrix().scale(marker.scal, marker.scal, marker.scal)
 
@@ -328,8 +328,27 @@ class DetailView(F.FloatLayout):
         if self.selection.get('icon') == 'hollywood':
             new_child = HollywoodDetails(data=self.selection)
 
+        old_children = []
+        for c in self.children[:]:
+            old_children.append(c)
+            self.remove_widget(c)
+
         if new_child:
+            new_child.opacity=0.0
             self.add_widget(new_child)
+            Animation(opacity=1.0, d=0.8).start(new_child)
+
+        for c in old_children:
+            self.add_widget(c)
+            self.hide_old_child(c)
+
+
+    def hide_old_child(self, c):
+        def remove_old(a, *args):
+            self.remove_widget(a)
+        anim = Animation(opacity=0.0, d=0.8)
+        anim.bind(on_complete=partial(remove_old, c))
+        anim.start(c)
 
 
 
