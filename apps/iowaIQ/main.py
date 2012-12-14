@@ -117,6 +117,7 @@ class CustomTextInput(Label):
         self._on_close()
 
     def _on_key_down(self, keyboard, keycode, text, modifiers):
+        # FUCK IOS
         if keycode[1] == 'backspace':
             self.rawtext = self.rawtext[:-1]
             self.data = {}
@@ -124,6 +125,10 @@ class CustomTextInput(Label):
             keyboard.release()
         elif keycode[1] == 'delete':
             pass
+        elif keycode[1] == 'enter':
+            self._keyboard.release()
+        elif type(text) in (int, long):
+            return True
         elif len(text):
             self.rawtext += text
             self.data = {}
@@ -724,7 +729,7 @@ class IowaIQApp(App):
         with open(self._questions_fn, 'w') as fd:
             json.dump(result, fd)
 
-        self._jsondata = JsonData('questions.json',
+        self._jsondata = JsonData(self._questions_fn,
             on_success=self._pull_update_done,
             on_progress=self._show_progression
         )
