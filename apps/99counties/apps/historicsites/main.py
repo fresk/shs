@@ -20,18 +20,6 @@ m_cube = ObjFile("data/map/unitcube.obj").objects.values()[0]
 
 
 
-class _Mesh(Mesh):
-    pass
-
-def gMesh(m, source=None):
-    mesh = _Mesh(
-        vertices=m.vertices,
-        indices=m.indices,
-        fmt = m.vertex_format,
-        mode = 'triangles',
-        source = source )
-    return mesh
-
 
 def gScale(sx, sy, sz):
     mi = MatrixInstruction()
@@ -64,7 +52,17 @@ def gDrawAxes():
     gXaxis()
     gZaxis()
 
+class _gMesh(Mesh):
+    pass
 
+def gMesh(m, source=None):
+    mesh = _gMesh(
+        vertices=m.vertices,
+        indices=m.indices,
+        fmt = m.vertex_format,
+        mode = 'triangles',
+        source = source )
+    return mesh
 
 def gCube(scale=1.0, pos=(0,0,0), color=(1,1,1,1), source=None):
     PushMatrix()
@@ -78,41 +76,26 @@ def gCube(scale=1.0, pos=(0,0,0), color=(1,1,1,1), source=None):
     PopMatrix()
     return mesh
 
-
-
-def marker_pos(s):
-    lat, lon = map(float, (s['latitude'], s['longitude']))
+def marker_pos(mdata):
+    lat, lon = map(float, (mdata['latitude'], mdata['longitude']))
     x,y = iowa_relative((lat, lon))
-    return (x-.5,y-.5,0)
-
-
-"""
-class Marker(F.Widget):
-    mapview = ObjectProperty()
-    latlon = ListProperty([0,0,0])
-    color = ListProperty([1,1,1,1])
-    icon = StringProperty("data/map/marker-historic.png")
-    scale = NumericProperty(0.01)
-
-    def __init__(self, **kwargs):
-        super(Marker, self).__init__(self, **kwargs)
-        self.render_canvas = Canvas()
-        with self.render_canvas:
-            self.render()
-
-    def render(self):
-        gCube(self.scale)
-"""
-
+    return (x - .5, y - .5, 0.025)
 
 def gMarker(mdata):
-    m = gCube(0.05, marker_pos(mdata), )
-    m.source = "data/map/marker-historic.png"
+    mdata['map_pos'] = mdata.get('map_pos', marker_pos(mdata))
+    m = gCube(0.05, mdata['map_pos'])
+    m.source = "data/map/marker-%s.png" % mdata.get('icon', 'medal')
     return m
+
+
 
 
 class SHSMap(IowaMap):
 
+    def render(self):
+        super(SHSMap, self).render()
+        with self.map_space:
+            self.render_markers()
 
     def render_markers(self):
         self.markers = []
@@ -123,13 +106,6 @@ class SHSMap(IowaMap):
             for m in self.app.historic_sites.values():
                 self.markers.append(gMarker(m))
         PopMatrix()
-
-    def render(self):
-        self.render_map()
-        with self.map_space:
-            gDrawAxes()
-            self.render_markers()
-
 
 
 

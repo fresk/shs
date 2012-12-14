@@ -30,7 +30,7 @@ class CountyModel(Widget):
 
         with self.fbo:
             self.cb = Callback(self.setup_gl_context)
-            self.render_ctx = RenderContext()
+            self.render_ctx = RenderContext(with_normal_mat=True)
             self.cb2 = Callback(self.reset_gl_context)
 
         with self.render_ctx:
@@ -142,12 +142,12 @@ class CountyMap(Widget):
 
         with self.fbo:
             self.cb = Callback(self.setup_gl_context)
-            self.render_ctx = RenderContext()
+            self.render_ctx = RenderContext(with_normal_mat=True)
             self.cb2 = Callback(self.reset_gl_context)
 
         with self._p_fbo:
             self._p_cb = Callback(self.setup_gl_context)
-            self._p_render_ctx = RenderContext()
+            self._p_render_ctx = RenderContext(with_normal_mat=True)
             self._p_cb2 = Callback(self.reset_gl_context)
 
         with self.render_ctx:
@@ -176,13 +176,14 @@ class CountyMap(Widget):
         self._p_fbo.size = value
         self.texture = self.fbo.texture
         self.p_texture = self._p_fbo.texture
+
         self.fbo_rect.size = self.size
         self._p_fbo_rect.size = self.size
         self._p_fbo_rect.pos = self.x,-self.height
 
     def on_pos(self, instance, value):
-        self.fbo_rect.pos = value
-        self._p_fbo_rect.pos = self.x, self.height
+        self._p_fbo_rect.pos = value
+        self._p_fbo_rect.pos = self.x, -self.height
 
     def on_texture(self, instance, value):
         self.fbo_rect.texture = value
@@ -210,15 +211,13 @@ class CountyMap(Widget):
             self.mesh_colors[self.selected_county].rgba = (1,0,0,1)
 
     def setup_scene(self):
-        normal_txt = resource_find('data/map/iowa_tex.png')
-        map_txt = resource_find(self.map_texture)
 
         Translate(0,-.12,-2)
 
         self.rot = Rotate(0, 0,1,0) # tilt
         self.roty = Rotate(0,1,0,0)
         Scale(1.8)
-        Translate(-.5,-.25, 0.05)
+        Translate(0,.25, 0.05)
         self.meshes = {}
         self.mesh_transforms = {}
         self.mesh_colors = {}
@@ -227,8 +226,6 @@ class CountyMap(Widget):
         c = 0.0 #f=lambda a,l:min(l,key=lambda x:abs(x-a))
         for name in sorted(self.counties.keys()):
             mesh = self.counties[name]['mesh']
-            self.tex_binding_1 = BindTexture(source=self.map_texture, index=1)
-            self.render_ctx['texture1'] = 1
             PushMatrix()
             self.mesh_transforms[name] = MatrixInstruction()
             self.mesh_colors[name] = Color(1,1,1,1)
@@ -237,7 +234,7 @@ class CountyMap(Widget):
                 indices=mesh.indices,
                 fmt = mesh.vertex_format,
                 mode = 'triangles',
-                source = normal_txt
+                source = "data/map/iowa_wiki.png"
             )
             Color(1,1,1,1)
             PopMatrix()
@@ -250,7 +247,7 @@ class CountyMap(Widget):
         self._p_roty = Rotate(0,1,0,0)
         Rotate(0, 1,0,0) # tilt
         Scale(1.8)
-        Translate(-.5,-.25, 0.05)
+        Translate(0, .25, 0.05)
         self._p_meshes = {}
         self._p_mesh_transforms = {}
         Color(1,1,1,1)
@@ -297,7 +294,6 @@ class CountyMap(Widget):
     def update_glsl(self, *largs):
         va = (self.width/float(self.height)) /2.0
         self.render_ctx['time'] = t = Clock.get_boottime()
-        self.render_ctx['resolution'] = map(float, self.size)
         self.render_ctx['projection_mat'] = Matrix().view_clip(-va,va,-.5,.5, .95,100, 1)
         self.render_ctx['light_pos'] = [0, 0.0, 0]
 

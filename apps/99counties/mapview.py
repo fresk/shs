@@ -112,7 +112,7 @@ class MapView(Widget):
                 indices=m.indices,
                 fmt = m.vertex_format,
                 mode = 'triangles',
-                source = 'data/map/iowa_land.png' )
+                source = 'data/map/iowa_4k.png' )
         PopMatrix()
         self.map_space = Canvas()
         PopMatrix()
