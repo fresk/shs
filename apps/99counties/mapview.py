@@ -142,8 +142,8 @@ class InteractiveMapView(MapView):
             self.scatter.scale = interpolate(self.scatter.scale, 1.0, 20)
         xpan = self.scatter.center_x - self.center_x
         ypan = self.scatter.center_y - self.center_y
-        tx = xpan/float(self.height) * 1.3
-        ty = ypan/float(self.height) * 1.3
+        tx = xpan/float(1080)
+        ty = ypan/float(1080)
         mat = Matrix().scale(s,s,s).translate(tx,ty,0)
 
         self.t_viewtrans.matrix = mat
