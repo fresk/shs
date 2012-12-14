@@ -1,6 +1,5 @@
 import random
 import json
-import csv
 import urllib
 from jsondata import JsonData
 
@@ -9,6 +8,8 @@ from os import makedirs
 from os.path import join, exists, expanduser
 from functools import partial
 from kivy.app import App
+from kivy.utils import interpolate
+from kivy.factory import Factory as F
 from kivy.uix.image import AsyncImage
 from kivy.uix.widget import Widget
 from kivy.uix.relativelayout import RelativeLayout
@@ -18,7 +19,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.listview import ListView
 from kivy.adapters.listadapter import ListAdapter
-from kivy.uix.screenmanager import Screen, ScreenManager, WipeTransition
+from kivy.uix.screenmanager import *
 from kivy.network.urlrequest import UrlRequest
 from kivy.utils import platform
 from kivy.clock import Clock
@@ -27,6 +28,8 @@ from kivy.graphics import Fbo, Canvas, Color, Quad, Translate
 from kivy.properties import (
     BooleanProperty, NumericProperty, StringProperty, ObjectProperty,
     ListProperty, DictProperty, AliasProperty, OptionProperty)
+
+from kivy.cache import Cache
 
 from math import sin, pi
 from viewport import Viewport
@@ -88,7 +91,7 @@ class CustomTextInput(Label):
     _autocomplete_index = ObjectProperty()
 
     def _is_valid(self):
-        return len(self.data.keys()) >= self.autocomplete_minkeys and len(self.rawtext) > 2
+        return len(self.rawtext) > 2
     is_valid = AliasProperty(_is_valid, None, bind=('data', 'rawtext'))
 
     def on_touch_down(self, touch):
@@ -114,6 +117,7 @@ class CustomTextInput(Label):
         self._on_close()
 
     def _on_key_down(self, keyboard, keycode, text, modifiers):
+        # FUCK IOS
         if keycode[1] == 'backspace':
             self.rawtext = self.rawtext[:-1]
             self.data = {}
@@ -121,6 +125,10 @@ class CustomTextInput(Label):
             keyboard.release()
         elif keycode[1] == 'delete':
             pass
+        elif keycode[1] == 'enter':
+            self._keyboard.release()
+        elif type(text) in (int, long):
+            return True
         elif len(text):
             self.rawtext += text
             self.data = {}
@@ -145,14 +153,13 @@ class CustomTextInput(Label):
         a.start(self.autocomplete_placeholder)
 
     def on_autocomplete_source(self, instance, value):
-        places = []
-        self._rows = {}
-        with open(value, 'rb') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                place = "{0}, {1}".format(row['name'], row['state_code'])
-                self._rows[place] = row
-                places.append(place)
+        places = json.load(open('ui/usplaces.json', 'r'))
+        #with open(value, 'rb') as f:
+        #    reader = csv.DictReader(f)
+        #    for row in reader:
+        #        place = "{0}, {1}".format(row['name'], row['state_code'])
+        #        self._rows[place] = row
+        #        places.append(place)
         self._autocomplete_index = StringIndex(places)
         self.autocomplete_minkeys = 2
 
@@ -160,22 +167,28 @@ class CustomTextInput(Label):
         if not self.autocomplete_source:
             return
 
-        completions = self._autocomplete_index.find_prefix(value)[:10]
-        completions = [c for c in completions if c.lower().startswith(value.lower())]
+        completions = self._autocomplete_index.find_prefix(value)
+        completions = [c for c in completions if (
+            c.lower().startswith(value.lower()) and
+            "mobile home" not in c.lower()
+            )]
         if len(completions) == 1:
             return
 
         ph = self.autocomplete_placeholder
         ph.clear_widgets()
-        ph.add_widget(CompletionLabel(text='Do you mean?'))
-        for text in completions[:3]:
-            btn = CompletionButton(text=text, data=self._rows.get(text, {}))
+        #ph.add_widget(CompletionLabel(text='Do you mean?'))
+        iowa_compl = [c for c in completions if c.lower().strip().endswith("ia")]
+        other_compl = [c for c in completions if not c in iowa_compl ]
+        comps = iowa_compl[:3] + other_compl[:4]
+        for text in comps[:4]:
+            btn = CompletionButton(text=text, data={})
             btn.bind(on_release=self._set_text)
             ph.add_widget(btn)
 
     def _set_text(self, instance):
         if self._keyboard:
-            print 'SET TEXT FROM', instance, instance.data
+            #print 'SET TEXT FROM', instance, instance.data
             self.rawtext = instance.text
             self.data = instance.data
             self._keyboard.release()
@@ -318,27 +331,63 @@ class QuestionScreen(Screen):
             c.reset()
 
 
-    def on_transition_progress(self, *args):
-        if self.transition_progress == 1.0 and self.transition_state == "in":
-            print "done transitioning"
-            App.get_running_app().preload_answer_screen()
+    #def on_transition_progress(self, *args):
+    #    if self.transition_progress == 1.0 and self.transition_state == "in":
+    #        print "done transitioning"
+    #        App.get_running_app().preload_answer_screen()
 
 
 class AnswerImagePopup(ModalView):
     answer = ObjectProperty()
     alpha = NumericProperty(0)
     scatter = ObjectProperty()
+    data = ObjectProperty(None)
+    text = StringProperty("")
+    image_src = StringProperty("")
 
-    def on_touch_down(self, touch):
-        if touch.is_double_tap:
+    def highres_src(self, *args):
+        src = self.data.get('medium') or ""
+        src = self.data.get('large') or src
+        src = self.data.get('full') or src
+        return src
+
+    def on_data(self, *args):
+        #print self.data
+        self.text = self.data.get('caption', '')
+        self.image_src = self.highres_src()
+
+
+    #def on_touch_down(self, touch):
+    #    if touch.is_double_tap:
+    #        self.reset()
+    #        return True
+    #    return super(AnswerImagePopup, self).on_touch_down(touch)
+
+    def on_touch_up(self, touch):
+        super(AnswerImagePopup, self).on_touch_up(touch)
+        if len(self.scatter._touches) == 1:
             self.reset()
-            return True
-        return super(AnswerImagePopup, self).on_touch_down(touch)
+        return True
 
-    def reset(self):
-        rotation = 360. if self.scatter.rotation > 180 else 0.
-        Animation(rotation=rotation, scale=1., center=self.center,
-                d=0.5, t='out_quart').start(self.scatter)
+    def reset(self, *args):
+        #rotation = 360. if self.scatter.rotation > 180 else 0.
+        #Animation(rotation=rotation, scale=1., center=self.center,
+        #        d=0.5, t='out_quart').start(self.scatter)
+        self.scatter.scale = interpolate(self.scatter.scale, 1.0)
+        self.scatter.center = interpolate(self.scatter.center, self.center)
+        if self.scatter.rotation > 200:
+            self.scatter.rotation = interpolate(self.scatter.rotation, 360.0)
+        else:
+            self.scatter.rotation = interpolate(self.scatter.rotation, 0.0)
+
+        if ( abs(1.-self.scatter.scale) < 0.1 and
+             abs(self.scatter.center_x - self.center_x) < 10 and
+             abs(self.scatter.center_y - self.center_y) < 10 ):
+            return
+        Clock.schedule_once(self.reset, 1/60.)
+
+
+
 
     def open(self):
         super(AnswerImagePopup, self).open()
@@ -349,8 +398,8 @@ class AnswerImagePopup(ModalView):
         Animation(alpha=0., d=.5, t='out_quart').start(self)
 
 
-class AnswerImage(AsyncImage):
-    img_data = ObjectProperty()
+class AnswerImage(F.Image):
+    data = ObjectProperty()
     text = StringProperty()
 
     def on_touch_down(self, touch):
@@ -360,71 +409,90 @@ class AnswerImage(AsyncImage):
         super(AnswerImage, self).on_touch_down(touch)
 
 
-    def _get_smallest(self):
-        print "XXXX", self.img_data
-        if self.img_data.get('medium'):
-            return self.img_data['medium'][0]
-        return self.img_data['full']
 
     def on_img_data(self, *args):
-        self.source = self._get_smallest()
         self.text = self.img_data.get('caption') or ''
 
     def open(self):
-        self._popup = AnswerImagePopup(answer=self)
+        pass
+        #self._popup = AnswerImagePopup(answer=self)
+        #self._popup.open()
+
+
+
+class AnswerThumb(F.AsyncImage):
+    data = ObjectProperty(None)
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            self.open()
+            return True
+
+    def open(self):
+        self._popup = AnswerImagePopup(data=self.data)
         self._popup.open()
 
 
+class ThumnailList(F.GridLayout):
+    zoomlayer = ObjectProperty(None)
 
-class ThumnailList(BoxLayout):
     def clear(self):
-        self._next_x = 50
         self.clear_widgets()
+        self.thumbs = []
+
+    def add_image(self, src, data):
+        t = AnswerThumb(opacity=0.0)
+        t.source = src
+        t.data = data
+        self.add_widget(t)
+        Animation(opacity=1.0).start(t)
 
 
-    def add_thumb(self, img):
-        print "ADDING", img
-        if not img.get('full'):
-            return
-        w = AnswerImage(img_data=img)
-        w.size_hint = (None, None)
-        w.height = 400
-        w.width = 400 * w.image_ratio
-        self.minimum_width = self.minimum_width + w.width + 50
-        self.add_widget(w)
-
-    def add_images(self, images):
-        self.clear()
-        self.minimum_width = 50
-        for img in images:
-            self.add_thumb(img)
-        self.add_widget(Widget(size_hint=(None, None), width=200))
-        self.minimum_width = self.minimum_width + 250
-        self.width = self.minimum_width
-        self.parent.update_from_scroll()
-        print "THIMBS", self.width
 
 
 
 class AnswerScreen(Screen):
     text = StringProperty("")
+    question = ObjectProperty(None)
     correct = BooleanProperty(False)
     feedback = StringProperty("")
-    images = ListProperty([])
     image_layout = ObjectProperty()
 
     _feedback_right = open('ui/screens/answer/feedback_right.txt').readlines()
     _feedback_wrong = open('ui/screens/answer/feedback_wrong.txt').readlines()
 
-    def on_text(self, *args):
-        if self.correct:
-            self.feedback = random.choice(self._feedback_right).strip()
-        else:
-            self.feedback = random.choice(self._feedback_wrong).strip()
+    def on_transition_progress(self, *args):
+        if self.transition_state != "in":
+            return
+        if self.transition_progress < 1:
+            return
+        self.load_next_image()
 
-    def on_images(self, *args):
+    def thumb_src(self, img):
+        src = img.get('full') or ""
+        src = img.get('large') or src
+        src = img.get('medium') or src
+        return src
+
+    def load_next_image(self, *args):
+        if self.images:
+            img = self.images.pop()
+            src = self.thumb_src(img)
+            if src:
+                self.image_layout.add_image(src, img)
+                Clock.schedule_once(self.load_next_image, 0.5)
+            else:
+                self.load_next_image()
+
+    def reset(self, q):
+        self.correct = True
         self.image_layout.clear()
-        self.image_layout.add_images(self.images)
+        self.question = q
+        self.text = q['answer_text']
+        self.images = q['answer_images']
+
+    def on_text(self, *args):
+        self.feedback = random.choice(self._feedback_right).strip()
 
 
 class ResultsScreen(Screen):
@@ -481,7 +549,7 @@ class StatusBar(RelativeLayout):
     alpha_show = NumericProperty(0.0)
 
     def show(self, *args):
-        (Animation(d=0.8) + Animation(alpha_show=1.0, t='out_quad', d=1.0)
+        (Animation(d=1.5) + Animation(alpha_show=1.0, t='out_quad', d=1.0)
         ).start(self)
 
     def hide(self, *args):
@@ -497,8 +565,12 @@ class IowaIQApp(App):
 
     def build(self):
         self.root = self.viewport = Viewport(size=(2048, 1536))
+        #Clock.schedule_interval(self.print_cache, 1.0)
         self.ensure_directories()
         self.load_questions()
+
+    def print_cache(self, *args):
+        Cache.print_usage()
 
     def ensure_directories(self):
         resources_dir = join(self.get_data_dir(), 'resources')
@@ -508,7 +580,7 @@ class IowaIQApp(App):
     def show_app(self, *args):
         self._hide_progression()
 
-        self.screen_manager = ScreenManager(transition=WipeTransition())
+        self.screen_manager = ScreenManager(transition=FadeTransition(duration=0.3))
         self.screen_manager.add_widget(IntroScreen(name='intro'))
         self.screen_manager.add_widget(QuestionScreen(name='question'))
         self.screen_manager.add_widget(AnswerScreen(name='answer'))
@@ -552,19 +624,19 @@ class IowaIQApp(App):
     def preload_answer_screen(self):
         q = self.question
         ascreen = self.screen_manager.get_screen('answer')
-        ascreen.correct = True
-        ascreen.text = q['answer_text']
-        ascreen.images = q['answer_images']
 
 
 
     def check_answer(self, ui_question, ui_button, answer):
         q = self.question
         is_correct = (answer == int(q['correct_answer']))
+        #print "answer is:", is_correct
         if is_correct:
             self.status_bar.score += 4
             ui_button.background_normal = "ui/screens/question/qbg_correct.png"
             ui_button._update_mesh()
+            ascreen = self.screen_manager.get_screen('answer')
+            ascreen.reset(q)
             def _go_answer(*args):
                 self.screen_manager.current = 'answer'
             Clock.schedule_once(_go_answer, 0.2)
@@ -599,20 +671,21 @@ class IowaIQApp(App):
     #
 
     def submit_score(self, nick, city):
-        d = dict(
-            nick=nick.rawtext,
-            city=city.data['name'],
-            county=city.data['county'],
-            state=city.data['state'],
-            state_code=city.data['state_code'],
-            score=self.status_bar.score)
+        d = dict(nick=nick.rawtext, place=city.rawtext)
+        #d = dict(
+        #    nick=nick.rawtext,
+        #    city=city.data['name'],
+        #    county=city.data['county'],
+        #    state=city.data['state'],
+        #    state_code=city.data['state_code'],
+        #    score=self.status_bar.score)
         body = urllib.urlencode(d)
         self._show_progression('Submitting score...', 0, 1)
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
         self._req = UrlRequest(self.config.get('app', 'score'),
                 req_body=body, req_headers=headers,
                 on_success=self._on_submit_success,
-                on_error=self._on_submit_failed, debug=True)
+                on_error=self._on_submit_failed)
 
     def _on_submit_success(self, req, result):
         self._hide_progression()
@@ -656,15 +729,15 @@ class IowaIQApp(App):
         with open(self._questions_fn, 'w') as fd:
             json.dump(result, fd)
 
-        self._jsondata = JsonData('questions.json',
+        self._jsondata = JsonData(self._questions_fn,
             on_success=self._pull_update_done,
             on_progress=self._show_progression
         )
 
     def _pull_update_done(self, questions):
         self.questions = questions
-        for q in self.questions:
-            print q['question_bg_image']
+        #for q in self.questions:
+        #    #print q['question_bg_image']
         self._show_progression('Starting application...', 100, 100)
         Clock.schedule_once(self.show_app, 0.1)
 
@@ -687,7 +760,6 @@ class IowaIQApp(App):
         if hasattr(self, '_progression'):
             self._progression.dismiss()
             del self._progression
-
 
 APP = IowaIQApp()
 APP.run()

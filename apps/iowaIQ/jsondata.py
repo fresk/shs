@@ -57,47 +57,44 @@ class JsonData(object):
                 'resources', '{0}{1}.{2}'.format(etag, suffix, ext))
 
     def _download_image(self, data):
-        if not data['full']:
+        if not data['large']:
             return {}
         # check the etag
         etag = data['etag']
-        ext = data['full'][0].rsplit('.', 1)[-1]
+        ext = data['large'][0].rsplit('.', 1)[-1]
 
         if self._json_mode == 'detect':
-            fn = self._get_local_from_etag(etag, ext)
-            print 'fn', fn, exists(fn)
-            if not exists(fn):
-                print 'append full', data['full']
-                self._json_urls.append((data['full'], etag, ''))
-            else:
-                self._json_cache[data['full'][0]] = fn
+            #fn = self._get_local_from_etag(etag, ext)
+            #print 'fn', fn, exists(fn)
+            #if not exists(fn):
+                #print 'append full', data['full']
+            #    self._json_urls.append((data['full'], etag, ''))
+            #else:
+            #    self._json_cache[data['full'][0]] = fn
             if data['medium']:
                 fn = self._get_local_from_etag(etag, ext, '_medium')
                 if not exists(fn):
-                    print 'append medium', data['medium']
+                    #print 'append medium', data['medium']
                     self._json_urls.append((data['medium'], etag, '_medium'))
                 else:
+                    #print "adding to cache", data['medium']
                     self._json_cache[data['medium'][0]] = fn
             if data['large']:
                 fn = self._get_local_from_etag(etag, ext, '_large')
                 if not exists(fn):
-                    print 'append large', data['large']
+                    #print 'append large', data['large']
                     self._json_urls.append((data['large'], etag, '_large'))
                 else:
                     self._json_cache[data['large'][0]] = fn
             return data
 
         if self._json_mode == 'replace':
-            if data['full'][0].startswith('http://'):
-                data['full'] = self._json_cache.get(data['full'][0])
+            #if data['full'][0].startswith('http://'):
+            #    data['full'] = self._json_cache.get(data['full'][0])
             if data['medium'] and data['medium'][0].startswith('http://'):
                 data['medium'] = self._json_cache.get(data['medium'][0])
-            else:
-                data['medium'] = None
             if data['large'] and data['large'][0].startswith('http://'):
                 data['large'] = self._json_cache.get(data['large'][0])
-            else:
-                data['large'] = None
             return data
 
     def _download_resources(self, *args):
@@ -114,6 +111,7 @@ class JsonData(object):
         url_data, etag, suffix = self._json_urls.pop()
         url = url_data[0]
         url = urllib2.quote(url, safe=':/')
+        #print "fetching:", url
         self.cb_progress('Downloading resources {0}/{1}'.format(
             self._json_count - len(self._json_urls), self._json_count),
             self._json_count - 1 - len(self._json_urls),
@@ -175,8 +173,8 @@ class JsonData(object):
         rv = {}
 
         # hook to check if the dict is an image dict
-        if 'full' in data and 'etag' in data:
-            return self._download_image(data)
+        if 'large' in data and 'etag' in data:
+            self._download_image(data)
 
         for key, value in data.iteritems():
             if isinstance(key, unicode):

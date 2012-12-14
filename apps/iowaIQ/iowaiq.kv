@@ -30,6 +30,7 @@
         size_hint: None, None
         text_size: 2000, 150
         color: 0,0,0,0.8
+        padding: 200, 5
 
     Label:
         text: "Score: {0}".format(root.score)
@@ -38,15 +39,11 @@
         size_hint: None, None
         text_size: 2000, 150
         color: 0,0,0,0.8
+        padding: 200, 5
 
 
 <Screen>:
     canvas:
-        Color:
-            rgba: 0,0,0,1
-        Rectangle:
-            pos: self.pos
-            size: self.size
         Color:
             rgba: 1,1,1,1
         Rectangle:
@@ -85,12 +82,12 @@
 
 <QuestionScreen>:
     canvas:
-        Color:
-            rgba: 1, 1, 1, 1
-        Rectangle:
-            pos: self.pos
-            size: self.size
-            source: 'ui/screens/question/bg.png'
+        #Color:
+        #    rgba: 1, 1, 1, 1
+        #Rectangle:
+        #    pos: self.pos
+        #    size: self.size
+        #    source: 'ui/screens/question/bg.png'
 
     on_reset: [x.reset() for x in (opt1, opt2, opt3, opt4)]
 
@@ -100,11 +97,14 @@
         Label:
             text: root.text
             markup: True
-            font_name: 'ui/fonts/Gotham-Bold.ttf'
-            font_size: '28dp'
+            font_name: 'ui/fonts/Gotham-Book.ttf'
+            font_size: '32dp'
             halign: 'left'
             size_hint: None, 1
+            padding: 200, 300
             width: root.width - 250
+            line_height: 1.3
+            color: .96, .96, .96, 1
 
         GridLayout:
             on_parent: root.button_grid = self
@@ -131,22 +131,39 @@
 
 
 <QuestionButton>:
-    font_name: 'ui/fonts/Gotham-Bold.ttf' if self.alpha_rotation < 0.5 else 'ui/fonts/Gotham-Book.ttf'
-    halign: 'center' if self.alpha_rotation < 0.5 else 'left'
+    font_name: 'ui/fonts/Gotham-Bold.ttf' if self.alpha_rotation < 0.5 else 'ui/fonts/Gotham-Bold.ttf'
+    halign: 'center' if self.alpha_rotation < 0.5 else 'center'
     font_size: '22dp' if self.alpha_rotation < 0.5 else '14dp'
     background_normal: "ui/screens/question/qbg.png"
     background_down: "ui/screens/question/qbg_down.png"
     background_wrong: "ui/screens/question/qbg_wrong.png"
+    color: .96, .96, .96, 1
+
+
+
+<AnswerThumb>:
+    size_hint: None, None
+    width: self.image_ratio * 400
+    height: 400
+    allow_stretch: True
+
+    #canvas.before:
+    #    Color:
+    #        rgba: 1,1,1,1
+    #    Rectangle:
+    #        size: self.width + 40, self.height + 40
+    #        pos: self.x-20, self.y-20
 
 
 <AnswerScreen>:
-    canvas:
-        Color:
-            rgba: 1,1,1,1
-        Rectangle:
-            pos: self.pos
-            size: self.size
-            source: 'ui/screens/answer/bg.png'
+    image_layout: thumbnail_list
+    #canvas:
+    #    Color:
+    #        rgba: 1,1,1,1
+    #    Rectangle:
+    #        pos: self.pos
+    #        size: self.size
+    #        source: 'ui/screens/answer/bg.png'
 
     BoxLayout:
         orientation: 'vertical'
@@ -156,11 +173,12 @@
         Label:
             font_name: 'ui/fonts/Gotham-Bold.ttf'
             font_size: '76dp'
-            height: '100dp'
+            height: '125dp'
             halign: 'left'
             valign: 'bottom'
             size_hint_y: None
             text: root.feedback
+            line_height: 1.3
         Label:
             halign: 'left'
             font_size: '24dp'
@@ -171,6 +189,8 @@
             height: 500
 
 
+    Widget:
+        id: zoomlayer
 
     ScrollView:
         do_scroll_y: False
@@ -179,19 +199,20 @@
 
         canvas.before:
             Color:
-                rgba: 1,0,0,0.0
+                rgba: 0,0,0,0.5
             Rectangle:
-                pos: self.pos
+                pos: 0,0
                 size: self.size
 
         ThumnailList:
+            id: thumbnail_list
+            zoomlayer: zoomlayer
+            rows: 1
+            size_hint: None, None
+            height: 400
             padding: 50
             spacing: 50
-            size_hint: None, None
-            height: 500
-            minimum_width: self.width
-            on_parent: root.image_layout = self
-
+            width: self.minimum_width
 
     Button:
         on_release: app.next_question()
@@ -208,32 +229,27 @@
 <ResultsScreen>:
     fadelist_1: [title, score_text]
     fadelist_2: [title, score_text, cityinput, citylabel]
-    canvas:
-        Color:
-            rgba: 1,1,1,1
-        Rectangle:
-            pos: self.pos
-            size: self.size
-            source: 'ui/screens/results/bg.png'
 
     Label:
         id: title
         size_hint: 1, None
         text: "Nice work, friend."
-        height: '100dp'
-        top: root.top - dp(10)
+        height: 200
+        top: root.top - 150
+        x: 50
         valign: 'bottom'
         halign: 'left'
         font_name: 'ui/fonts/Gotham-Bold.ttf'
-        font_size: '100dp'
+        font_size: '90dp'
 
 
     Label:
         id: score_text
         text: root.text
         size_hint: 1, None
-        height: '100dp'
-        top: title.y - dp(10)
+        height: 150
+        top: title.y - 10
+        x: 50
         valign: 'top'
         halign: 'left'
         font_size: '65dp'
@@ -244,10 +260,10 @@
         cols: 2
         size_hint: 1, None
         height: '250dp'
-        top: score_text.y + dp(20)
+        top: score_text.y - 100
         padding: dp(50)
         Label:
-		    id: citylabel
+            id: citylabel
             text: "Where are you from?"
             font_size: '36dp'
             halign: 'left'
@@ -263,7 +279,7 @@
             id: cityinput
             text: ""
             on__keyboard: root.fadein(root.fadelist_1) if self._keyboard else root.fadeout(root.fadelist_1)
-            autocomplete_source: 'ui/uscities.csv'
+            autocomplete_source: 'ui/uscities.json'
             autocomplete_placeholder: city_placeholder
             autocomplete_hidelist: [nickinput, nicklabel]
 
@@ -272,40 +288,40 @@
             id: fl
             size_hint_y: None
             height: cityinput.height
-
-            BoxLayout:
-                id: city_placeholder
-                pos: fl.pos
-                orientation: 'vertical'
+            Widget:
+                BoxLayout:
+                    id: city_placeholder
+                    center: fl.center
+                    size: cityinput.width, cityinput.height*2
+                    pos: fl.pos
+                    spacing: 10
+                    orientation: 'vertical'
 
             CustomTextInput:
                 id: nickinput
                 pos: fl.pos
                 text: ""
-				on__keyboard: root.fadein(root.fadelist_2) if self._keyboard else root.fadeout(root.fadelist_2)
+                on__keyboard: root.fadein(root.fadelist_2) if self._keyboard else root.fadeout(root.fadelist_2)
 
 
     Button:
         id: submit_btn
-		background_color: (1, 0, 0, 1)
         background_down: 'ui/screens/results/submit_down.png'
         background_normal: 'ui/screens/results/submit.png'
-		on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid) else None
-		opacity: 1 if (nickinput.is_valid and cityinput.is_valid) else 0
+        on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid) else None
+        opacity: 1 if (nickinput.is_valid and cityinput.is_valid) else 0
         right: root.right - dp(50)
         size: dp(320), dp(100)
         size_hint: None, None
         y: '150dp'
 
     Button:
-		background_color: (0, 1, 0, 1)
         background_down: 'ui/screens/results/nosubmit_down.png'
         background_normal: 'ui/screens/results/nosubmit.png'
         on_release: app.screen_manager.current = 'intro'
         right: submit_btn.right
         size: dp(320), dp(100)
         size_hint: None, None
-        text: "Don't submit score - start over."
         top: submit_btn.y - dp(20)
 
 
@@ -320,9 +336,11 @@
             size_hint: None, None
             size: ('400dp', '250dp')
             orientation: 'vertical'
-            padding: '50dp'
+            padding: '70dp'
             Label:
                 text: root.text
+                color: .20, .20, .20, 1
+                font_size: '15sp'
             ProgressBar:
                 value: root.progression
 
@@ -332,8 +350,8 @@
 
 <AnswerImagePopup>:
     scatter: scatter
-    background_color: (0, 0, 0, 1.0)
-    background: 'ui/screens/answer/imageviewbg.png'
+    background_color: (0, 0, 0, 0.6)
+    #background: 'ui/screens/answer/imageviewbg.png'
 
     ScatterPlane:
         id: scatter
@@ -343,7 +361,7 @@
         on_center_y: self.center_y = min(max(0,self.center_y), root.height)
         AsyncImage:
             mipmap: True
-            source: root.answer.img_data['full']
+            source: root.image_src
             # for positionning, take care of the label
             size: root.width - dp(100), root.height - dp(150)
             pos: dp(50), dp(100)
@@ -358,7 +376,7 @@
             on_touch_down: root.dismiss() if self.collide_point(*args[1].pos) else None
 
         Label:
-            text: root.answer.text or ''
+            text: root.text or ''
             size_hint_y: None
             height: '50dp'
             font_size: '12dp'
@@ -380,7 +398,7 @@
 
     Image:
         id: img
-		color: root.color
+        color: root.color
         pos: root.pos
         size: root.size
         source: 'ui/screens/results/input_bg.png'
@@ -388,153 +406,155 @@
         allow_stretch: True
 
 <CompletionLabel>:
-    font_size: '18sp'
+    font_size: '28sp'
 
 <CompletionButton>:
     background_color: 0, 0, 0, 0
+    font_name: 'ui/fonts/Gotham-Bold.ttf'
+    font_size: '26sp'
 
 
 <StandingsScreen>:
-	container: container
-    canvas:
-        Color:
-            rgba: 1,1,1,1
-        Rectangle:
-            pos: self.pos
-            size: self.size
-            source: 'ui/screens/standings/bg.png'
+    container: container
+    #canvas:
+    #    Color:
+    #        rgba: 1,1,1,1
+    #    Rectangle:
+    #        pos: self.pos
+    #        size: self.size
+    #        source: 'ui/screens/standings/bg.png'
 
     Label:
         id: title
         size_hint: 1, None
-        text: 'Standings'
+        text: ''
         height: '100dp'
         top: root.top - dp(10)
         valign: 'bottom'
-        halign: 'left'
+        right: root.right - dp(20)
         font_name: 'ui/fonts/Gotham-Bold.ttf'
         font_size: '80dp'
 
-	Button:
-		top: root.top - dp(10)
-		right: root.right - dp(20)
+    Button:
+        top: root.top - dp(10)
+        halign: 'left'
         size: dp(225), dp(100)
-		size_hint: None, None
-		border: 0, 0, 0, 0
-		background_normal: 'ui/screens/standings/returnbtn.png'
-		background_down: 'ui/screens/standings/returnbtn_down.png'
-		on_release: app.screen_manager.current = 'intro'
+        size_hint: None, None
+        border: 0, 0, 0, 0
+        background_normal: 'ui/screens/standings/returnbtn.png'
+        background_down: 'ui/screens/standings/returnbtn_down.png'
+        on_release: app.screen_manager.current = 'intro'
 
 
-	GridLayout:
-		height: '50dp'
-		size_hint: 1, None
-		rows: 1
-        top: title.y - dp(5)
+    GridLayout:
+        height: '50dp'
+        size_hint: 1, None
+        rows: 1
+        top: title.y - dp(50)
 
+        Label:
+            text: 'view by:'
+            size_hint_x: None
+            width: '150sp'
+            font_size: '22sp'
 
-		Label:
-			text: 'view by:'
-			size_hint_x: None
-			width: '150sp'
-			font_size: '22sp'
+        Button:
+            text: 'NAME'
+            background_color: (0, 0, 0, 0)
+            on_release: root.tp = 'nick'
+            font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'nick' else 'Book')
 
-		Button:
-			text: 'NICK'
-			background_color: (0, 0, 0, 0)
-			on_release: root.tp = 'nick'
-			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'nick' else 'Book')
+        Button:
+            text: 'CITY'
+            background_color: (0, 0, 0, 0)
+            on_release: root.tp = 'city'
+            font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'city' else 'Book')
 
-		Button:
-			text: 'CITY'
-			background_color: (0, 0, 0, 0)
-			on_release: root.tp = 'city'
-			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'city' else 'Book')
+        Button:
+            text: 'COUNTY'
+            background_color: (0, 0, 0, 0)
+            on_release: root.tp = 'county'
+            font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'county' else 'Book')
 
-		Button:
-			text: 'COUNTY'
-			background_color: (0, 0, 0, 0)
-			on_release: root.tp = 'county'
-			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'county' else 'Book')
+        Button:
+            text: 'STATE'
+            background_color: (0, 0, 0, 0)
+            on_release: root.tp = 'state'
+            font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'state' else 'Book')
 
-		Button:
-			text: 'STATE'
-			background_color: (0, 0, 0, 0)
-			on_release: root.tp = 'state'
-			font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'state' else 'Book')
+    BoxLayout:
+        id: container
+        size_hint: None, None
+        size: root.width - dp(100), root.height - dp(250)
+        pos: root.x + dp(50), root.y + dp(50)
 
-	BoxLayout:
-		id: container
-		size_hint: None, None
-		size: root.width - dp(100), root.height - dp(250)
-		pos: root.x + dp(50), root.y + dp(50)
 
 <NickStandingEntry>:
-	Label:
-		text: root.entry.get('nick', '')
-		font_name: 'ui/fonts/Gotham-Bold.ttf'
-		halign: 'left'
-		size_hint_x: None
-		width: '150dp'
-	Label:
-		text: root.entry.get('city', '')
-		halign: 'left'
-	Label:
-		text: root.entry.get('county', '')
-		halign: 'left'
-	Label:
-		text: root.entry.get('state_code', '')
-		size_hint_x: None
-		width: '100dp'
-		halign: 'left'
-	Label:
-		text: root.entry.get('score', '')
-		size_hint_x: None
-		width: '120dp'
-		halign: 'center'
+    Label:
+        text: root.entry.get('nick', '')
+        font_name: 'ui/fonts/Gotham-Bold.ttf'
+        halign: 'left'
+        size_hint_x: None
+        width: '150dp'
+    Label:
+        text: root.entry.get('city', '')
+        halign: 'left'
+    Label:
+        text: root.entry.get('county', '')
+        halign: 'left'
+    Label:
+        text: root.entry.get('state_code', '')
+        size_hint_x: None
+        width: '100dp'
+        halign: 'left'
+    Label:
+        text: root.entry.get('score', '')
+        size_hint_x: None
+        width: '120dp'
+        halign: 'center'
 
 <CityStandingEntry>:
-	Label:
-		text: root.entry.get('city', '')
-		font_name: 'ui/fonts/Gotham-Bold.ttf'
-		halign: 'left'
-	Label:
-		text: root.entry.get('county', '')
-		halign: 'left'
-	Label:
-		text: root.entry.get('state_code', '')
-		size_hint_x: None
-		width: '100dp'
-		halign: 'left'
-	Label:
-		text: root.entry.get('score', '')
-		size_hint_x: None
-		width: '120dp'
-		halign: 'center'
+    Label:
+        text: root.entry.get('city', '')
+        font_name: 'ui/fonts/Gotham-Bold.ttf'
+        halign: 'left'
+    Label:
+        text: root.entry.get('county', '')
+        halign: 'left'
+    Label:
+        text: root.entry.get('state_code', '')
+        size_hint_x: None
+        width: '100dp'
+        halign: 'left'
+    Label:
+        text: root.entry.get('score', '')
+        size_hint_x: None
+        width: '120dp'
+        halign: 'center'
 
 <CountyStandingEntry>:
-	Label:
-		text: root.entry.get('county', '')
-		font_name: 'ui/fonts/Gotham-Bold.ttf'
-		halign: 'left'
-	Label:
-		text: root.entry.get('state_code', '')
-		size_hint_x: None
-		width: '100dp'
-		halign: 'left'
-	Label:
-		text: root.entry.get('score', '')
-		size_hint_x: None
-		width: '120dp'
-		halign: 'center'
+    Label:
+        text: root.entry.get('county', '')
+        font_name: 'ui/fonts/Gotham-Bold.ttf'
+        halign: 'left'
+    Label:
+        text: root.entry.get('state_code', '')
+        size_hint_x: None
+        width: '100dp'
+        halign: 'left'
+    Label:
+        text: root.entry.get('score', '')
+        size_hint_x: None
+        width: '120dp'
+        halign: 'center'
 
 <StateStandingEntry>:
-	Label:
-		text: root.entry.get('state', '')
-		font_name: 'ui/fonts/Gotham-Bold.ttf'
-		halign: 'left'
-	Label:
-		text: root.entry.get('score', '')
-		size_hint_x: None
-		width: '120dp'
-		halign: 'center'
+    Label:
+        text: root.entry.get('state', '')
+        font_name: 'ui/fonts/Gotham-Bold.ttf'
+        halign: 'left'
+    Label:
+        text: root.entry.get('score', '')
+        size_hint_x: None
+        width: '120dp'
+        halign: 'center'
