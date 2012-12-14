@@ -29,6 +29,8 @@ from kivy.properties import (
     BooleanProperty, NumericProperty, StringProperty, ObjectProperty,
     ListProperty, DictProperty, AliasProperty, OptionProperty)
 
+from kivy.cache import Cache
+
 from math import sin, pi
 from viewport import Viewport
 
@@ -89,7 +91,7 @@ class CustomTextInput(Label):
     _autocomplete_index = ObjectProperty()
 
     def _is_valid(self):
-        return len(self.data.keys()) >= self.autocomplete_minkeys and len(self.rawtext) > 2
+        return len(self.rawtext) > 2
     is_valid = AliasProperty(_is_valid, None, bind=('data', 'rawtext'))
 
     def on_touch_down(self, touch):
@@ -146,9 +148,7 @@ class CustomTextInput(Label):
         a.start(self.autocomplete_placeholder)
 
     def on_autocomplete_source(self, instance, value):
-        data = json.load(open('ui/uscities.json', 'r'))
-        places = data['places']
-        self._rows = data['rows']
+        places = json.load(open('ui/usplaces.json', 'r'))
         #with open(value, 'rb') as f:
         #    reader = csv.DictReader(f)
         #    for row in reader:
@@ -162,22 +162,28 @@ class CustomTextInput(Label):
         if not self.autocomplete_source:
             return
 
-        completions = self._autocomplete_index.find_prefix(value)[:10]
-        completions = [c for c in completions if c.lower().startswith(value.lower())]
+        completions = self._autocomplete_index.find_prefix(value)
+        completions = [c for c in completions if (
+            c.lower().startswith(value.lower()) and
+            "mobile home" not in c.lower()
+            )]
         if len(completions) == 1:
             return
 
         ph = self.autocomplete_placeholder
         ph.clear_widgets()
-        ph.add_widget(CompletionLabel(text='Do you mean?'))
-        for text in completions[:3]:
-            btn = CompletionButton(text=text, data=self._rows.get(text, {}))
+        #ph.add_widget(CompletionLabel(text='Do you mean?'))
+        iowa_compl = [c for c in completions if c.lower().strip().endswith("ia")]
+        other_compl = [c for c in completions if not c in iowa_compl ]
+        comps = iowa_compl[:3] + other_compl[:4]
+        for text in comps[:4]:
+            btn = CompletionButton(text=text, data={})
             btn.bind(on_release=self._set_text)
             ph.add_widget(btn)
 
     def _set_text(self, instance):
         if self._keyboard:
-            print 'SET TEXT FROM', instance, instance.data
+            #print 'SET TEXT FROM', instance, instance.data
             self.rawtext = instance.text
             self.data = instance.data
             self._keyboard.release()
@@ -341,6 +347,7 @@ class AnswerImagePopup(ModalView):
         return src
 
     def on_data(self, *args):
+        #print self.data
         self.text = self.data.get('caption', '')
         self.image_src = self.highres_src()
 
@@ -553,8 +560,12 @@ class IowaIQApp(App):
 
     def build(self):
         self.root = self.viewport = Viewport(size=(2048, 1536))
+        #Clock.schedule_interval(self.print_cache, 1.0)
         self.ensure_directories()
         self.load_questions()
+
+    def print_cache(self, *args):
+        Cache.print_usage()
 
     def ensure_directories(self):
         resources_dir = join(self.get_data_dir(), 'resources')
@@ -579,7 +590,7 @@ class IowaIQApp(App):
         self.screen_manager.current = 'standings'
 
     def start_quiz(self):
-        self.quiz = random.sample(self.questions, 5)
+        self.quiz = random.sample(self.questions, 1)
         self.status_bar.score = 0
         self.status_bar.show()
         self.next_question()
@@ -614,7 +625,7 @@ class IowaIQApp(App):
     def check_answer(self, ui_question, ui_button, answer):
         q = self.question
         is_correct = (answer == int(q['correct_answer']))
-        print "answer is:", is_correct
+        #print "answer is:", is_correct
         if is_correct:
             self.status_bar.score += 4
             ui_button.background_normal = "ui/screens/question/qbg_correct.png"
@@ -655,13 +666,14 @@ class IowaIQApp(App):
     #
 
     def submit_score(self, nick, city):
-        d = dict(
-            nick=nick.rawtext,
-            city=city.data['name'],
-            county=city.data['county'],
-            state=city.data['state'],
-            state_code=city.data['state_code'],
-            score=self.status_bar.score)
+        d = dict(nick=nick.rawtext, place=city.rawtext)
+        #d = dict(
+        #    nick=nick.rawtext,
+        #    city=city.data['name'],
+        #    county=city.data['county'],
+        #    state=city.data['state'],
+        #    state_code=city.data['state_code'],
+        #    score=self.status_bar.score)
         body = urllib.urlencode(d)
         self._show_progression('Submitting score...', 0, 1)
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
@@ -719,8 +731,8 @@ class IowaIQApp(App):
 
     def _pull_update_done(self, questions):
         self.questions = questions
-        for q in self.questions:
-            print q['question_bg_image']
+        #for q in self.questions:
+        #    #print q['question_bg_image']
         self._show_progression('Starting application...', 100, 100)
         Clock.schedule_once(self.show_app, 0.1)
 
