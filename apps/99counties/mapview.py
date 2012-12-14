@@ -21,8 +21,13 @@ from objloader import ObjFile
 
 from kivy.core.image import Image as CoreImage
 
+import sys
+iowa_hd = None
 
-iowa_hd = CoreImage("data/map/iowa8k.png", mipmap=True)
+if sys.platform == "darwin":
+    iowa_hd = CoreImage("data/map/iowa_4k.png", mipmap=True)
+else:
+    iowa_hd = CoreImage("data/map/iowa8k.png", mipmap=True)
 
 class MapView(Widget):
     selected_county = StringProperty("")
@@ -125,6 +130,8 @@ class MapView(Widget):
 
 
 class InteractiveMapView(MapView):
+    scatter = ObjectProperty(None)
+
     def __init__(self, **kwargs):
         super(InteractiveMapView, self).__init__(**kwargs)
         self.scatter = F.ScatterPlane(do_rotation=True)
