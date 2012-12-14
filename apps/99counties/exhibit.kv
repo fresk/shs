@@ -102,15 +102,47 @@
     valign: 'top'
 
 
+
+
+
 <HSDetails>:
-    canvas:
+    canvas.before:
         Color:
-            rgba: (1,1,1,1)
+            rgba: 1,1,1,1
         Rectangle:
             pos: self.pos
             size: self.size
-            source: "data/map/itembg.png"
-    #Image:
+            source: 'data/map/itembg.png'
+
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: self.data.get('bgimage', 'data/img/trans.png')
+
+<MedalDetails>:
+    canvas.before:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'data/map/itembg.png'
+
+
+<HollywoodDetails>:
+    canvas.before:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'data/map/itembg.png'
+
+
+
+
+
+<HSDetails>:
     #    source: root.data.get('bgimage', "data/img/trans.png")
 
     BoxLayout:
@@ -118,10 +150,10 @@
         padding: 120
 
         H1:
-            text: root.data.get('title')
+            text: root.data.get('title') or ""
 
         H2:
-            text: root.data.get('address').replace("<br/>", "\n").replace("<br />", "")
+            text: (root.data.get('address') or "").replace("<br/>", "\n").replace("<br />", "")
 
         Widget
             size_hint: 1, None
@@ -137,12 +169,6 @@
 
 
 <HollywoodDetails>:
-
-    Image:
-        source: "data/map/itembg.png"
-        opacity: root.opacity
-    #Image:
-    #    source: root.data.get('bgimage', "data/img/trans.png")
 
     BoxLayout:
         orientation: 'horizontal'
@@ -195,11 +221,6 @@
 
 
 <MedalDetails>:
-    Image:
-        source: "data/map/itembg.png"
-        opacity: root.opacity
-    #Image:
-    #    source: root.data.get('bgimage', "data/img/trans.png")
 
     BoxLayout:
         orientation: 'horizontal'

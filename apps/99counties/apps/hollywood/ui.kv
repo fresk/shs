@@ -1,17 +1,20 @@
 DualDisplay:
-
-    TopScreen:
-    	background: 'apps/hollywood/bg-top.png'
-
-        DetailView:
-            selection: map.selection
+    id: display
 
     BottomScreen:
-    	background: 'apps/hollywood/bg-bottom.png'
+        on_parent: display.bottom_screen = self
+    	background: 'apps/historicsites/bg-bottom.png'
         HollywoodMap:
             id: map
 
         BackToMenuButton:
 
+
+    TopScreen:
+        on_parent: display.top_screen = self
+    	background: 'apps/hollywood/bg-top.png'
+
+        DetailView:
+            selection: map.selection
 
 
