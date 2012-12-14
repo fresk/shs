@@ -100,10 +100,9 @@ class Renderer(Widget):
 
 
     def setup_scene(self):
-        map_obj = resource_find("apps/population/map/iowa.obj")
+        self.scene = App.get_running_app().map_model
         normal_txt = resource_find('apps/population/map/iowa_tex.png')
         map_txt = resource_find(self.map_texture)
-        self.scene = ObjFile(map_obj)
 
         Translate(0,-.12,-2)
 
@@ -112,7 +111,7 @@ class Renderer(Widget):
         self.roty = Rotate(0,1,0,0)
         Rotate(-30, 1,0,0) # tilt
         Scale(1.8)
-        Translate(-.5,-.25, 0.05)
+        Translate(0,.25, 0.05)
         self.meshes = {}
         self.mesh_transforms = {}
         self.mesh_colors = {}
