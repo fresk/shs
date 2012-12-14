@@ -39,6 +39,6 @@ def iowa_relative(p):
     lon = abs(lon)
     s2n = earth_distance((S,E), (lat, E))
     e2w = earth_distance((S,E), (S, lon))
-    return 1.0-(e2w/E2W), s2n/S2N
+    return 1.0-(e2w/E2W), s2n/E2W
 
 

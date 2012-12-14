@@ -32,6 +32,6 @@ void main (void){
     diffuse = LIGHT_COLOR * clamp(diffuse_dot, 0.0, 1.0);
 
     col = texture2D(texture1, tex_coord0) * frag_color;
-    gl_FragColor = vec4(clamp(col.rgb * diffuse + AMBIENT, 0.0, 1.0), frag_color.a);
+    gl_FragColor = vec4(clamp(col.rgb * diffuse + AMBIENT, 0.0, 1.0), col.a);
 }
 

@@ -234,46 +234,52 @@
         id: title
         size_hint: 1, None
         text: "Nice work, friend."
-        height: 200
-        top: root.top - 150
+        height: 180
+        top: root.top - 50
         x: 50
         valign: 'bottom'
         halign: 'left'
         font_name: 'ui/fonts/Gotham-Bold.ttf'
-        font_size: '90dp'
+        font_size: 150
 
 
     Label:
         id: score_text
         text: root.text
         size_hint: 1, None
-        height: 150
+        height: 100
         top: title.y - 10
         x: 50
         valign: 'top'
         halign: 'left'
-        font_size: '65dp'
+        font_size: 80
         font_name: 'ui/fonts/Gotham-Book.ttf'
 
 
     GridLayout:
         cols: 2
-        size_hint: 1, None
-        height: '250dp'
-        top: score_text.y - 100
-        padding: dp(50)
+        size_hint: None, None
+        y: 1536/2 + 20
+        height: 300
+        x: 50
+        width: 2048 - 100
+
         Label:
             id: citylabel
             text: "Where are you from?"
-            font_size: '36dp'
+            font_size: 60
             halign: 'left'
-            padding: 0,0
+            valign: 'bottom'
+            text_size: self.size
+            padding: 175, 0
         Label:
             id: nicklabel
             text: "What's your name?"
-            font_size: '36dp'
+            font_size: 60
             halign: 'left'
-            padding: 0,0
+            valign: 'bottom'
+            text_size: self.size
+            padding: 175, 0
 
         CustomTextInput:
             id: cityinput
@@ -291,9 +297,8 @@
             Widget:
                 BoxLayout:
                     id: city_placeholder
-                    center: fl.center
                     size: cityinput.width, cityinput.height*2
-                    pos: fl.pos
+                    pos: fl.x, fl.y + 50
                     spacing: 10
                     orientation: 'vertical'
 
@@ -306,24 +311,26 @@
 
     Button:
         id: submit_btn
-        background_down: 'ui/screens/results/submit_down.png'
+        background_down: 'ui/screens/results/submit_down.png' if (nickinput.is_valid and cityinput.is_valid)  else 'ui/screens/results/submit.png'
         background_normal: 'ui/screens/results/submit.png'
+        background_color: (1,1,1,1) if (nickinput.is_valid and cityinput.is_valid) else (.6,.6,.2)
         on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid) else None
-        opacity: 1 if (nickinput.is_valid and cityinput.is_valid) else 0
-        right: root.right - dp(50)
-        size: dp(320), dp(100)
+        opacity: 1 if (nickinput.is_valid and cityinput.is_valid) else 0.5
+
+        size: 800, 250
         size_hint: None, None
-        y: '150dp'
+        right: 2048 - 170
+        y: 200
+
 
     Button:
         background_down: 'ui/screens/results/nosubmit_down.png'
         background_normal: 'ui/screens/results/nosubmit.png'
         on_release: app.screen_manager.current = 'intro'
-        right: submit_btn.right
-        size: dp(320), dp(100)
+        size: 800, 250
         size_hint: None, None
-        top: submit_btn.y - dp(20)
-
+        x: 170
+        y: 200
 
 <ProgressionView>:
     auto_dismiss: False
@@ -392,7 +399,7 @@
 
 <CustomTextInput>:
     text: self.rawtext + ('|' if self._keyboard else '')
-    font_size: '30sp'
+    font_size: 65
     height: img.texture_size[1]
     size_hint_y: None
 
@@ -406,12 +413,12 @@
         allow_stretch: True
 
 <CompletionLabel>:
-    font_size: '28sp'
+    font_size: 50
 
 <CompletionButton>:
     background_color: 0, 0, 0, 0
     font_name: 'ui/fonts/Gotham-Bold.ttf'
-    font_size: '26sp'
+    font_size: 50
 
 
 <StandingsScreen>:

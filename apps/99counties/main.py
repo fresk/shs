@@ -132,7 +132,7 @@ class ExhibitApp(App):
 
     def load_data(self, *args):
         print "laoding obj model"
-        self.map_model = ObjFile("data/map/iowa.obj")
+        self.map_model = ObjFile("data/map/iowa2.obj")
 
         print "laoding mesh ids"
         mesh_ids = json.load(open('data/mesh_ids.json', 'r'))

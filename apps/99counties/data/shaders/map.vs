@@ -27,7 +27,7 @@ void main (void) {
     vec4 position = modelview_mat * vec4(v_pos,1.0);
     normal_vec = normalize(vec4(v_normal, 0.0));
     frag_color = color * vec4(1.,1.,1., opacity);
-    tex_coord0 = vec2(v_pos.x, 1.0-v_pos.y);
+    tex_coord0 = vec2(v_pos.x+.5, 1.0-(v_pos.y+.5));
     light_vec = vec4(0.,0.,0.,1.) - position;
     gl_Position = projection_mat * position;
 }

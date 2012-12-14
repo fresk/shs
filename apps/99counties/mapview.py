@@ -26,8 +26,9 @@ class MapView(Widget):
 
     def __init__(self, **kwargs):
         self.aspect = 1.0
-        self.map_model = App.get_running_app().map_model
-        self.counties = App.get_running_app().counties
+        self.app = App.get_running_app()
+        self.map_model = self.app.map_model
+        self.counties = self.app.counties
 
         self.canvas = Canvas()
         with self.canvas:
@@ -37,7 +38,7 @@ class MapView(Widget):
             self.fbo_rect = Rectangle()
         with self.fbo:
             self.cb = Callback(self.setup_gl_context)
-            self.render_ctx = RenderContext()
+            self.render_ctx = RenderContext(with_normal_mat=True)
             self.cb2 = Callback(self.reset_gl_context)
         self.init_scene()
         with self.render_ctx:
@@ -78,33 +79,31 @@ class MapView(Widget):
         self.projection_mat = Matrix().view_clip(-hw,hw,-.5,.5, .98, 100, 1)
 
     def update_glsl(self, *largs):
-        self.render_ctx['projection_mat'] = self.projection_mat
         self.update()
-        self.update_scene()
-
-    def update(self):
-        pass
-
-    def update_scene(self):
-        pass
+        self.render_ctx['projection_mat'] = self.projection_mat
 
     def init_scene(self, *args):
         self.meshes = {}
         self.update_projection()
 
+    def render(self):
+        self.render_map()
+
     def render_scene(self):
         PushMatrix()
-        Translate(0,0,-1.1)
-
+        Translate(0,0,-1.2)
         self.t_viewtrans = MatrixInstruction()
+        self.view_space = Canvas()
+        self.render()
+        PopMatrix()
+
+    def render_map(self):
+        PushMatrix()
         cx,cy = self.map_model.bounds.center[:-1]
-        Translate(-cx, -cy, -0.01)
-
-        self.map_canvas = Canvas()
-
+        Translate(-cx, -cy, -0)
         tz = self.map_model.bounds.zmax
+        PushMatrix()
         Translate(0,0,-tz)
-
         Color(1,1,1,1)
         for name in sorted(self.counties.keys()):
             m = self.counties[name]['mesh']
@@ -115,18 +114,20 @@ class MapView(Widget):
                 mode = 'triangles',
                 source = 'data/map/iowa_land.png' )
         PopMatrix()
+        self.map_space = Canvas()
+        PopMatrix()
 
 
 
 class InteractiveMapView(MapView):
     def __init__(self, **kwargs):
         super(InteractiveMapView, self).__init__(**kwargs)
-        self.scatter = F.ScatterPlane(do_rotation=False)
+        self.scatter = F.ScatterPlane(do_rotation=True)
         self.add_widget(self.scatter)
         self.canvas.remove(self.scatter.canvas)
         self.xpan, self.ypan = 0, 0
 
-    def update_scene(self):
+    def update(self):
         s = self.scatter.scale
         if s < 1.5 and not self.scatter._touches:
             self.scatter.center = interpolate(self.scatter.center, self.center)
@@ -139,11 +140,58 @@ class InteractiveMapView(MapView):
         tx = xpan/float(self.height) * 1.3
         ty = ypan/float(self.height) * 1.3
         mat = Matrix().scale(s,s,s).translate(tx,ty,0)
+
         self.t_viewtrans.matrix = mat
 
     def on_size(self, instance, value):
         super(InteractiveMapView, self).on_size(instance, value)
         self.scatter.size = self.size
+
+
+class IowaMap(InteractiveMapView):
+    cube_mesh = ObjFile("data/map/unitcube.obj").objects.values()[0]
+
+    def __init__(self, **kwargs):
+        super(IowaMap, self).__init__(**kwargs)
+        self.markers = []
+
+    def update(self):
+        super(IowaMap, self).update()
+
+
+
+def Scale3(sx, sy, sz):
+    mi = MatrixInstruction()
+    mi.matrix = Matrix().scale(sx, sy, sz)
+    return mi
+
+
+
+
+
+
+
+"""
+
+
+    def update(self):
+        super(IowaMap, self).update()
+        #sel = []
+        #for m in self.markers:
+        #    m.update(self)
+        #    if m.selected:
+        #        sel.append(m)
+        #self.selection = sel
+
+    #def add_marker(self, marker):
+    #    self.markers.append(marker)
+    #    with self.map_canvas:
+    #        PushMatrix()
+    #        marker.render(self)
+    #        PopMatrix()
+
+
+
 
 
 class MapMarker(object):
@@ -172,9 +220,9 @@ class MapMarker(object):
         xok = bl[0]/1080.0 < self.pos[0] < tr[0]/1080.0
         yok = bl[1]/1080.0 < self.pos[1] < tr[1]/1080.0
         self.selected = yok and xok
-        print self.name
-        print bl[0]/1080.0 , self.pos[0] , tr[0]/1080.0, xok
-        print  bl[1]/1080.0 , self.pos[1] , tr[1]/1080.0, yok
+        #print self.name
+        #print bl[0]/1080.0 , self.pos[0] , tr[0]/1080.0, xok
+        #print  bl[1]/1080.0 , self.pos[1] , tr[1]/1080.0, yok
 
 
 
@@ -189,42 +237,4 @@ class MapMarker(object):
             indices=m.indices,
             fmt = m.vertex_format,
             mode = 'triangles')
-
-
-class IowaMap(InteractiveMapView):
-    cube_mesh = ObjFile("data/map/unitcube.obj").objects.values()[0]
-
-    def __init__(self, **kwargs):
-        super(IowaMap, self).__init__(**kwargs)
-        self.markers = []
-
-    def update_scene(self):
-        super(IowaMap, self).update_scene()
-        sel = []
-        for m in self.markers:
-            m.update(self)
-            if m.selected:
-                sel.append(m)
-        self.selection = sel
-
-    def add_marker(self, marker):
-        self.markers.append(marker)
-        with self.map_canvas:
-            PushMatrix()
-            marker.render(self)
-            PopMatrix()
-
-
-
-
-def Scale3(sx, sy, sz):
-    mi = MatrixInstruction()
-    mi.matrix = Matrix().scale(sx, sy, sz)
-    return mi
-
-
-
-
-
-
-
+"""

@@ -90,6 +90,13 @@ class CustomTextInput(Label):
     autocomplete_minkeys = NumericProperty(0)
     _autocomplete_index = ObjectProperty()
 
+
+    def __init__(self, **kwargs):
+        super(CustomTextInput, self).__init__(**kwargs)
+        self.places = App.get_running_app().places
+        self._autocomplete_index = StringIndex(self.places)
+        self.autocomplete_minkeys = 2
+
     def _is_valid(self):
         return len(self.rawtext) > 2
     is_valid = AliasProperty(_is_valid, None, bind=('data', 'rawtext'))
@@ -152,19 +159,19 @@ class CustomTextInput(Label):
         a = Animation(opacity=0., d=0.3, t='out_quart')
         a.start(self.autocomplete_placeholder)
 
-    def on_autocomplete_source(self, instance, value):
-        places = json.load(open('ui/usplaces.json', 'r'))
-        #with open(value, 'rb') as f:
-        #    reader = csv.DictReader(f)
-        #    for row in reader:
-        #        place = "{0}, {1}".format(row['name'], row['state_code'])
-        #        self._rows[place] = row
-        #        places.append(place)
-        self._autocomplete_index = StringIndex(places)
-        self.autocomplete_minkeys = 2
+    #def on_autocomplete_source(self, instance, value):
+    #    places = json.load(open('ui/usplaces.json', 'r'))
+    #    #with open(value, 'rb') as f:
+    #    #    reader = csv.DictReader(f)
+    #    #    for row in reader:
+    #    #        place = "{0}, {1}".format(row['name'], row['state_code'])
+    #    #        self._rows[place] = row
+    #    #        places.append(place)
 
     def on_rawtext(self, instance, value):
         if not self.autocomplete_source:
+            return
+        if not value:
             return
 
         completions = self._autocomplete_index.find_prefix(value)
@@ -567,6 +574,8 @@ class IowaIQApp(App):
         self.root = self.viewport = Viewport(size=(2048, 1536))
         #Clock.schedule_interval(self.print_cache, 1.0)
         self.ensure_directories()
+
+        self.places = json.load(open('ui/placenames.json', 'r'))
         self.load_questions()
 
     def print_cache(self, *args):
@@ -672,13 +681,6 @@ class IowaIQApp(App):
 
     def submit_score(self, nick, city):
         d = dict(nick=nick.rawtext, place=city.rawtext)
-        #d = dict(
-        #    nick=nick.rawtext,
-        #    city=city.data['name'],
-        #    county=city.data['county'],
-        #    state=city.data['state'],
-        #    state_code=city.data['state_code'],
-        #    score=self.status_bar.score)
         body = urllib.urlencode(d)
         self._show_progression('Submitting score...', 0, 1)
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
