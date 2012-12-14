@@ -19,6 +19,10 @@ from math import sin, cos
 from latlon import iowa_relative
 from objloader import ObjFile
 
+from kivy.core.image import Image as CoreImage
+
+
+iowa_hd = CoreImage("data/map/iowa8k.png", mipmap=True)
 
 class MapView(Widget):
     selected_county = StringProperty("")
@@ -112,7 +116,8 @@ class MapView(Widget):
                 indices=m.indices,
                 fmt = m.vertex_format,
                 mode = 'triangles',
-                source = 'data/map/iowa_4k.png' )
+                texture=iowa_hd.texture)
+                #source = 'data/map/iowa_4k.png' )
         PopMatrix()
         self.map_space = Canvas()
         PopMatrix()
