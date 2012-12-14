@@ -148,6 +148,7 @@ class ExhibitApp(App):
         self.root.clear_widgets()
         self.app_screen = self.intro_screen
         self.root.add_widget(self.intro_screen)
+        Animation(opacity=1.0).start(self.intro_screen)
 
     def load_data(self, *args):
         print "laoding obj model"
