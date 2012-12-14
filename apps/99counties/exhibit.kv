@@ -8,7 +8,9 @@
     on_release: app.start_app(self.app_name)
 
 <BackToMenuButton>:
-    y: 1080 - self.height
+    x,y: 930
+    size: 150,150
+    size_hint: None, None
     on_release: app.show_menu()
     source: 'data/img/btn-back-to-menu.png'
 
