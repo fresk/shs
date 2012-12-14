@@ -99,7 +99,6 @@ class ExhibitApp(App):
     selected_county = StringProperty("polk")
 
     def build(self):
-        EventLoop.add_postproc_module(TuioTransform())
         self.transitioning = False
 
         self.load_data()
