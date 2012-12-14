@@ -140,7 +140,7 @@ class ExhibitApp(App):
 
     def check_for_inactivity(self, *args):
         since_last_touch = time.time() - self.last_touch_time
-        if since_last_touch > 15:
+        if since_last_touch > 60:
             if not self.intro_screen in self.root.children:
                 self.show_intro()
 
