@@ -169,32 +169,7 @@ class SHSMap(IowaMap):
         glEnable(GL_DEPTH_TEST)
 
     def render_markers(self):
-        PushMatrix()
-        Translate(0,0, -0.025)
-        Callback(self._disable_depth)
-        self.marker_space = Canvas()
-        Callback(self._enable_depth)
-        PopMatrix()
-
-        with self.marker_space:
-            self.historic_canvas = Canvas()
-            self.hollywood_canvas = Canvas()
-            self.medal_canvas = Canvas()
-
-        with self.historic_canvas:
-            for i in range(len(self.historicsites)):
-                m = gMarker(self.historicsites[i])
-                self.markers.append(m)
-
-        with self.hollywood_canvas:
-            for i in range(len(self.hollywood)):
-                m = gMarker(self.hollywood[i])
-                self.markers.append(m)
-
-        with self.medal_canvas:
-            for i in range(len(self.medals)):
-                m = gMarker(self.medals[i])
-                self.markers.append(m)
+        pass
 
 
     def selection_query(self, x,y):
@@ -281,24 +256,80 @@ class SHSMap(IowaMap):
 
 
 
+class HistoryMap(SHSMap):
+
+    def render_markers(self):
+        PushMatrix()
+        Translate(0,0, -0.025)
+        Callback(self._disable_depth)
+        self.marker_space = Canvas()
+        Callback(self._enable_depth)
+        PopMatrix()
+
+        with self.marker_space:
+            self.historic_canvas = Canvas()
+
+        with self.historic_canvas:
+            for i in range(len(self.historicsites)):
+                m = gMarker(self.historicsites[i])
+                self.markers.append(m)
+
+
+
+class HollywoodMap(SHSMap):
+
+    def render_markers(self):
+        PushMatrix()
+        Translate(0,0, -0.025)
+        Callback(self._disable_depth)
+        self.marker_space = Canvas()
+        Callback(self._enable_depth)
+        PopMatrix()
+
+        with self.marker_space:
+            self.hollywood_canvas = Canvas()
+
+        with self.hollywood_canvas:
+            for i in range(len(self.hollywood)):
+                m = gMarker(self.hollywood[i])
+                self.markers.append(m)
+
+class MedalMap(SHSMap):
+
+    def render_markers(self):
+        PushMatrix()
+        Translate(0,0, -0.025)
+        Callback(self._disable_depth)
+        self.marker_space = Canvas()
+        Callback(self._enable_depth)
+        PopMatrix()
+
+        with self.marker_space:
+            self.medal_canvas = Canvas()
+
+        with self.medal_canvas:
+            for i in range(len(self.medals)):
+                m = gMarker(self.medals[i])
+                self.markers.append(m)
+
+
+
+
 class DetailView(F.FloatLayout):
     selection = DictProperty({})
 
     def on_selection(self, *args):
-        self.clear_widgets()
-        if not self.selection:
-            return
-        print"SELECTION -->"
-        print self.selection
-        print ""
-        print ""
 
+        new_child = None
         if self.selection.get('icon') == 'historic':
-            self.add_widget(HSDetails(data=self.selection))
+            new_child = HSDetails(data=self.selection)
         if self.selection.get('icon') == 'medal':
-            self.add_widget(MedalDetails(data=self.selection))
+            new_child = MedalDetails(data=self.selection)
         if self.selection.get('icon') == 'hollywood':
-            self.add_widget(HollywoodDetails(data=self.selection))
+            new_child = HollywoodDetails(data=self.selection)
+
+        if new_child:
+            self.add_widget(new_child)
 
 
 
@@ -327,5 +358,3 @@ class FactLabel(F.Label):
 
 class FactDetail(F.Label):
     pass
-
-

@@ -21,10 +21,7 @@ from objloader import ObjFile
 import apps.countywiki
 import apps.population
 import apps.scratch
-import apps.historicsites
-import apps.iowans
-import apps.hollywood
-
+import shsmap
 
 class Intro(DualDisplay):
     def on_touch_down(self, touch):
@@ -105,19 +102,20 @@ class ExhibitApp(App):
         self.intro_screen = Intro(app=self)
         self.menu_screen = Menu(app=self)
 
+        self.menu_screen.add_app("scratch")
         self.menu_screen.add_app("historicsites")
         self.menu_screen.add_app("population")
-        self.menu_screen.add_app("scratch")
         self.menu_screen.add_app("countywiki")
-        self.menu_screen.add_app("iowans")
+        self.menu_screen.add_app("medals")
         self.menu_screen.add_app("hollywood")
 
         self.child_apps = {}
         self.child_apps['population'] = Builder.load_file('apps/population/ui.kv')
+        self.child_apps['hollywood'] = Builder.load_file('apps/population/ui.kv')
         self.child_apps['historicsites'] = Builder.load_file('apps/historicsites/ui.kv')
         self.child_apps['scratch'] = Builder.load_file('apps/scratch/ui.kv')
         self.child_apps['countywiki'] = Builder.load_file('apps/countywiki/ui.kv')
-        self.child_apps['iowans'] = Builder.load_file('apps/iowans/ui.kv')
+        self.child_apps['medals'] = Builder.load_file('apps/medals/ui.kv')
         self.child_apps['hollywood'] = Builder.load_file('apps/hollywood/ui.kv')
 
         self.root = ExhibitRoot()

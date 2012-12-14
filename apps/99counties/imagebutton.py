@@ -38,12 +38,6 @@ class ImageButton(F.Button):
 
 Builder.load_string("""
 <ImageButton>:
-    canvas.before:
-        Color:
-            rgba: 1,0,0,1
-        Rectangle:
-            pos: self.pos
-            size: self.size
 
     size: self.image_size
     size_hint: None, None
