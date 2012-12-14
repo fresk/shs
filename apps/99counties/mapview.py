@@ -103,6 +103,7 @@ class MapView(Widget):
         self.update_projection()
 
     def render(self):
+        Color(1,1,1,1)
         self.render_map()
 
     def render_scene(self):

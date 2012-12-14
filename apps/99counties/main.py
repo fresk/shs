@@ -136,9 +136,6 @@ class ExhibitApp(App):
         print "laoding mesh ids"
         mesh_ids = json.load(open('data/mesh_ids.json', 'r'))
 
-        print "laoding historix sites"
-        historic_sites = json.load(open('resources/historicsites.json', 'r'))
-
         print "laoding county data"
         county_wiki = json.load(open('resources/countywiki.json'))
 
@@ -154,12 +151,34 @@ class ExhibitApp(App):
             self.counties[n] = c
             self.counties[n]['mesh'] = self.map_model.objects[mid]
 
+        print "laoding historic sites"
         self.historic_sites = {}
+        historic_sites = json.load(open('resources/historicsites.json', 'r'))
         for site in historic_sites:
             n = site['name'].replace("'","").replace("-", "_")
             site['name']= n
             site['icon'] = 'historic'
             self.historic_sites[n] = site
+
+        print "laoding hollywood iowans"
+        self.hollywood = {}
+        hollywood = json.load(open('resources/hollywood.json', 'r'))
+        for site in hollywood:
+            n = site['name'].replace("'","").replace("-", "_")
+            site['name']= n
+            site['icon'] = 'hollywood'
+            self.hollywood[n] = site
+
+
+        print "laoding medal of honor iowans"
+        self.medals = {}
+        medals = json.load(open('resources/medals.json', 'r'))
+        for site in medals:
+            n = site['name'].replace("'","").replace("-", "_")
+            site['name']= n
+            site['icon'] = 'medal'
+            self.medals[n] = site
+
 
     def show_menu(self, *args):
         if self.transitioning:

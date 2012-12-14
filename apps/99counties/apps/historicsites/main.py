@@ -14,6 +14,7 @@ from kivy.graphics import *
 from objloader import *
 from mapview import *
 from latlon import iowa_relative
+from functools import partial
 
 
 m_cube = ObjFile("data/map/unitcube.obj").objects.values()[0]
@@ -65,12 +66,13 @@ def gMesh(m, source=None):
         source = source )
     return mesh
 
-def gCube(scale=1.0, pos=(0,0,0), color=(1,1,1,1), source=None):
+def gCube(scale=1.0, pos=(0,0,0), color=(.8,.8,.8,1), source=None):
     PushMatrix()
     c = Color(*color)
     t = Translate(*pos)
     s = gScale(scale,scale,scale)
     mesh = gMesh(m_cube, source)
+    mesh.scal = scale
     mesh.color = color
     mesh.icon = source
     mesh.g_color = c
@@ -110,15 +112,18 @@ def make_pickable(mesh):
 def marker_pos(mdata):
     lat, lon = map(float, (mdata['latitude'], mdata['longitude']))
     x,y = iowa_relative((lat, lon))
-    return (x - .5, y - .5, 0.025)
+    x,y = x-.5, y-.5
+    x,y = x*.96, y*.99
+    return (x, y, 0.001)
 
 
 def gMarker(mdata):
     mdata['map_pos'] = mdata.get('map_pos', marker_pos(mdata))
-    m = gCube(0.05, mdata['map_pos'])
+    m = gCube(0.04, mdata['map_pos'])
     m.source = "data/map/marker-%s.png" % mdata.get('icon', 'medal')
     m.icon = "data/map/marker-%s.png" % mdata.get('icon', 'medal')
     make_pickable(m)
+    m.is_selected  = False
     m.data = mdata
     return m
 
@@ -127,38 +132,76 @@ ATTR_STASH = {}
 
 
 class SHSMap(IowaMap):
+    selected_marker = ObjectProperty(None, allownone=True)
     selection = DictProperty({})
 
     def setup(self):
-        self.markers = []
-        self.places = self.app.historic_sites.values()
-        self.selection = self.places[0]
         self._map_vs = open(resource_find('data/shaders/map.vs')).read()
         self._map_fs = open(resource_find('data/shaders/map.fs')).read()
         self._picking_vs = open(resource_find('data/shaders/picking.vs')).read()
         self._picking_fs = open(resource_find('data/shaders/picking.fs')).read()
         self._picking = False
+        self.markers = []
+        self.last_marker = None
+        self.selected_marker = None
+        self.selection = {}
+
+        self.historicsites = self.app.historic_sites.values()
+        self.hollywood = self.app.hollywood.values()
+        self.medals = self.app.medals.values()
 
     def on_touch_up(self, touch):
-        self.selection_query(*touch.pos)
+        if touch.time_update - touch.time_start < 300:
+            self.selection_query(*touch.pos)
+        return super(SHSMap, self).on_touch_up(touch)
 
     def render(self):
         super(SHSMap, self).render()
         with self.map_space:
             self.render_markers()
 
+    def _disable_depth(self, *args):
+        glDisable(GL_DEPTH_TEST)
+        glEnable(GL_CULL_FACE)
+        glEnable(GL_BLEND)
+
+    def _enable_depth(self, *args):
+        glEnable(GL_DEPTH_TEST)
+
     def render_markers(self):
         PushMatrix()
         Translate(0,0, -0.025)
+        Callback(self._disable_depth)
         self.marker_space = Canvas()
+        Callback(self._enable_depth)
         PopMatrix()
 
         with self.marker_space:
-            for i in range(len(self.places)):
-                m = gMarker(self.places[i])
+            self.historic_canvas = Canvas()
+            self.hollywood_canvas = Canvas()
+            self.medal_canvas = Canvas()
+
+        with self.historic_canvas:
+            for i in range(len(self.historicsites)):
+                m = gMarker(self.historicsites[i])
                 self.markers.append(m)
 
+        with self.hollywood_canvas:
+            for i in range(len(self.hollywood)):
+                m = gMarker(self.hollywood[i])
+                self.markers.append(m)
+
+        with self.medal_canvas:
+            for i in range(len(self.medals)):
+                m = gMarker(self.medals[i])
+                self.markers.append(m)
+
+
     def selection_query(self, x,y):
+        if self.selected_marker:
+            self.selected_marker.is_selected = False
+            self.selected_marker = None
+
         self.enable_picking()
         self.fbo.clear_color = (0,0,0,1)
         self.fbo.bind()
@@ -177,11 +220,8 @@ class SHSMap(IowaMap):
         self.render_ctx.draw()
         self.fbo.release()
 
-
-
         r,g,b,a = map(ord, pixel)
         if r == 0 and g == 0 and b == 0:
-            self.selection = {}
             return
 
         pid = rgba2pickid(r,b,g,a)
@@ -189,7 +229,9 @@ class SHSMap(IowaMap):
         if not marker:
             sid = min(PICKABLE_OBJECTS.keys(), key=lambda x:abs(x-pid))
             marker = PICKABLE_OBJECTS[sid]
-        self.selection = marker.data
+
+        marker.is_selected = True
+        self.selected_marker = marker
 
 
     def enable_picking(self):
@@ -210,6 +252,33 @@ class SHSMap(IowaMap):
             m.g_color.rgba = m.color
             m.source = m.icon
 
+    def on_selected_marker(self, *args):
+        if self.selected_marker:
+            self.selection = self.selected_marker.data
+        else:
+            self.selection = {}
+
+
+    def update(self):
+        super(SHSMap, self).update()
+        for m in self.markers:
+            if m.is_selected:
+                self.scale_up_marker(m)
+            elif m.scal > 0.04 or min(m.color) > 0.75:
+                self.scale_back_marker(m)
+
+    def scale_back_marker(self, marker, *args):
+        marker.color = interpolate(marker.color, (.75, .75, .75, .75))
+        marker.scal = interpolate(marker.scal, 0.04)
+        marker.g_color.rgba = marker.color
+        marker.g_scale.matrix = Matrix().scale(marker.scal, marker.scal, marker.scal)
+
+    def scale_up_marker(self, marker, *args):
+        marker.color = interpolate(marker.color, (1,1,1,1))
+        marker.scal = interpolate(marker.scal, 0.06)
+        marker.g_color.rgba = marker.color
+        marker.g_scale.matrix = Matrix().scale(marker.scal, marker.scal, marker.scal)
+
 
 
 class DetailView(F.FloatLayout):
@@ -217,54 +286,46 @@ class DetailView(F.FloatLayout):
 
     def on_selection(self, *args):
         self.clear_widgets()
+        if not self.selection:
+            return
+        print"SELECTION -->"
+        print self.selection
+        print ""
+        print ""
+
         if self.selection.get('icon') == 'historic':
             self.add_widget(HSDetails(data=self.selection))
-
+        if self.selection.get('icon') == 'medal':
+            self.add_widget(MedalDetails(data=self.selection))
+        if self.selection.get('icon') == 'hollywood':
+            self.add_widget(HollywoodDetails(data=self.selection))
 
 
 
 class HSDetails(F.FloatLayout):
     data = DictProperty({})
 
+class MedalDetails(F.FloatLayout):
+    data = DictProperty({})
 
-class HSTitleLabel(F.Label):
+class HollywoodDetails(F.FloatLayout):
+    data = DictProperty({})
+
+
+class H1(F.Label):
     pass
 
-class HSAddress(F.Label):
+class H2(F.Label):
     pass
 
-class HSText(F.Label):
+class Paragraph(F.Label):
+    pass
+
+class FactLabel(F.Label):
     pass
 
 
+class FactDetail(F.Label):
+    pass
 
 
-
-
-class TestApp(App):
-    def build(self):
-        self.load_data()
-        return SHSMap()
-
-    def load_data(self, *args):
-        self.map_model = ObjFile("data/map/iowa2.obj")
-        mesh_ids = json.load(open('data/mesh_ids.json', 'r'))
-        historic_sites = json.load(open('resources/historicsites.json', 'r'))
-        county_wiki = json.load(open('resources/countywiki.json'))
-
-        self.counties = {}
-        for c in county_wiki:
-            n = c['name'].replace("'","").replace("-", "_")
-            mid = mesh_ids[n]
-            c['name'] = n
-            self.counties[n] = c
-            self.counties[n]['mesh'] = self.map_model.objects[mid]
-
-        self.historic_sites = {}
-        for site in historic_sites:
-            n = site['name'].replace("'","").replace("-", "_")
-            site['name']= n
-            self.historic_sites[n] = site
-
-if __name__ == "__main__":
-    TestApp().run()

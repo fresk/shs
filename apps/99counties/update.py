@@ -54,7 +54,7 @@ class JsonDataLoader(object):
         rv = []
         for item in data:
             if isinstance(item, unicode):
-                item = item.encode('utf-8')
+                item = item.encode('utf-8', 'replace')
             elif isinstance(item, list):
                 item = self._decode_list(item)
             elif isinstance(item, dict):
@@ -75,9 +75,9 @@ class JsonDataLoader(object):
 
         for key, value in data.iteritems():
             if isinstance(key, unicode):
-                key = key.encode('utf-8')
+                key = key.encode('utf-8', 'replace')
             if isinstance(value, unicode):
-                value = value.encode('utf-8')
+                value = value.encode('utf-8', 'replace')
             elif isinstance(value, list):
                 value = self._decode_list(value)
             elif isinstance(value, dict):
@@ -96,6 +96,16 @@ scratches.save('resources/scratches.json')
 print "updating historic sites..."
 scratches = JsonDataLoader("historicsites")
 scratches.save('resources/historicsites.json')
+
+print "updating iowans in hollywood..."
+scratches = JsonDataLoader("hollywood")
+scratches.save('resources/hollywood.json')
+
+print "updating medal of honor iowans..."
+scratches = JsonDataLoader("medals")
+scratches.save('resources/medals.json')
+
+
 
 print "updating county wiki..."
 countywiki = JsonDataLoader("countywiki")
