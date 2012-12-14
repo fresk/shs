@@ -25,7 +25,7 @@ import sys
 iowa_hd = None
 
 if sys.platform == "darwin":
-    iowa_hd = CoreImage("data/map/iowa_4k.png", mipmap=True)
+    iowa_hd = CoreImage("data/map/iowa_land.png", mipmap=True)
 else:
     iowa_hd = CoreImage("data/map/iowa8k.png", mipmap=True)
 
@@ -38,6 +38,7 @@ class MapView(Widget):
         self.app = App.get_running_app()
         self.map_model = self.app.map_model
         self.counties = self.app.counties
+        self.setup()
 
         self.canvas = Canvas()
         with self.canvas:
@@ -52,8 +53,11 @@ class MapView(Widget):
         self.init_scene()
         with self.render_ctx:
             PushMatrix()
-            self.render_scene()
+            self.render_canvas = Canvas()
             PopMatrix();
+        with self.render_canvas:
+            self.render_scene()
+
 
         self.texture = self.fbo.texture
         super(MapView, self).__init__(**kwargs)
@@ -62,6 +66,9 @@ class MapView(Widget):
         self.render_ctx.shader.vs = open(resource_find("data/shaders/map.vs")).read()
         self.render_ctx.shader.fs = open(resource_find('data/shaders/map.fs')).read()
         Clock.schedule_interval(self.update_glsl, 1 / 60.)
+
+    def setup(self):
+        pass
 
     def on_texture(self, instance, value):
         self.fbo_rect.texture = value
@@ -113,7 +120,7 @@ class MapView(Widget):
         tz = self.map_model.bounds.zmax
         PushMatrix()
         Translate(0,0,-tz)
-        Color(1,1,1,1)
+        self.g_map_color = Color(1,1,1,1)
         for name in sorted(self.counties.keys()):
             m = self.counties[name]['mesh']
             self.meshes[name] = Mesh(
@@ -165,7 +172,6 @@ class IowaMap(InteractiveMapView):
 
     def __init__(self, **kwargs):
         super(IowaMap, self).__init__(**kwargs)
-        self.markers = []
 
     def update(self):
         super(IowaMap, self).update()

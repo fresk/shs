@@ -17,6 +17,10 @@ from latlon import iowa_relative
 
 
 m_cube = ObjFile("data/map/unitcube.obj").objects.values()[0]
+vs_map = open(resource_find('data/shaders/map.vs')).read()
+fs_map = open(resource_find('data/shaders/map.fs')).read()
+vs_pick = open(resource_find('data/shaders/pick.vs')).read()
+fs_pick = open(resource_find('data/shaders/pick.fs')).read()
 
 
 
@@ -71,29 +75,29 @@ def gCube(scale=1.0, pos=(0,0,0), color=(1,1,1,1), source=None):
     t = Translate(*pos)
     s = gScale(scale,scale,scale)
     mesh = gMesh(m_cube, source)
-    mesh.color = color
-    mesh.icon = source
     mesh.g_color = c
     mesh.g_translate = t
     mesh.g_scale = s
     PopMatrix()
     return mesh
 
+def marker_pos(mdata):
+    lat, lon = map(float, (mdata['latitude'], mdata['longitude']))
+    x,y = iowa_relative((lat, lon))
+    return (x - .5, y - .5, 0.025)
 
-import random
-import math
+def gMarker(mdata):
+    mdata['map_pos'] = mdata.get('map_pos', marker_pos(mdata))
+    m = gCube(0.05, mdata['map_pos'])
+    #m.source = "data/map/mar`ker-%s.png" % mdata.get('icon', 'medal')
+    return m
 
-PICK_ID_INCR = 1024
+
+
 PICK_ID = 0
 PICKABLE_OBJECTS = {}
 
-def rgba2pickid(r,g,b,a):
-    ri = r * 256**2
-    bi = b * 256**1
-    gi = g
-    return ri + bi + gi
-
-def pickid2rgba(pid):
+def picking_id2rgb(pid):
     b = (pid) & 255
     g = (pid >> 8) & 255
     r = (pid >> 16) & 255
@@ -101,46 +105,68 @@ def pickid2rgba(pid):
 
 def make_pickable(mesh):
     global PICK_ID, PICKABLE_OBJECTS
-    PICK_ID = PICK_ID + PICK_ID_INCR
-    PICKABLE_OBJECTS[PICK_ID] = mesh
+    PICK_ID += 4096
     mesh.pick_id = PICK_ID
-    mesh.pick_color = pickid2rgba(PICK_ID)
+    PICKABLE_OBJECTS[mesh.pick_id] = mesh
+    mesh.g_color.rgba = picking_id2rgb(mesh_pick_id)
 
-
-def marker_pos(mdata):
-    lat, lon = map(float, (mdata['latitude'], mdata['longitude']))
-    x,y = iowa_relative((lat, lon))
-    return (x - .5, y - .5, 0.025)
-
-
-def gMarker(mdata):
+def gPickingMarker(mdata):
     mdata['map_pos'] = mdata.get('map_pos', marker_pos(mdata))
     m = gCube(0.05, mdata['map_pos'])
-    m.source = "data/map/marker-%s.png" % mdata.get('icon', 'medal')
-    m.icon = "data/map/marker-%s.png" % mdata.get('icon', 'medal')
     make_pickable(m)
-    m.data = mdata
     return m
 
 
-ATTR_STASH = {}
+
 
 
 class SHSMap(IowaMap):
-    selection = DictProperty({})
+    pick_tex = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super(SHSMap, self).__init__(**kwargs)
+
+        self._picking_fbo = Fbo(size=self.size, with_depthbuffer=True, do_clear=True)
+        self._picking_ctx = RenderContext(with_normal_mat=True)
+
+        self._picking_ctx.add( PushMatrix() )
+        self._picking_ctx.add( self.render_canvas )
+        self._picking_ctx.add( PopMatrix() )
+
+        self.pick_tex = self.fbo.texture
 
     def setup(self):
-        self.markers = []
         self.places = self.app.historic_sites.values()
-        self.selection = self.places[0]
-        self._map_vs = open(resource_find('data/shaders/map.vs')).read()
-        self._map_fs = open(resource_find('data/shaders/map.fs')).read()
-        self._picking_vs = open(resource_find('data/shaders/picking.vs')).read()
-        self._picking_fs = open(resource_find('data/shaders/picking.fs')).read()
-        self._picking = False
+        self._picking_vs = open(resource_find('data/shaders/pick.vs')).read()
+        self._picking_fs = open(resource_find('data/shaders/pick.fs')).read()
+
+
+    def on_size(self, instance, value):
+        super(SHSMap, self).on_size(instance, value)
+        self._picking_fbo.size = value
+        self.pick_tex = self.fbo.texture
 
     def on_touch_up(self, touch):
         self.selection_query(*touch.pos)
+        return super(SHSMap, self).on_touch_up(touch)
+
+    def selection_query(self, x,y):
+        self._picking_ctx.shader.vs = self._picking_vs
+        self._picking_ctx.shader.fs = self._picking_fs
+        self._picking_ctx['projection_mat'] = self.projection_mat
+
+        self._picking_fbo.bind()
+        glDisable(GL_DEPTH_TEST)
+        self._picking_ctx.draw()
+        pixel = glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE)
+        self._picking_fbo.release()
+
+        self.pick_tex = self._picking_fbo.texture
+
+        self._picking_fbo.bind()
+        self._picking_fbo.release()
+        print pixel
+
 
     def render(self):
         super(SHSMap, self).render()
@@ -148,6 +174,7 @@ class SHSMap(IowaMap):
             self.render_markers()
 
     def render_markers(self):
+        self.markers = []
         PushMatrix()
         Translate(0,0, -0.025)
         self.marker_space = Canvas()
@@ -155,86 +182,17 @@ class SHSMap(IowaMap):
 
         with self.marker_space:
             for i in range(len(self.places)):
+                SelectionID(i*1000)
                 m = gMarker(self.places[i])
                 self.markers.append(m)
 
-    def selection_query(self, x,y):
-        self.enable_picking()
-        self.fbo.clear_color = (0,0,0,1)
-        self.fbo.bind()
-        self.fbo.clear_buffer()
-        self.render_ctx.draw()
-        self.fbo.release()
-
-        self.fbo.bind()
-        pixel = glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE)
-        self.fbo.release()
-
-        self.disable_picking()
-        self.fbo.clear_color = (0,0,0,0)
-        self.fbo.bind()
-        self.fbo.clear_buffer()
-        self.render_ctx.draw()
-        self.fbo.release()
-
-
-
-        r,g,b,a = map(ord, pixel)
-        if r == 0 and g == 0 and b == 0:
-            self.selection = {}
-            return
-
-        pid = rgba2pickid(r,b,g,a)
-        marker = PICKABLE_OBJECTS.get(pid)
-        if not marker:
-            sid = min(PICKABLE_OBJECTS.keys(), key=lambda x:abs(x-pid))
-            marker = PICKABLE_OBJECTS[sid]
-        self.selection = marker.data
-
-
-    def enable_picking(self):
-        glDisable(GL_BLEND)
-        self.render_ctx.shader.vs = self._picking_vs
-        self.render_ctx.shader.fs = self._picking_fs
-        self.g_map_color.rgba = (0,0,0,0)
-        for m in self.markers:
-            m.g_color.rgba = m.pick_color
-            m.source = None
-
-    def disable_picking(self):
-        glEnable(GL_BLEND)
-        self.render_ctx.shader.vs = self._map_vs
-        self.render_ctx.shader.fs = self._map_fs
-        self.g_map_color.rgba = (1,1,1,1)
-        for m in self.markers:
-            m.g_color.rgba = m.color
-            m.source = m.icon
-
-
-
-class DetailView(F.FloatLayout):
-    selection = DictProperty({})
-
-    def on_selection(self, *args):
-        self.clear_widgets()
-        if self.selection.get('icon') == 'historic':
-            self.add_widget(HSDetails(data=self.selection))
 
 
 
 
-class HSDetails(F.FloatLayout):
-    data = DictProperty({})
 
 
-class HSTitleLabel(F.Label):
-    pass
 
-class HSAddress(F.Label):
-    pass
-
-class HSText(F.Label):
-    pass
 
 
 

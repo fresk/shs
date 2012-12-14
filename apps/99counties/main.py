@@ -136,7 +136,6 @@ class ExhibitApp(App):
         print "laoding mesh ids"
         mesh_ids = json.load(open('data/mesh_ids.json', 'r'))
 
-
         print "laoding historix sites"
         historic_sites = json.load(open('resources/historicsites.json', 'r'))
 
@@ -159,6 +158,7 @@ class ExhibitApp(App):
         for site in historic_sites:
             n = site['name'].replace("'","").replace("-", "_")
             site['name']= n
+            site['icon'] = 'historic'
             self.historic_sites[n] = site
 
     def show_menu(self, *args):

@@ -3,11 +3,47 @@ DualDisplay:
     TopScreen:
     	background: 'apps/historicsites/bg-top.png'
 
+        DetailView:
+            selection: map.selection
+
     BottomScreen:
         SHSMap:
             id: map
-        Label:
-            text: "ZOOM: {0:g}".format(map.scatter.scale)
-            font_size: 200
 
         BackToMenuButton:
+
+
+
+
+<HSDetails>:
+
+    Image:
+        text: root.data.get('bgimage', 'data/map/itembg.png')
+
+
+    Widget:
+        Label:
+            text: root.data.get('title')
+            font_size: 72
+            top: 1080 -100
+            x: 100
+            text_size: self.size
+            halign: 'left'
+
+        Label:
+            font_size: 48
+            text: root.data.get('address')
+            top: 1080 -115
+            x: 100
+            text_size: self.size
+            halign: 'left'
+
+        Label:
+            font_size: 36
+            text: root.data.get('description')
+            top: 1080 -15 -50
+            x: 100
+            text_size: self.size
+            halign: 'left'
+            line_height: 1.3
+
