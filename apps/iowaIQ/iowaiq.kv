@@ -29,7 +29,7 @@
         halign: 'left'
         size_hint: None, None
         text_size: 2000, 150
-        color: 0,0,0,0.8
+        color: .98, .98, .98, 1
         padding: 200, 5
 
     Label:
@@ -38,9 +38,8 @@
         size: 2048, 150
         size_hint: None, None
         text_size: 2000, 150
-        color: 0,0,0,0.8
+        color: .98, .98, .98, 1
         padding: 200, 5
-
 
 <Screen>:
     canvas:
@@ -93,16 +92,20 @@
 
     BoxLayout:
         orientation: 'vertical'
-
+        
+        Widget:
+        	size_hint: None, None
+        	height: 50
+        	
         Label:
             text: root.text
             markup: True
             font_name: 'ui/fonts/Gotham-Book.ttf'
-            font_size: '32dp'
+            font_size: '30dp'
             halign: 'left'
             size_hint: None, 1
             padding: 200, 300
-            width: root.width - 250
+            width: root.width - 170
             line_height: 1.3
             color: .96, .96, .96, 1
 
@@ -157,13 +160,13 @@
 
 <AnswerScreen>:
     image_layout: thumbnail_list
-    #canvas:
-    #    Color:
-    #        rgba: 1,1,1,1
-    #    Rectangle:
-    #        pos: self.pos
-    #        size: self.size
-    #        source: 'ui/screens/answer/bg.png'
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'ui/screens/answer/bg.png'
 
     BoxLayout:
         orientation: 'vertical'
@@ -181,7 +184,9 @@
             line_height: 1.3
         Label:
             halign: 'left'
-            font_size: '24dp'
+            size_hint: None, 1
+            font_size: '20dp'
+            width: root.width - 170
             valign: 'top'
             text: root.text+"\n"
         Widget:
@@ -199,7 +204,7 @@
 
         canvas.before:
             Color:
-                rgba: 0,0,0,0.5
+                rgba: 0,0,0,0
             Rectangle:
                 pos: 0,0
                 size: self.size
@@ -357,9 +362,16 @@
 
 <AnswerImagePopup>:
     scatter: scatter
-    background_color: (0, 0, 0, 0.6)
+    background_color: (0, 0, 0, 1)
     #background: 'ui/screens/answer/imageviewbg.png'
-
+    
+    canvas:
+    	Color: 
+    		rgba: 0,0,0,1
+    	Rectangle: 
+    		pos:0,0
+    		size: 4000,4000
+    		
     ScatterPlane:
         id: scatter
         opacity: root.alpha
