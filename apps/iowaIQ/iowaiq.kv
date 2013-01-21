@@ -221,7 +221,7 @@
         size_hint: None, None
         size: 200,200
         right: root.right - 50
-        y: 50
+        y: root.top - 350
 
 
 
@@ -314,7 +314,7 @@
         background_down: 'ui/screens/results/submit_down.png' if (nickinput.is_valid and cityinput.is_valid)  else 'ui/screens/results/submit.png'
         background_normal: 'ui/screens/results/submit.png'
         background_color: (1,1,1,1) if (nickinput.is_valid and cityinput.is_valid) else (.6,.6,.2)
-        on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid) else None
+        on_release: app.submit_score(nickinput, cityinput)
         opacity: 1 if (nickinput.is_valid and cityinput.is_valid) else 0.5
 
         size: 800, 250
@@ -358,7 +358,6 @@
 <AnswerImagePopup>:
     scatter: scatter
     background_color: (0, 0, 0, 0.6)
-    #background: 'ui/screens/answer/imageviewbg.png'
 
     ScatterPlane:
         id: scatter
@@ -366,7 +365,7 @@
         scale_min: 1.0
         on_center_x: self.center_x = min(max(0,self.center_x), root.height)
         on_center_y: self.center_y = min(max(0,self.center_y), root.height)
-        AsyncImage:
+        Image:
             mipmap: True
             source: root.image_src
             # for positionning, take care of the label
@@ -453,41 +452,47 @@
         on_release: app.screen_manager.current = 'intro'
 
 
-    GridLayout:
-        height: '50dp'
-        size_hint: 1, None
-        rows: 1
+    #GridLayout:
+    #    height: '50dp'
+    #    size_hint: 1, None
+    #    rows: 1
+    #    top: title.y - dp(50)
+
+    BoxLayout:
+        id: container
+        size_hint: None,None
+        height:  dp(50)
+        #pos: rooat.x + dp(50), root.y + dp(50)
         top: title.y - dp(50)
+        width: root.width - dp(100)
+
+        pos: root.x + dp(50), root.y + dp(50)
+
+        canvas:
+            Color:
+                rgba: 1,1,1,1
+            Rectangle:
+                pos: self.x, container.top - 97
+                size: self.width, 8
 
         Label:
-            text: 'view by:'
-            size_hint_x: None
-            width: '150sp'
-            font_size: '22sp'
-
-        Button:
             text: 'NAME'
             background_color: (0, 0, 0, 0)
-            on_release: root.tp = 'nick'
             font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'nick' else 'Book')
+            halign: 'left'
 
-        Button:
-            text: 'CITY'
+        Label:
+            text: 'FROM'
             background_color: (0, 0, 0, 0)
-            on_release: root.tp = 'city'
             font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'city' else 'Book')
+            halign: 'left'
 
-        Button:
-            text: 'COUNTY'
-            background_color: (0, 0, 0, 0)
-            on_release: root.tp = 'county'
-            font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'county' else 'Book')
 
-        Button:
-            text: 'STATE'
+        Label:
+            text: 'SCORE'
             background_color: (0, 0, 0, 0)
-            on_release: root.tp = 'state'
             font_name: 'ui/fonts/Gotham-{0}.ttf'.format('Bold' if root.tp == 'state' else 'Book')
+            halign: 'left'
 
     BoxLayout:
         id: container
@@ -501,67 +506,10 @@
         text: root.entry.get('nick', '')
         font_name: 'ui/fonts/Gotham-Bold.ttf'
         halign: 'left'
-        size_hint_x: None
-        width: '150dp'
     Label:
         text: root.entry.get('city', '')
         halign: 'left'
     Label:
-        text: root.entry.get('county', '')
-        halign: 'left'
-    Label:
-        text: root.entry.get('state_code', '')
-        size_hint_x: None
-        width: '100dp'
-        halign: 'left'
-    Label:
         text: root.entry.get('score', '')
-        size_hint_x: None
         width: '120dp'
-        halign: 'center'
 
-<CityStandingEntry>:
-    Label:
-        text: root.entry.get('city', '')
-        font_name: 'ui/fonts/Gotham-Bold.ttf'
-        halign: 'left'
-    Label:
-        text: root.entry.get('county', '')
-        halign: 'left'
-    Label:
-        text: root.entry.get('state_code', '')
-        size_hint_x: None
-        width: '100dp'
-        halign: 'left'
-    Label:
-        text: root.entry.get('score', '')
-        size_hint_x: None
-        width: '120dp'
-        halign: 'center'
-
-<CountyStandingEntry>:
-    Label:
-        text: root.entry.get('county', '')
-        font_name: 'ui/fonts/Gotham-Bold.ttf'
-        halign: 'left'
-    Label:
-        text: root.entry.get('state_code', '')
-        size_hint_x: None
-        width: '100dp'
-        halign: 'left'
-    Label:
-        text: root.entry.get('score', '')
-        size_hint_x: None
-        width: '120dp'
-        halign: 'center'
-
-<StateStandingEntry>:
-    Label:
-        text: root.entry.get('state', '')
-        font_name: 'ui/fonts/Gotham-Bold.ttf'
-        halign: 'left'
-    Label:
-        text: root.entry.get('score', '')
-        size_hint_x: None
-        width: '120dp'
-        halign: 'center'

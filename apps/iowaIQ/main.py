@@ -1,7 +1,16 @@
+import sys
+print sys.path
+
 import random
 import json
 import urllib
 from jsondata import JsonData
+
+from kivy.cache import Cache
+import pdb
+import objgraph
+import gc
+
 
 
 from os import makedirs
@@ -29,7 +38,6 @@ from kivy.properties import (
     BooleanProperty, NumericProperty, StringProperty, ObjectProperty,
     ListProperty, DictProperty, AliasProperty, OptionProperty)
 
-from kivy.cache import Cache
 
 from math import sin, pi
 from viewport import Viewport
@@ -338,16 +346,12 @@ class QuestionScreen(Screen):
             c.reset()
 
 
-    #def on_transition_progress(self, *args):
-    #    if self.transition_progress == 1.0 and self.transition_state == "in":
-    #        print "done transitioning"
-    #        App.get_running_app().preload_answer_screen()
-
 
 class AnswerImagePopup(ModalView):
     answer = ObjectProperty()
     alpha = NumericProperty(0)
     scatter = ObjectProperty()
+    highres_image = ObjectProperty()
     data = ObjectProperty(None)
     text = StringProperty("")
     image_src = StringProperty("")
@@ -402,6 +406,9 @@ class AnswerImagePopup(ModalView):
 
     def dismiss(self):
         super(AnswerImagePopup, self).dismiss()
+        for c in self.scatter.children:
+            c._coreimage.remove_from_cache()
+        gc.collect()
         Animation(alpha=0., d=.5, t='out_quart').start(self)
 
 
@@ -436,6 +443,7 @@ class AnswerThumb(F.AsyncImage):
             return True
 
     def open(self):
+        #pdb.set_trace()
         self._popup = AnswerImagePopup(data=self.data)
         self._popup.open()
 
@@ -444,8 +452,10 @@ class ThumnailList(F.GridLayout):
     zoomlayer = ObjectProperty(None)
 
     def clear(self):
+        #for t in self.children:
+        #    t._coreimage.remove_from_cache()
         self.clear_widgets()
-        self.thumbs = []
+
 
     def add_image(self, src, data):
         t = AnswerThumb(opacity=0.0)
@@ -538,7 +548,6 @@ class StandingsScreen(Screen):
     def set_standings(self, tp, result):
         tcls = {'nick': NickStandingEntry,
                 'city': CityStandingEntry,
-                'county': CountyStandingEntry,
                 'state': StateStandingEntry}[tp]
         args_converter = lambda index, rec: {'entry': rec}
         adapter = ListAdapter(data=result,
@@ -578,8 +587,13 @@ class IowaIQApp(App):
         self.places = json.load(open('ui/placenames.json', 'r'))
         self.load_questions()
 
+        Cache.register('kv.image', timeout=10)
+        Cache.register('kv.texture', limit=100, timeout=10)
+
+
     def print_cache(self, *args):
-        Cache.print_usage()
+        pass
+        #Cache.print_usage()
 
     def ensure_directories(self):
         resources_dir = join(self.get_data_dir(), 'resources')
@@ -604,7 +618,7 @@ class IowaIQApp(App):
         self.screen_manager.current = 'standings'
 
     def start_quiz(self):
-        self.quiz = random.sample(self.questions, 1)
+        self.quiz = random.sample(self.questions, 5)
         self.status_bar.score = 0
         self.status_bar.show()
         self.next_question()
@@ -625,6 +639,7 @@ class IowaIQApp(App):
         #qscreen.bg_image = q['question_bg_image']
         qscreen.reset = True
         qscreen.reset = False
+        #pdb.set_trace()
 
         def _goto_screen(*args):
             self.screen_manager.current = 'question'
@@ -680,8 +695,10 @@ class IowaIQApp(App):
     #
 
     def submit_score(self, nick, city):
-        d = dict(nick=nick.rawtext, place=city.rawtext)
+        d = dict(nick=nick.rawtext, city=city.rawtext, score=self.status_bar.score)
+        print "SUBMIT SCORE"
         body = urllib.urlencode(d)
+        print "BODY", body
         self._show_progression('Submitting score...', 0, 1)
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
         self._req = UrlRequest(self.config.get('app', 'score'),
@@ -691,10 +708,13 @@ class IowaIQApp(App):
 
     def _on_submit_success(self, req, result):
         self._hide_progression()
+        print "SUCCESS", result
         self.screen_manager.current = 'standings'
 
     def _on_submit_failed(self, req, result):
         self._hide_progression()
+        print "FAILED", result
+        print "\n\n\n"
         self.screen_manager.current = 'intro'
 
     def load_standings(self, tp):
