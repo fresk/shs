@@ -141,89 +141,6 @@
 
 
 
-<AnswerThumb>:
-    size_hint: None, None
-    width: self.image_ratio * 400
-    height: 400
-    allow_stretch: True
-
-    #canvas.before:
-    #    Color:
-    #        rgba: 1,1,1,1
-    #    Rectangle:
-    #        size: self.width + 40, self.height + 40
-    #        pos: self.x-20, self.y-20
-
-
-<AnswerScreen>:
-    image_layout: thumbnail_list
-    #canvas:
-    #    Color:
-    #        rgba: 1,1,1,1
-    #    Rectangle:
-    #        pos: self.pos
-    #        size: self.size
-    #        source: 'ui/screens/answer/bg.png'
-
-    BoxLayout:
-        orientation: 'vertical'
-        Widget:
-            size_hint_y: None
-            height: 150
-        Label:
-            font_name: 'ui/fonts/Gotham-Bold.ttf'
-            font_size: '76dp'
-            height: '125dp'
-            halign: 'left'
-            valign: 'bottom'
-            size_hint_y: None
-            text: root.feedback
-            line_height: 1.3
-        Label:
-            halign: 'left'
-            font_size: '24dp'
-            valign: 'top'
-            text: root.text+"\n"
-        Widget:
-            size_hint_y: None
-            height: 500
-
-
-    Widget:
-        id: zoomlayer
-
-    ScrollView:
-        do_scroll_y: False
-        size_hint: 1, None
-        height: 500
-
-        canvas.before:
-            Color:
-                rgba: 0,0,0,0.5
-            Rectangle:
-                pos: 0,0
-                size: self.size
-
-        ThumnailList:
-            id: thumbnail_list
-            zoomlayer: zoomlayer
-            rows: 1
-            size_hint: None, None
-            height: 400
-            padding: 50
-            spacing: 50
-            width: self.minimum_width
-
-    Button:
-        on_release: app.next_question()
-        background_normal: "ui/screens/answer/nextbtn.png"
-        background_down: "ui/screens/answer/nextbtn_down.png"
-        size_hint: None, None
-        size: 200,200
-        right: root.right - 50
-        y: 50
-
-
 
 
 <ResultsScreen>:
@@ -313,8 +230,8 @@
         id: submit_btn
         background_down: 'ui/screens/results/submit_down.png' if (nickinput.is_valid and cityinput.is_valid)  else 'ui/screens/results/submit.png'
         background_normal: 'ui/screens/results/submit.png'
-        background_color: (1,1,1,1) if (nickinput.is_valid and cityinput.is_valid) else (.6,.6,.2)
-        on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid) else None
+        background_color: (1,1,1,1) if (nickinput.is_valid and cityinput.is_valid and len(nickinput.text)>3 and len(cityinput.text)>4) else (.6,.6,.2)
+        on_release: app.submit_score(nickinput, cityinput) if (nickinput.is_valid and cityinput.is_valid and len(nickinput.text)>3 and len(cityinput.text)>4) else None
         opacity: 1 if (nickinput.is_valid and cityinput.is_valid) else 0.5
 
         size: 800, 250
@@ -351,51 +268,6 @@
             ProgressBar:
                 value: root.progression
 
-<AnswerImage>:
-    mipmap: True
-    allow_stretch: True
-
-<AnswerImagePopup>:
-    scatter: scatter
-    background_color: (0, 0, 0, 0.6)
-    #background: 'ui/screens/answer/imageviewbg.png'
-
-    ScatterPlane:
-        id: scatter
-        opacity: root.alpha
-        scale_min: 1.0
-        on_center_x: self.center_x = min(max(0,self.center_x), root.height)
-        on_center_y: self.center_y = min(max(0,self.center_y), root.height)
-        AsyncImage:
-            mipmap: True
-            source: root.image_src
-            # for positionning, take care of the label
-            size: root.width - dp(100), root.height - dp(150)
-            pos: dp(50), dp(100)
-
-    FloatLayout:
-        Image:
-            size: 150,150
-            x: root.width - self.width - 20
-            y: root.height - self.height - 20
-            source: "ui/screens/answer/imageviewclose.png"
-            size_hint: None, None
-            on_touch_down: root.dismiss() if self.collide_point(*args[1].pos) else None
-
-        Label:
-            text: root.text or ''
-            size_hint_y: None
-            height: '50dp'
-            font_size: '12dp'
-            y: -(1 - root.alpha) * self.height
-            on_touch_down: root.dismiss() if self.collide_point(*args[1].pos) else None
-
-            canvas.before:
-                Color:
-                    rgba: .05, .05, .05, .9
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
 
 <CustomTextInput>:
     text: self.rawtext + ('|' if self._keyboard else '')
@@ -565,3 +437,142 @@
         size_hint_x: None
         width: '120dp'
         halign: 'center'
+
+
+
+
+
+
+<AnswerScreen>:
+    scatter: scatter
+    zoom_layer: zoomlayer
+    image_layout: thumbnail_list
+    selected_image: thumbnail_list.selected
+    zoom_uix_image: zoom_uix_image
+
+    BoxLayout:
+        orientation: 'vertical'
+        Widget:
+            size_hint_y: None
+            height: 150
+        Label:
+            font_name: 'ui/fonts/Gotham-Bold.ttf'
+            font_size: '76dp'
+            height: '125dp'
+            halign: 'left'
+            valign: 'bottom'
+            size_hint_y: None
+            text: root.feedback
+            line_height: 1.3
+        Label:
+            halign: 'left'
+            font_size: '24dp'
+            valign: 'top'
+            text: root.text+"\n"
+        Widget:
+            size_hint_y: None
+            height: 500
+
+    ScrollingList:
+        id: thumbnail_list
+        size_hint: 1, None
+        height: 500
+        canvas.before:
+            Color:
+                rgba: 0,0,0,0.5
+            Rectangle:
+                pos: 0,0
+                size: self.size
+
+    Button:
+        on_release: app.next_question()
+        background_normal: "ui/screens/answer/nextbtn.png"
+        background_down: "ui/screens/answer/nextbtn_down.png"
+        size_hint: None, None
+        size: 200,200
+        right: root.right - 50
+        top: root.top-160
+
+
+    ZoomLayer:
+        pos: root.pos
+        size: root.size
+        id: zoomlayer
+        canvas.before:
+            Color:
+                rgba: 0,0,0, .9
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        ScatterPlane:
+            id: scatter
+            scale_min: 1.0
+            on_center_x: self.center_x = min(max(0,self.center_x), zoomlayer.width)
+            on_center_y: self.center_y = min(max(0,self.center_y), zoomlayer.height)
+            Image:
+                id: zoom_uix_image
+                mipmap: False
+                source: root.zoom_image
+                # for positionning, take care of the label
+                width: 1024
+                height: 1024 * self.image_ratio
+                center: zoomlayer.center_x, zoomlayer.center_y + (self.height* 0.0)
+
+
+        FloatLayout:
+            Image:
+                size: 150,150
+                x: root.width - self.width - 20
+                y: root.height - self.height - 200
+                source: "ui/screens/answer/imageviewclose.png"
+                size_hint: None, None
+                on_touch_down: root.hide_zoom() if self.collide_point(*args[1].pos) else None
+
+            Label:
+                text: root.text or ''
+                size_hint_y: None
+                height: '150dp'
+                font_size: '15dp'
+                y: 20
+                #y: -(1 - zoom_layer.opacity) * self.height
+                #on_touch_down: root.hide_zoom() if self.collide_point(*args[1].pos) else None
+
+
+
+
+
+
+
+
+<ScrollingList>:
+    scroll_layer: scroll_layer
+    item_list: item_list
+
+
+    StencilView:
+        size_hint:None, None
+        size: root.size
+        pos: root.pos
+
+        TransformLayer:
+            id: scroll_layer
+            size_hint:None, None
+            size: root.size
+            pos: root.pos
+
+            BoxLayout:
+                padding: 50
+                spacing: 50
+                orientation: 'horizontal'
+                id: item_list
+                size_hint: None, None
+                #width: self.minimum_width or 0
+
+<PreviewImage>
+    mipmap: False
+    size_hint: None, None
+    width: (self.image_ratio or 1.0)* 400
+    height: 400
+    allow_stretch: True
+    opacity: 0.0

@@ -7,9 +7,9 @@ import urllib
 from jsondata import JsonData
 
 from kivy.cache import Cache
-import pdb
-import objgraph
-import gc
+#import pdb
+#import objgraph
+#import gc
 
 
 
@@ -39,6 +39,7 @@ from kivy.properties import (
     ListProperty, DictProperty, AliasProperty, OptionProperty)
 
 
+from scrolling import ScrollingList
 from math import sin, pi
 from viewport import Viewport
 
@@ -347,126 +348,6 @@ class QuestionScreen(Screen):
 
 
 
-class AnswerImagePopup(ModalView):
-    answer = ObjectProperty()
-    alpha = NumericProperty(0)
-    scatter = ObjectProperty()
-    highres_image = ObjectProperty()
-    data = ObjectProperty(None)
-    text = StringProperty("")
-    image_src = StringProperty("")
-
-    def highres_src(self, *args):
-        src = self.data.get('medium') or ""
-        src = self.data.get('large') or src
-        src = self.data.get('full') or src
-        return src
-
-    def on_data(self, *args):
-        #print self.data
-        self.text = self.data.get('caption', '')
-        self.image_src = self.highres_src()
-
-
-    #def on_touch_down(self, touch):
-    #    if touch.is_double_tap:
-    #        self.reset()
-    #        return True
-    #    return super(AnswerImagePopup, self).on_touch_down(touch)
-
-    def on_touch_up(self, touch):
-        super(AnswerImagePopup, self).on_touch_up(touch)
-        if len(self.scatter._touches) == 1:
-            self.reset()
-        return True
-
-    def reset(self, *args):
-        #rotation = 360. if self.scatter.rotation > 180 else 0.
-        #Animation(rotation=rotation, scale=1., center=self.center,
-        #        d=0.5, t='out_quart').start(self.scatter)
-        self.scatter.scale = interpolate(self.scatter.scale, 1.0)
-        self.scatter.center = interpolate(self.scatter.center, self.center)
-        if self.scatter.rotation > 200:
-            self.scatter.rotation = interpolate(self.scatter.rotation, 360.0)
-        else:
-            self.scatter.rotation = interpolate(self.scatter.rotation, 0.0)
-
-        if ( abs(1.-self.scatter.scale) < 0.1 and
-             abs(self.scatter.center_x - self.center_x) < 10 and
-             abs(self.scatter.center_y - self.center_y) < 10 ):
-            return
-        Clock.schedule_once(self.reset, 1/60.)
-
-
-
-
-    def open(self):
-        super(AnswerImagePopup, self).open()
-        Animation(alpha=1., d=.5, t='out_quart').start(self)
-
-    def dismiss(self):
-        super(AnswerImagePopup, self).dismiss()
-        for c in self.scatter.children:
-            c._coreimage.remove_from_cache()
-        gc.collect()
-        Animation(alpha=0., d=.5, t='out_quart').start(self)
-
-
-class AnswerImage(F.Image):
-    data = ObjectProperty()
-    text = StringProperty()
-
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            self.open()
-            return True
-        super(AnswerImage, self).on_touch_down(touch)
-
-
-
-    def on_img_data(self, *args):
-        self.text = self.img_data.get('caption') or ''
-
-    def open(self):
-        pass
-        #self._popup = AnswerImagePopup(answer=self)
-        #self._popup.open()
-
-
-
-class AnswerThumb(F.AsyncImage):
-    data = ObjectProperty(None)
-
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            self.open()
-            return True
-
-    def open(self):
-        #pdb.set_trace()
-        self._popup = AnswerImagePopup(data=self.data)
-        self._popup.open()
-
-
-class ThumnailList(F.GridLayout):
-    zoomlayer = ObjectProperty(None)
-
-    def clear(self):
-        #for t in self.children:
-        #    t._coreimage.remove_from_cache()
-        self.clear_widgets()
-
-
-    def add_image(self, src, data):
-        t = AnswerThumb(opacity=0.0)
-        t.source = src
-        t.data = data
-        self.add_widget(t)
-        Animation(opacity=1.0).start(t)
-
-
-
-
 
 class AnswerScreen(Screen):
     text = StringProperty("")
@@ -474,6 +355,11 @@ class AnswerScreen(Screen):
     correct = BooleanProperty(False)
     feedback = StringProperty("")
     image_layout = ObjectProperty()
+    zoom_layer  = ObjectProperty()
+    zoom_image = StringProperty(allownone=True)
+    scatter = ObjectProperty()
+    selected_image = ObjectProperty(allownone=True)
+    zoom_uix_image = ObjectProperty()
 
     _feedback_right = open('ui/screens/answer/feedback_right.txt').readlines()
     _feedback_wrong = open('ui/screens/answer/feedback_wrong.txt').readlines()
@@ -485,10 +371,24 @@ class AnswerScreen(Screen):
             return
         self.load_next_image()
 
+    def on_touch_up(self, touch):
+        ret = super(AnswerScreen, self).on_touch_up(touch)
+        #print "touch up", ret, len(self.scatter._touches)
+        if self.zoom_layer.opacity > 0.8 and len(self.scatter._touches) == 1:
+            self.reset_zoom()
+            return True
+        return ret
+
     def thumb_src(self, img):
         src = img.get('full') or ""
         src = img.get('large') or src
         src = img.get('medium') or src
+        return src
+
+    def highres_src(self, img):
+        src = img.get('medium') or ""
+        src = img.get('large') or src
+        src = img.get('full') or src
         return src
 
     def load_next_image(self, *args):
@@ -503,13 +403,52 @@ class AnswerScreen(Screen):
 
     def reset(self, q):
         self.correct = True
-        self.image_layout.clear()
+        self.image_layout.clear_images()
         self.question = q
         self.text = q['answer_text']
         self.images = q['answer_images']
+        self.zoom_layer.opacity = 0
+        self.zoom_layer.enabled = False
 
     def on_text(self, *args):
         self.feedback = random.choice(self._feedback_right).strip()
+
+    def on_selected_image(self, *args):
+        cimg = self.zoom_uix_image._coreimage
+        
+        if cimg:
+            cimg.remove_from_cache()
+        if not self.selected_image:
+            self.zoom_image = None
+            return
+        self.zoom_image = self.highres_src(self.selected_image)
+        if self.zoom_image:
+            self.zoom_layer.enabled = True
+            #Animation(opacity=1.0).start(self.zoom_layer)
+
+
+    def hide_zoom(self):
+        #Animation(opacity=0.0).start(self.zoom_layer)
+        self.zoom_layer.enabled = False
+
+
+    def reset_zoom(self, *args):
+        #rotation = 360. if self.scatter.rotation > 180 else 0.
+        #Animation(rotation=rotation, scale=1., center=self.center,
+        #        d=0.5, t='out_quart').start(self.scatter)
+        self.scatter.scale = interpolate(self.scatter.scale, 1.0)
+        self.scatter.center = interpolate(self.scatter.center, self.center)
+        if self.scatter.rotation > 200:
+            self.scatter.rotation = interpolate(self.scatter.rotation, 360.0)
+        else:
+            self.scatter.rotation = interpolate(self.scatter.rotation, 0.0)
+
+        if ( abs(1.-self.scatter.scale) < 0.1 and
+             abs(self.scatter.center_x - self.center_x) < 10 and
+             abs(self.scatter.center_y - self.center_y) < 10 ):
+            return
+        Clock.schedule_once(self.reset_zoom, 1/60.)
+
 
 
 class ResultsScreen(Screen):
@@ -570,6 +509,59 @@ class StatusBar(RelativeLayout):
 
     def hide(self, *args):
         Animation(alpha_show=0.0, t='out_quad', d=1.0).start(self)
+
+
+
+
+class TransformLayer(F.ScatterPlane):
+    def __init__(self, **kwargs):
+        kwargs.setdefault('size', (1920, 1080))
+        kwargs.setdefault('rotate_to_fit', False)
+        kwargs.setdefault('size_hint', (1, 1))
+        kwargs.setdefault('do_scale', False)
+        kwargs.setdefault('do_translation', False)
+        kwargs.setdefault('do_rotation', False)
+        super(TransformLayer, self).__init__(**kwargs)
+
+    def on_size(self, *args):
+        for w in self.children:
+            self._set_child_size(w)
+
+    def add_widget(self, w, *args, **kwargs):
+        super(TransformLayer, self).add_widget(w, *args, **kwargs)
+        self._set_child_size(w)
+
+    def _set_child_size(self, child):
+        shx, shy = child.size_hint
+        if shx:
+            child.width = shx * self.width
+        if shy:
+            child.height = shx * self.height
+
+
+class ZoomLayer(TransformLayer):
+    enabled = BooleanProperty(False)
+    def on_touch_down(self, touch):
+        if not self.enabled:
+            return False
+        return super(ZoomLayer, self).on_touch_down(touch)
+
+    def on_touch_move(self, touch):
+        if not self.enabled:
+            return False
+        return super(ZoomLayer, self).on_touch_move(touch)
+
+    def on_touch_up(self, touch):
+        if not self.enabled:
+            return False
+        return super(ZoomLayer, self).on_touch_up(touch)
+
+    def on_enabled(self, *args):
+        if self.enabled:
+            Animation(opacity=1.0, duration=0.5).start(self)
+        elif self.enabled == False:
+            Animation(opacity=0.0, duration=0.5).start(self)
+
 
 
 class IowaIQApp(App):
