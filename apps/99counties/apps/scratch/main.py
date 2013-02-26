@@ -166,6 +166,11 @@ class ScratchDualDisplay(DualDisplay):
             return True
         super(ScratchDualDisplay, self).on_touch_up(touch)
 
+    def show(self, *args, **kwargs):
+        super(ScratchDualDisplay, self).show(*args, **kwargs)
+        self.show_menu()
+
+
     def start_scratch(self, item, *args):
         if self.transitioning:
             return
@@ -215,6 +220,8 @@ class ScratchDualDisplay(DualDisplay):
 
     def show_menu(self, *args):
         if self.transitioning:
+            return
+        if self.menu.parent:
             return
         self.transitioning = True
         for c in self.bottom_screen.content.children:
