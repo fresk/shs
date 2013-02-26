@@ -4,7 +4,7 @@
 apps/iowaIQ/resources/*
 apps/iowaIQ/*.json
 apps/iowaIQ/*.ini
-
+.idea/*
 # Packages
 *.egg
 *.egg-info
