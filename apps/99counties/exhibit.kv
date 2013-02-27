@@ -205,7 +205,7 @@
                 height: 50
 
             FactLabel:
-                text: "[b]Hometown:[/b] %s" % (root.data.get('hometown') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('hometown') else ""
+                text: "[b]Hometown:[/b] %s" % (root.data.get('hometown') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('hometown') else "[b]Hometown:[/b] %s" % (root.data.get('hometown_alt') or "n/a").replace("<br/>", "\n").replace("<br />", "")
 
             Widget:
                 size_hint: 1, None

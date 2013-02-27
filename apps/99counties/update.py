@@ -6,6 +6,11 @@ from os.path import join, exists
 
 API_URL = 'http://www.fresksite.net/dcadb/wp-content/themes/dca/api/%s.php'
 
+import HTMLParser
+_htmlparser = HTMLParser.HTMLParser()
+unescape = _htmlparser.unescape
+
+
 class JsonDataLoader(object):
 
     def __init__(self, dataset, storage_dir='resources'):
@@ -75,9 +80,9 @@ class JsonDataLoader(object):
 
         for key, value in data.iteritems():
             if isinstance(key, unicode):
-                key = key.encode('utf-8', 'replace')
+                key = unescape(key.encode('utf-8', 'replace'))
             if isinstance(value, unicode):
-                value = value.encode('utf-8', 'replace')
+                value = unescape(value.encode('utf-8', 'replace'))
             elif isinstance(value, list):
                 value = self._decode_list(value)
             elif isinstance(value, dict):

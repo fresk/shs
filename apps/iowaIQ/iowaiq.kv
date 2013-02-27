@@ -370,7 +370,8 @@
     Label:
         halign: 'center'
         text_size: self.width, self.height
-        text: root.entry.get('nick', '')
+        font_name: 'ui/fonts/Gotham-Bold.ttf'
+        text: root.entry.get('nick', '').capitalize()
     Label:
         halign: 'center'
         text_size: self.width, self.height
@@ -383,7 +384,7 @@
     Label:
         halign: 'center'
         text_size: self.width, self.height
-        text: root.entry.get('state_code', '')
+        text: root.entry.get('city', '').split(',')[1].upper()
 
 
 <CityStandingEntry>:
@@ -510,8 +511,8 @@
                 mipmap: False
                 source: root.zoom_image
                 # for positionning, take care of the label
-                width: 1024
-                height: 1024 * self.image_ratio
+                width: 1440
+                height: 1440 * self.image_ratio
                 center: zoomlayer.center_x, zoomlayer.center_y + (self.height* 0.0)
 
 
@@ -524,12 +525,23 @@
                 size_hint: None, None
                 on_touch_down: root.hide_zoom() if self.collide_point(*args[1].pos) else None
 
-            Label:
-                text: root.text or ''
+            Widget:
+                canvas:
+                    Color:
+                        rgba: 0,0,0,0.8
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                    Color:
+                        rgba: 1,1,1,1
                 size_hint_y: None
-                height: '150dp'
-                font_size: '15dp'
-                y: 20
+                height: '100dp'
+
+            Label:
+                text: root.caption or ''
+                size_hint_y: None
+                height: '100dp'
+                font_size: '18dp'
                 #y: -(1 - zoom_layer.opacity) * self.height
                 #on_touch_down: root.hide_zoom() if self.collide_point(*args[1].pos) else None
 

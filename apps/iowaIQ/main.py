@@ -348,13 +348,14 @@ class QuestionScreen(Screen):
 
     def reset(self, q):
         for i in range(4):
-            self.button_grid.children[i].reset(q['answers'][i])
+            self.button_grid.children[3-i].reset(q['answers'][i])
 
 
 
 
 class AnswerScreen(Screen):
     text = StringProperty("")
+    caption = StringProperty("")
     question = ObjectProperty(None)
     correct = BooleanProperty(False)
     feedback = StringProperty("")
@@ -406,6 +407,7 @@ class AnswerScreen(Screen):
 
     def reset(self, q):
         self.correct = True
+        self.caption = ""
         self.image_layout.clear_images()
         self.question = q
         self.text = q['answer_text']
@@ -426,6 +428,7 @@ class AnswerScreen(Screen):
             self.zoom_image = None
             return
         self.zoom_image = self.highres_src(self.selected_image)
+        self.caption = self.selected_image['caption']
         if self.zoom_image:
             self.zoom_layer.enabled = True
             #Animation(opacity=1.0).start(self.zoom_layer)
@@ -796,9 +799,10 @@ class IowaIQApp(App):
     # Update part
     # Manage the update of questions.json + associated data
     def load_questions(self):
-        self._show_progression('Downloading questions...', 0, 1)
+        self._show_progression('Connecting...', 0, 1)
         # first step, download the questions.json
         self._req = UrlRequest(self.config.get('app', 'questions'),
+            timeout = 7.0,
             on_success=self._pull_update_success,
             on_error=self._pull_update_failed,
             on_progress=self._progress_update,
@@ -820,6 +824,7 @@ class IowaIQApp(App):
         )
 
     def _pull_update_done(self, questions):
+        print "PULL FAILED"
         self.questions = questions
         #for q in self.questions:
         #    #print q['question_bg_image']
@@ -828,8 +833,12 @@ class IowaIQApp(App):
 
     def _pull_update_failed(self, request, error):
         # XXX TODO
-        pass
-
+        self._show_progression('Starting without network connection', 0, 100)
+        self._questions_fn = join(self.get_data_dir(), 'questions.json')
+        self._jsondata = JsonData(self._questions_fn,
+            on_success=self._pull_update_done,
+            on_progress=self._show_progression
+        )
     # Modal view for showing progression
     def _show_progression(self, text, size, total):
         if not hasattr(self, '_progression'):
