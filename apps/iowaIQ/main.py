@@ -281,11 +281,11 @@ class QuestionButton(Button):
 
         # change the background to red, and ensure we are not seeing any
         # changes when clicking
-        if alpha >= 0.5 and self.background_normal != self.background_wrong:
-            self._origin = {
-                'background_normal': self.background_normal,
-                'background_down': self.background_down,
-                'color': (1, 1, 1, 1)}
+        if alpha >= 0.5 :#and self.background_normal != self.background_wrong:
+            #self._origin = {
+            #    'background_normal': self.background_normal,
+            #    'background_down': self.background_down,
+            #    'color': (1, 1, 1, 1)}
             self.background_normal = self.background_wrong
             self.background_down = self.background_wrong
             self.color = self.color_wrong
@@ -316,11 +316,14 @@ class QuestionButton(Button):
         (Animation(color=self.color_wrong, t=t, d=hd) +
          Animation(color=self.color, t=t, d=1 - hd)).start(self)
 
-    def reset(self):
+    def reset(self, text):
         self.alpha_rotation = 0
+        self.disabled = False
         self.background_normal =  "ui/screens/question/qbg.png"
-        for key, value in self._origin.iteritems():
-            setattr(self, key, value)
+        self.background_down = "ui/screens/question/qbg_down.png"
+        self.color = (.96,.96,.96,1)
+        self.text = text
+        self._update_mesh()
 
 
 class QuestionScreen(Screen):
@@ -336,7 +339,6 @@ class QuestionScreen(Screen):
     option_wrong_c = StringProperty()
     option_wrong_d = StringProperty()
     button_grid = ObjectProperty(None)
-    reset = BooleanProperty()
 
     def on_text(self, *args):
         first_words = " ".join(self.text.split(" ")[:3])
@@ -344,9 +346,9 @@ class QuestionScreen(Screen):
         text_parts = (first_words, other_words)
         self.markedup_text = "[size=60sp]%s[/size] %s\n" % text_parts
 
-    def on_reset(self, *args):
-        for c in self.button_grid.children:
-            c.reset()
+    def reset(self, q):
+        for i in range(4):
+            self.button_grid.children[i].reset(q['answers'][i])
 
 
 
@@ -690,10 +692,9 @@ class IowaIQApp(App):
         qscreen.option_b = q['answers'][1]
         qscreen.option_c = q['answers'][2]
         qscreen.option_d = q['answers'][3]
+        qscreen.reset(q)
 
         #qscreen.bg_image = q['question_bg_image']
-        qscreen.reset = True
-        qscreen.reset = False
         print "\n\n === CACHE USAGE ============"
         print Cache.print_usage()
         #pdb.set_trace()
@@ -756,9 +757,9 @@ class IowaIQApp(App):
 
     def submit_score(self, nick, city):
         d = dict(nick=nick.rawtext, city=city.rawtext, score=self.status_bar.score)
-        #print "SUBMIT SCORE"
+        print "SUBMIT SCORE"
         body = urllib.urlencode(d)
-        #print "BODY", body
+        print "BODY", body
         self._show_progression('Submitting score...', 0, 1)
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
         self._req = UrlRequest(self.config.get('app', 'score'),
@@ -768,14 +769,14 @@ class IowaIQApp(App):
 
     def _on_submit_success(self, req, result):
         self._hide_progression()
-        #print "SUCCESS", result
+        print "SUCCESS", result
         self.screen_manager.current = 'standings'
         self.load_standings('nick')
 
 
     def _on_submit_failed(self, req, result):
         self._hide_progression()
-        #print "FAILED", result
+        print "FAILED", result
         #print "\n\n\n"
         self.screen_manager.current = 'intro'
 
