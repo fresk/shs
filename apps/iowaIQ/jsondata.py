@@ -116,7 +116,7 @@ class JsonData(object):
             self._json_count - len(self._json_urls), self._json_count),
             self._json_count - 1 - len(self._json_urls),
             self._json_count)
-        self._json_req = UrlRequest(url,
+        self._json_req = UrlRequest(url, chunk_size=8192*2,
                 on_success=partial(self._on_dget_success, etag, suffix),
                 on_progress=self._on_dget_progress,
                 on_error=self._on_dget_error)

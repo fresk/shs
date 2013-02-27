@@ -1,5 +1,5 @@
 import sys
-print sys.path
+#print sys.path
 
 import random
 import json
@@ -9,7 +9,7 @@ from jsondata import JsonData
 from kivy.cache import Cache
 #import pdb
 #import objgraph
-#import gc
+import gc
 
 
 
@@ -103,7 +103,7 @@ class CustomTextInput(Label):
     def __init__(self, **kwargs):
         super(CustomTextInput, self).__init__(**kwargs)
         self.places = App.get_running_app().places
-        self._autocomplete_index = StringIndex(self.places)
+        self._autocomplete_index = App.get_running_app().places_index
         self.autocomplete_minkeys = 2
 
     def _is_valid(self):
@@ -181,6 +181,8 @@ class CustomTextInput(Label):
         if not self.autocomplete_source:
             return
         if not value:
+            ph = self.autocomplete_placeholder
+            ph.clear_widgets()
             return
 
         completions = self._autocomplete_index.find_prefix(value)
@@ -190,9 +192,9 @@ class CustomTextInput(Label):
             )]
         if len(completions) == 1:
             return
-
         ph = self.autocomplete_placeholder
         ph.clear_widgets()
+
         #ph.add_widget(CompletionLabel(text='Do you mean?'))
         iowa_compl = [c for c in completions if c.lower().strip().endswith("ia")]
         other_compl = [c for c in completions if not c in iowa_compl ]
@@ -369,7 +371,6 @@ class AnswerScreen(Screen):
             return
         if self.transition_progress < 1:
             return
-        self.load_next_image()
 
     def on_touch_up(self, touch):
         ret = super(AnswerScreen, self).on_touch_up(touch)
@@ -387,8 +388,8 @@ class AnswerScreen(Screen):
 
     def highres_src(self, img):
         src = img.get('medium') or ""
+        src = img.get('full') or ""
         src = img.get('large') or src
-        src = img.get('full') or src
         return src
 
     def load_next_image(self, *args):
@@ -406,16 +407,17 @@ class AnswerScreen(Screen):
         self.image_layout.clear_images()
         self.question = q
         self.text = q['answer_text']
-        self.images = q['answer_images']
+        self.images = [img for img in q['answer_images']]
         self.zoom_layer.opacity = 0
         self.zoom_layer.enabled = False
+        #print "Answer screen set with images:", self.images
 
     def on_text(self, *args):
         self.feedback = random.choice(self._feedback_right).strip()
 
     def on_selected_image(self, *args):
         cimg = self.zoom_uix_image._coreimage
-        
+
         if cimg:
             cimg.remove_from_cache()
         if not self.selected_image:
@@ -454,6 +456,20 @@ class AnswerScreen(Screen):
 class ResultsScreen(Screen):
     text = StringProperty("")
 
+
+    fadelist_1 = ObjectProperty(None)
+    fadelist_2 = ObjectProperty(None)
+    textinput1 = ObjectProperty(None)
+    textinput2 = ObjectProperty(None)
+
+    def reset(self, *args):
+        print "RESET"
+        #self.textinput2.focus = False
+        #self.textinput1.rawtext = ""
+        #self.textinput2.rawtext = ""
+        # self.fadeout(self.fadelist_2)
+        #self.textinput1.focus = True
+
     def fadein(self, fadelist):
         a = Animation(color=(.5, .5, .5, .7), d=0.3, t='out_quart')
         [a.start(x) for x in fadelist]
@@ -462,8 +478,11 @@ class ResultsScreen(Screen):
         a = Animation(color=(1, 1, 1, 1), d=0.3, t='out_quart')
         [a.start(x) for x in fadelist]
 
-class NickStandingEntry(BoxLayout):
+class NickStandingEntry(F.GridLayout):
     entry = DictProperty()
+
+
+
 class CityStandingEntry(BoxLayout):
     entry = DictProperty()
 class CountyStandingEntry(BoxLayout):
@@ -474,26 +493,36 @@ class StateStandingEntry(BoxLayout):
 class StandingsScreen(Screen):
     tp = OptionProperty('nick', options=('nick', 'city', 'county', 'state'))
     container = ObjectProperty()
-    def on_transition_state(self, instance, value):
-        if value == 'in':
-            self.reload()
+    #def on_transition_state(self, instance, value):
+    #    if value == 'in':
+    #        self.reload()
 
     def reload(self):
-        App.get_running_app().load_standings(self.tp)
+        pass
+        #App.get_running_app().load_standings(self.tp)
 
-    def on_tp(self, instance, value):
-        self.reload()
+    #def on_tp(self, instance, value):
+    #    self.reload()
 
     def set_standings(self, tp, result):
+        filtered = []
+        for r in result:
+            if not r['nick']:
+                continue
+            filtered.append(r)
+
         tcls = {'nick': NickStandingEntry,
                 'city': CityStandingEntry,
-                'state': StateStandingEntry}[tp]
+                'state': StateStandingEntry}['nick']
         args_converter = lambda index, rec: {'entry': rec}
-        adapter = ListAdapter(data=result,
+        adapter = ListAdapter(data=filtered,
                 args_converter=args_converter,
                 cls=tcls)
+
         self.container.clear_widgets()
+        self.container.opacity = 0.0
         self.container.add_widget(ListView(adapter=adapter))
+        Animation(opacity=1.0).start(self.container)
 
 
 
@@ -564,6 +593,16 @@ class ZoomLayer(TransformLayer):
 
 
 
+import cPickle
+from threading import Thread
+
+
+def load_string_index(app):
+    app.places = json.load(open('ui/placenames.json', 'r'))
+    app.places_index = cPickle.load(open('places.dat', 'rb'))
+    Clock.schedule_once(app.finish_loading)
+
+
 class IowaIQApp(App):
 
     def build_config(self, config):
@@ -572,16 +611,22 @@ class IowaIQApp(App):
             config.setdefaults(k, v)
 
     def build(self):
-        self.root = self.viewport = Viewport(size=(2048, 1536))
-        #Clock.schedule_interval(self.print_cache, 1.0)
-        self.ensure_directories()
 
-        self.places = json.load(open('ui/placenames.json', 'r'))
+        Cache.register('kv.image', limit=32, timeout=5)
+        Cache.register('kv.texture', limit=32, timeout=5)
+
+        self.root = self.viewport = Viewport(size=(2048, 1536))
+        self.ensure_directories()
         self.load_questions()
 
-        Cache.register('kv.image', timeout=10)
-        Cache.register('kv.texture', limit=100, timeout=10)
+        self.screen_manager = ScreenManager(transition=FadeTransition(duration=0.3))
+        self.screen_manager.add_widget(IntroScreen(name='intro'))
+        t = Thread(target=load_string_index, args=(self,))
+        t.start()
 
+
+
+        return self.root
 
     def print_cache(self, *args):
         pass
@@ -593,20 +638,38 @@ class IowaIQApp(App):
             makedirs(resources_dir)
 
     def show_app(self, *args):
-        self._hide_progression()
+        self._show_progression('Starting application...', 10, 100)
+        Clock.schedule_once(self.show_app2)
 
-        self.screen_manager = ScreenManager(transition=FadeTransition(duration=0.3))
-        self.screen_manager.add_widget(IntroScreen(name='intro'))
+    def show_app2(self, *args):
+        self._show_progression('Starting application...', 40, 100)
         self.screen_manager.add_widget(QuestionScreen(name='question'))
         self.screen_manager.add_widget(AnswerScreen(name='answer'))
-        self.screen_manager.add_widget(ResultsScreen(name='results'))
-        self.screen_manager.add_widget(StandingsScreen(name='standings'))
-        self.viewport.add_widget(self.screen_manager)
+        Clock.schedule_once(self.show_app3)
 
+    def show_app3(self, *args):
+        self._show_progression('Starting application...', 80, 100)
+        self.screen_manager.add_widget(StandingsScreen(name='standings'))
+        Clock.schedule_once(self.show_app4)
+
+    def show_app4(self, *args):
         self.status_bar = StatusBar()
+        self._show_progression('Starting application...', 100, 100)
+        Clock.schedule_once(self.show_app5,0.1)
+
+    def show_app5(self, *args):
+        self._hide_progression()
+        self.viewport.add_widget(self.screen_manager)
         self.viewport.add_widget(self.status_bar)
 
+    def finish_loading(self, *args):
+        #print "DONE LOADING EVERYTHING"
+        cur = self.screen_manager.current
+        self.screen_manager.add_widget(ResultsScreen(name='results'))
+        self.screen_manager.current = cur
+
     def start_viewstandings(self):
+        self.load_standings('nick')
         self.screen_manager.current = 'standings'
 
     def start_quiz(self):
@@ -631,6 +694,8 @@ class IowaIQApp(App):
         #qscreen.bg_image = q['question_bg_image']
         qscreen.reset = True
         qscreen.reset = False
+        print "\n\n === CACHE USAGE ============"
+        print Cache.print_usage()
         #pdb.set_trace()
 
         def _goto_screen(*args):
@@ -653,6 +718,7 @@ class IowaIQApp(App):
             ui_button._update_mesh()
             ascreen = self.screen_manager.get_screen('answer')
             ascreen.reset(q)
+            Clock.schedule_once(ascreen.load_next_image,1.0)
             def _go_answer(*args):
                 self.screen_manager.current = 'answer'
             Clock.schedule_once(_go_answer, 0.2)
@@ -663,9 +729,11 @@ class IowaIQApp(App):
 
     def finish_quiz(self):
         rscreen = self.screen_manager.get_screen('results')
+        rscreen.reset()
         rscreen.text = "You got {0} points.".format(self.status_bar.score)
         self.screen_manager.current = 'results'
         self.status_bar.hide()
+        gc.collect()
 
     def get_data_dir(self):
         if platform() == 'ios':
@@ -688,9 +756,9 @@ class IowaIQApp(App):
 
     def submit_score(self, nick, city):
         d = dict(nick=nick.rawtext, city=city.rawtext, score=self.status_bar.score)
-        print "SUBMIT SCORE"
+        #print "SUBMIT SCORE"
         body = urllib.urlencode(d)
-        print "BODY", body
+        #print "BODY", body
         self._show_progression('Submitting score...', 0, 1)
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
         self._req = UrlRequest(self.config.get('app', 'score'),
@@ -700,17 +768,19 @@ class IowaIQApp(App):
 
     def _on_submit_success(self, req, result):
         self._hide_progression()
-        print "SUCCESS", result
+        #print "SUCCESS", result
         self.screen_manager.current = 'standings'
+        self.load_standings('nick')
+
 
     def _on_submit_failed(self, req, result):
         self._hide_progression()
-        print "FAILED", result
-        print "\n\n\n"
+        #print "FAILED", result
+        #print "\n\n\n"
         self.screen_manager.current = 'intro'
 
     def load_standings(self, tp):
-        self._req = UrlRequest(self.config.get('app', 'standings') + '?q=' + tp,
+        self._req = UrlRequest(self.config.get('app', 'standings'),
             on_success=partial(self._on_standings_success, tp),
             on_error=self._on_standings_error)
 
@@ -752,8 +822,8 @@ class IowaIQApp(App):
         self.questions = questions
         #for q in self.questions:
         #    #print q['question_bg_image']
-        self._show_progression('Starting application...', 100, 100)
-        Clock.schedule_once(self.show_app, 0.1)
+        self._show_progression('Starting application...', 0, 100)
+        Clock.schedule_once(self.show_app, 0)
 
     def _pull_update_failed(self, request, error):
         # XXX TODO
