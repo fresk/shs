@@ -15,7 +15,10 @@ def clean_text(text):
     text = unescape_html(text)
     text = text.replace("<br/>", "\n")
     text = text.replace("<br />", "")
-    text = text.replace("\r", "")
+    text = text.replace("\\r", "\r")
+    text = text.replace("\\n", "\n")
+    text = text.replace("<p>", "\n")
+    text = text.replace("</p>", "\n")
     return text
 
 class JsonDataLoader(object):

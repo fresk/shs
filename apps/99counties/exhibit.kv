@@ -147,7 +147,7 @@
 
     BoxLayout:
         orientation: 'vertical'
-        padding: 120
+        padding: 100
 
         H1:
             text: root.data.get('title') or ""
@@ -160,7 +160,7 @@
             height: 10
 
         Paragraph:
-            text: unicode(root.data.get('description') or "n/a")
+            text: unicode(root.data.get('description') or "")
 
     Label:
         color: 1,1,1,1
