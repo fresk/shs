@@ -4,6 +4,7 @@ import imp
 import kivy
 import glob
 import json
+from kivy.core.window import Window
 from kivy.app import App
 from kivy.base import EventLoop
 from kivy.clock import Clock
@@ -106,9 +107,17 @@ class ExhibitApp(App):
         self.last_touch_time = time.time()
         super(ExhibitApp, self).__init__(**kwargs)
         self.last_touch_time = time.time()
+        Window.bind(on_key_down=self.key_down)
 
+    def key_down(self, window, key, *args):
+        with open("keypresses.log", 'a') as f:
+            f.write("%d %s\n" %(key, str(args)))
+            print "KEY:", key, args
 
     def build(self):
+
+        with open("keypresses.log", 'w') as f:
+            f.write("start")
         self.intro_screen = Intro(app=self)
         self.root = ExhibitRoot(app=self)
 
