@@ -109,15 +109,19 @@ class ExhibitApp(App):
         self.last_touch_time = time.time()
         Window.bind(on_key_down=self.key_down)
 
-    def key_down(self, window, key, *args):
-        with open("keypresses.log", 'a') as f:
-            f.write("%d %s\n" %(key, str(args)))
-            print "KEY:", key, args
+    def key_down(self, window, k, key,  *args):
+        f = open("keypresses.log", 'a')
+        f.write("%d %s\n" %(key, str(args)))
+        if key == 174:
+            f.write("\t SLEEP")
+            f.close()
+            os.system("/home/fresk/sleep")
+
 
     def build(self):
 
-        with open("keypresses.log", 'w') as f:
-            f.write("start")
+        with open("keypresses.log", 'a') as f:
+            f.write("\n\nstart\n\n")
         self.intro_screen = Intro(app=self)
         self.root = ExhibitRoot(app=self)
 
