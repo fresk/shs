@@ -153,14 +153,14 @@
             text: root.data.get('title') or ""
 
         H2:
-            text: (root.data.get('address') or "").replace("<br/>", "\n").replace("<br />", "")
+            text: (root.data.get('address') or "")
 
         Widget
             size_hint: 1, None
             height: 10
 
         Paragraph:
-            text: unicode(root.data.get('description') or "n/a").replace("<br/>", "\n").replace("<br />", "")
+            text: unicode(root.data.get('description') or "n/a")
 
     Label:
         color: 1,1,1,1
@@ -180,12 +180,12 @@
             H1:
                 text: root.data.get('title')
             H2:
-                text: root.data.get('occupation').replace("<br/>", "\n").replace("<br />", "") if root.data.get('occupation') else ""
+                text: root.data.get('occupation') if root.data.get('occupation') else ""
             Widget
                 size_hint: 1, None
                 height: 10
             Paragraph:
-                text: unicode(root.data.get('comments') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('comments') else ""
+                text: unicode(root.data.get('comments') or "n/a") if root.data.get('comments') else ""
 
 
         BoxLayout:
@@ -196,16 +196,16 @@
 
 
             FactLabel:
-                text: "[b]Born:[/b] %s" % (root.data.get('year_born') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('year_born') else ""
+                text: "[b]Born:[/b] %s" % (root.data.get('year_born') or "n/a") if root.data.get('year_born') else ""
             FactLabel:
-                text: "[b]Died:[/b] %s" % (root.data.get('year_died') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('year_died') else ""
+                text: "[b]Died:[/b] %s" % (root.data.get('year_died') or "n/a") if root.data.get('year_died') else ""
 
             Widget:
                 size_hint: 1, None
                 height: 50
 
             FactLabel:
-                text: "[b]Hometown:[/b] %s" % (root.data.get('hometown') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('hometown') else "[b]Hometown:[/b] %s" % (root.data.get('hometown_alt') or "n/a").replace("<br/>", "\n").replace("<br />", "")
+                text: "[b]Hometown:[/b] %s" % (root.data.get('hometown') or "n/a") if root.data.get('hometown') else "[b]Hometown:[/b] %s" % (root.data.get('hometown_alt') or "n/a")
 
             Widget:
                 size_hint: 1, None
@@ -215,7 +215,7 @@
                 text: "[b]Iowa Connection:[/b]" if root.data.get('iowa_connection') else ""
 
             FactDetail:
-                text: unicode(root.data.get('iowa_connection') or "n/a").replace("<br/>", "\n").replace("<br />", "")  if root.data.get('iowa_connection') else ""
+                text: unicode(root.data.get('iowa_connection') or "n/a")  if root.data.get('iowa_connection') else ""
 
             Widget:
                 size_hint: 1,1
@@ -236,7 +236,7 @@
                 text: root.data.get('war') or ""
             Paragraph:
                 markup: True
-                text: "[b][i]Official Citation:[/i][/b]\n%s" % unicode(root.data.get('official_citation') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('official_citation') else ""
+                text: "[b][i]Official Citation:[/i][/b]\n%s" % unicode(root.data.get('official_citation') or "n/a") if root.data.get('official_citation') else ""
 
 
         BoxLayout:
@@ -250,9 +250,9 @@
                 height: 100
 
             FactLabel:
-                text: "[b]Infantry:[/b] %s" % (root.data.get('infantry') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('infantry') else ""
+                text: "[b]Infantry:[/b] %s" % (root.data.get('infantry') or "n/a") if root.data.get('infantry') else ""
             FactLabel:
-                text: "[b]Rank:[/b] %s" % (root.data.get('rank') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('rank') else ""
+                text: "[b]Rank:[/b] %s" % (root.data.get('rank') or "n/a") if root.data.get('rank') else ""
 
             Widget:
                 size_hint: 1, 1
@@ -261,7 +261,7 @@
             FactLabel:
                 text: "[b]Act of Valor:[/b] " if root.data.get('act_of_valor') else ""
             FactDetail:
-                text: (root.data.get('act_of_valor') or "n/a").replace("<br/>", "\n").replace("<br />", "") if root.data.get('act_of_valor') else ""
+                text: (root.data.get('act_of_valor') or "n/a") if root.data.get('act_of_valor') else ""
                 height: self.texture_size[0]
 
             Widget:
@@ -272,7 +272,7 @@
                 text: "[b]Date & Place of Action:[/b]" if root.data.get('action_dateplace') else ""
 
             FactDetail:
-                text: (root.data.get('action_dateplace') or 'n/a').replace("<br/>", "\n").replace("<br />", "") if root.data.get('action_dateplace') else ""
+                text: (root.data.get('action_dateplace') or 'n/a') if root.data.get('action_dateplace') else ""
                 height: self.texture_size[0]
 
             Widget:

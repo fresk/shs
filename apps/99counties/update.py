@@ -8,8 +8,15 @@ API_URL = 'http://www.fresksite.net/dcadb/wp-content/themes/dca/api/%s.php'
 
 import HTMLParser
 _htmlparser = HTMLParser.HTMLParser()
-unescape = _htmlparser.unescape
+unescape_html = _htmlparser.unescape
 
+
+def clean_text(text):
+    text = unescape_html(text)
+    text = text.replace("<br/>", "\n")
+    text = text.replace("<br />", "")
+    text = text.replace("\r", "")
+    return text
 
 class JsonDataLoader(object):
 
@@ -80,9 +87,9 @@ class JsonDataLoader(object):
 
         for key, value in data.iteritems():
             if isinstance(key, unicode):
-                key = unescape(key.encode('utf-8', 'replace'))
+                key = clean_text(key.encode('utf-8', 'replace'))
             if isinstance(value, unicode):
-                value = unescape(value.encode('utf-8', 'replace'))
+                value = clean_text(value.encode('utf-8', 'replace'))
             elif isinstance(value, list):
                 value = self._decode_list(value)
             elif isinstance(value, dict):

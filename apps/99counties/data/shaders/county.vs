@@ -19,7 +19,6 @@ uniform float      opacity;
 varying vec4 frag_color;
 varying vec4 normal_vec;
 varying vec2 tex_coord0;
-varying vec3 eye_vec;
 varying vec4 light_vec;
 
 
