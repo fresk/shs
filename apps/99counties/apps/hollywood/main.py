@@ -310,7 +310,12 @@ class MedalDetails(F.FloatLayout):
 
 class HollywoodDetails(F.FloatLayout):
     data = DictProperty({})
+    image = StringProperty("data/img/avatar.png")
 
+    def on_data(self, *args):
+        print "!!!HW:"data.keys()
+        if data.get('image'):
+            self.image = data.get('image')['medium']
 
 class H1(F.Label):
     pass
