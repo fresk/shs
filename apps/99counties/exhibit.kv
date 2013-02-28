@@ -197,7 +197,7 @@
             Image:
                 size_hint: None, None
                 size: 512, 512
-                source: root.data.get('image', 'data/img/avatar.png')
+                source: root.data.get('image') or 'data/img/avatar.png'
             FactLabel:
                 text: "[b]Born:[/b] %s" % (root.data.get('year_born') or "n/a") if root.data.get('year_born') else ""
             FactLabel:
@@ -252,7 +252,7 @@
             Image:
                 size_hint: None, None
                 size: 512, 512
-                source: root.data.get('image', 'data/img/avatar.png')
+                source: root.data.get('image') or 'data/img/avatar.png'
 
             Widget:
                 size_hint: 1, 1
