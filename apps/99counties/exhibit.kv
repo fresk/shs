@@ -248,9 +248,14 @@
             padding: 120
             spacing: 0
 
+
+            Image:
+                size_hint: None, None
+                size: 512, 512
+                source: root.data.get('image', 'data/img/avatar.png')
+
             Widget:
                 size_hint: 1, 1
-                height: 100
 
             FactLabel:
                 text: "[b]Infantry:[/b] %s" % (root.data.get('infantry') or "n/a") if root.data.get('infantry') else ""
@@ -259,7 +264,6 @@
 
             Widget:
                 size_hint: 1, 1
-                height: 20
 
             FactLabel:
                 text: "[b]Act of Valor:[/b] " if root.data.get('act_of_valor') else ""
@@ -269,7 +273,6 @@
 
             Widget:
                 size_hint: 1, 1
-                height: 20
 
             FactLabel:
                 text: "[b]Date & Place of Action:[/b]" if root.data.get('action_dateplace') else ""
@@ -280,7 +283,6 @@
 
             Widget:
                 size_hint: 1, 1
-                height: 20
 
 
 
